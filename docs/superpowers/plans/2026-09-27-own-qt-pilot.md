@@ -90,7 +90,9 @@ several short RED/GREEN cycles, not a helper checkpoint presented as visible UI.
   reset, zero/oversize viewport refusal and image survival beyond renderer.
 
 - [ ] Step 4: Add compiling behavioral build-selection RED before changing
-  helper/root logic: own-warp produces no rlottie/reference targets, D2D exists;
+  helper/root logic: own-warp has no rlottie target and no reference library in
+  app/smoke build/link closure (the existing EXCLUDE_FROM_ALL Reference wrapper
+  declaration may remain in the codemodel), D2D exists;
   invalid mode/conflicting variant/own-with-lab-OFF fail; default ON remains
   reference and OFF has no engine. Existing guards/cache-sentinel tests retained.
   Implement selector and shared target-wiring helper in AveMotionLab.cmake only

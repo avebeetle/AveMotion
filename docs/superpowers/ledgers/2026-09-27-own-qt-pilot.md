@@ -30,3 +30,5 @@ Ruling: Work on the two existing main checkouts with root-only Git and retain ra
 Design written/self-reviewed/committed9170bc5. Plan self-review complete;
 Task1 pending sole writer, functional RED, GREEN, task review. Task2 pending.
 No accepted package/dependency/Windows/automation change.
+
+Ruling: Check own app/smoke actual build/link closure, not the mere declaration of avemotion_reference — current engine always declares an EXCLUDE_FROM_ALL wrapper and spec prohibits building/linking it, not its declaration — cost if wrong is a missing transitive dependency detection, addressed by final actual link inspection.
