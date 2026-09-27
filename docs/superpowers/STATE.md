@@ -2,6 +2,20 @@
 
 Updated: 2026-09-28
 
+## Current execution — Part26N unchanged Duck playback
+
+User approved continuation toward real Duck think in canonical AvelabsUI.
+Controller-approved spec1eb21da, plan and durable ledger dated
+2026-09-28-own-duck-playback; matching SDD/progress is the execution checkpoint.
+Four tasks: reconcile carried M delta; bounded own vector compiler; shared
+scene stream and real-sticker parity; same-host acceptance/static promotion.
+Task1 pending.22 M files remain preserved/uncommitted and unverified; they are
+explicitly in Task1 review scope. M separate synthetic host/promotion work is
+superseded, not completed. No new product writer until Task1 dispatch, no new
+automation. Installed L EXE/PDB remains protected. Real artwork stays local.
+Do not repeat previous stages or claim compiler/reference success as own UI
+playback. Read current N spec/plan/ledger before historical M material below.
+
 ## Latest direction — real Telegram stickers first
 
 User redirected the next acceptance milestone to downloadable real Telegram
