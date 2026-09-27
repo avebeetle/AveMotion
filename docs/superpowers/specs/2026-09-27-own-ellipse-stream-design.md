@@ -34,7 +34,7 @@ identity-inventory.md resource stubs predate completed G and are not new tasks.
 - No vendor, dependency, license/notice, fixture or golden changes; no dependency installation or Windows/settings/security/automation actions.
 - No UI writes/builds/GUI or UI/out recreation; preserve Avelabs712d454 and accepted Release EXE C92F26EE8FEB4FF03F6DC7F4AFFF4B11FB48142743D1EDCCB4E213AAA81F82C2.
 - No public loader, Runtime handles, Player threading, Direct2D ownership, ANGLE/backend coverage or public fallback changes. New production interfaces are private/not installed; reference-linked install prohibition stays.
-- No changes to legacy NativeEllipseStream, NativeEllipseCertificate, own reader/admission/model policy or existing oracle/goldens to make parity pass.
+- No changes to legacy NativeEllipseStream except the identical private helper extraction in the review addendum below; NativeEllipseCertificate, own reader/admission/model policy and existing oracle/goldens stay unchanged.
 - No full Lottie, own playback/GPU, universal scalar parity, TSan, zero-allocation or measured-speedup claim. Samsung is configure/provenance-only in this stage.
 
 ## Production contract
@@ -183,3 +183,33 @@ No placeholders; production, test normalization and consumer isolation are disti
 Dependencies reuse G without weakening its sealed ownership. Full UI/public loader
 work is excluded. Controller approves proceeding to the written implementation
 plan under delegated authority; no routine confirmation is pending.
+
+## Task1 review addendum — shared evaluation helpers
+
+Independent Task1 review found property-storage resolution and aspect-fit numeric
+blocks duplicated verbatim from the legacy stream. The original no-legacy-edit
+constraint and no-copied-numeric-algorithm requirement conflict here. Resolve in
+favor of one shared first-party implementation: private header-only
+src/render/NativeEllipseEvaluationHelpers.hpp, included by both streams.
+
+`resolveNativeEllipseVec2(const MotionAssetModel&, const PropertyEvaluationView&,
+PropertyId, MotionVec2Value&) noexcept` retains the current exact validation and
+storage interpretation. `nativeEllipseViewportTransform(const
+MotionMatrix3x2Value&, size_t logicalWidth, size_t logicalHeight, size_t width,
+size_t height) noexcept -> optional<runtime::AffineTransform>` retains exact
+float operation order, aspect fit and finiteness rejection. Existing callers
+already validate nonzero dimensions. Namespace render::detail; inline private
+helpers, not installed. No new generic descriptor or certificate substitution.
+
+Both stream callers delegate these operations only; legacy authorization, IDs,
+sequence, errors, scene assembly and lifecycle policy remain unchanged. Cover
+the extraction with a compiling functional helper RED, own tests and the existing
+Telegram native stream/lifecycle tests. Include the new helper in final actual
+compiler/header closure and explicitly review the small legacy diff.
+
+Task1 also adds literal fingerprint witnesses for a pinned static scene whose
+expected hashes are derived independently from explicit scalar/path/paint/layer
+fields and documented FNV byte layout in scratch evidence, not by sampling the
+candidate or calling its fingerprint function as the expected-value generator.
+Both findings are resolved in one scoped task fix round. Controller approves this
+bounded reversible addendum under delegated authority before the fix begins.

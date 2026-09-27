@@ -16,7 +16,7 @@
 - No vendor, dependency, license/notice, fixture or golden changes; no dependency installation or Windows/settings/security/automation actions.
 - No UI writes/builds/GUI or UI/out recreation; preserve Avelabs712d454 and accepted Release EXE C92F26EE8FEB4FF03F6DC7F4AFFF4B11FB48142743D1EDCCB4E213AAA81F82C2.
 - No public loader, Runtime handles, Player threading, Direct2D ownership, ANGLE/backend coverage or public fallback changes. New production interfaces are private/not installed; reference-linked install prohibition stays.
-- No changes to legacy NativeEllipseStream, NativeEllipseCertificate, own reader/admission/model policy or existing oracle/goldens to make parity pass.
+- No changes to legacy NativeEllipseStream except the identical private helper extraction in the spec review addendum; NativeEllipseCertificate, own reader/admission/model policy and existing oracle/goldens stay unchanged.
 - No full Lottie, own playback/GPU, universal scalar parity, TSan, zero-allocation or measured-speedup claim. Samsung is configure/provenance-only in this stage.
 
 ## Review Focus
@@ -115,6 +115,11 @@ observed defect is routed to root first. Existing exact comparators/oracle uncha
 helpers consume original own/reference scene and original plans plus each side's
 own source binding/schema. Their names are local to this test; Task3 does not
 depend on normalized results. They return explicit mismatch diagnostics.
+The unchanged NativeEllipseOracle header's legacy inline helper needs the
+NativeEllipseCertificate.hpp declaration included first in TEST code; do not
+construct a certificate or call that legacy normalizer. freshScene emits raw
+instanceId0, so assign a fixed nonzero TEST oracle ID (independent of candidate)
+before its separate planner build; keep its original asset handle/sequence/model.
 
 - [ ] Write positive equal-semantic assertion against a compiling false comparator
   stub, observe RED. Define fixed normalization exactly per spec in the test
@@ -134,7 +139,7 @@ depend on normalized results. They return explicit mismatch diagnostics.
   explicit comparison/sample/witness counts and matrix summary.
 - [ ] `cmake --preset windows-msvc-telegram-debug`, build same preset --parallel4,
   `ctest --test-dir out/build/windows-msvc-telegram-debug --output-on-failure -R
-  "avemotion\.(own_native_ellipse|native_ellipse|own_json)"`: include the new
+  "(own_native_ellipse|native_ellipse|own_json)"`: include the new
   `avemotion.own_native_ellipse_stream_differential` and related old/own tests.
   Retain RED/GREEN full commands/counts, self-review/report. Root verifies,
   scoped normal commit, independent review, docs/guarded push.
@@ -148,6 +153,8 @@ extraction preserves the existing capture test's helpers, dimensions and behavio
 shared testsupport::WarpCaptureSurface keeps configure(profile), context(),
 beginFrame(), endFrame(), readPixels() behavior (use actual existing method names
 when extracting; no public consumer). No Task2 normalizer in pixel oracle.
+As in Task2, declare the unchanged oracle header's legacy types in TEST includes
+and assign its raw scene a fixed nonzero TEST ID for its separate planner.
 
 - [ ] Extract the existing test-only WARP surface mechanically; build/run existing
   `avemotion.direct2d_capture` to prove unchanged behavior before new assertions.
@@ -156,7 +163,8 @@ when extracting; no public consumer). No Task2 normalizer in pixel oracle.
   scenes/plans in distinct planner/backend domains. Compare exact WARP BGRA bytes;
   independent ordinary CPU raster uses unchanged PixelComparisonPolicy.
 - [ ] Six assets: base animated, static-visible, activity10..20, nonlinear easing,
-  nonsquare640x360, fractional coordinates/color from existing15case matrix.
+  nonsquare640x360, fractional-coordinates from existing15case matrix. Color
+  boundaries remain covered by the full15case semantic matrix in Task2.
   Frames [0,10,19,20,30,60] x all five existing CaptureProfiles =180 cases.
   Own/reference scenes use logical viewport; CPU uses physical pixel dimensions.
   Empty-case assertions and nonempty control prevent vacuous success. Write raw
@@ -168,7 +176,7 @@ when extracting; no public consumer). No Task2 normalizer in pixel oracle.
 - [ ] Register only when Direct2D capture and Telegram are enabled. Configure/build
   windows-msvc-win32-preview and run `ctest --test-dir
   out/build/windows-msvc-win32-preview --output-on-failure -R
-  "avemotion\.(own_native_ellipse|direct2d|win32)"`; no product backend edits.
+  "(own_native_ellipse|direct2d|win32)"`; no product backend edits.
   Self-review/report exact coverage, root verification/scoped commit, task review,
   docs/guarded push.
 
@@ -193,3 +201,14 @@ Spec coverage maps to Tasks1/2/3 and final root gate. Public/private ownership,
 counter signatures, comparison exclusions and file consumers agree. Review Focus
 cases are assigned above. Controller approves written plan and selects SDD under
 delegated authority, with one writer and root-only Git. No user reply is required.
+
+## Task1 fix round1 addendum
+
+Create src/render/NativeEllipseEvaluationHelpers.hpp with the exact two helper
+interfaces and operations in the spec addendum. Replace duplicated resolution and
+aspect-fit/finiteness blocks in own and legacy streams with helper calls only.
+Add literal fingerprint witness(s) and independent derivation scratch evidence;
+no expected values sampled from production. Functional helper RED then GREEN;
+none full suite and existing Telegram native stream/lifecycle focused regression
+tests. Root owns normal commits and scoped re-review. This adds the helper and
+legacy stream.cpp to the authorized final private closure diff, nothing else.

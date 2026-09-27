@@ -31,6 +31,8 @@ Ruling: normalize only specified identity/display/schema differences in independ
 
 Ruling: direct main with root-only Git and preserved raw/SDD artifacts — follows delegated workflow and avoids prior worker Git deviation — less checkout isolation and retained disk use.
 
+Ruling: extract identical property resolution and aspect-fit/finiteness into a shared private inline helper, allowing the narrow legacy delegation edit — independent Task1 review exposed conflict between frozen legacy code and no duplicated numeric algorithms — touches the legacy route, requiring existing Telegram stream/lifecycle regressions and explicit diff/header closure review.
+
 ## Baseline evidence
 
 out/part26h-design/baseline-none-2606632.log:36/37; nested legacy_subproject
@@ -40,7 +42,14 @@ out/part26h-design/baseline-none-vsdev-2606632.log. Both attempts retained.
 
 ## Queue
 
-- Task1 pending: own stream/lifecycle functional RED then production.
+- Task1 product4e0a957 root normal commit, task review pending; writer quiescent.
+  Worker full none38/38,6.05s; root fresh own stream1/1,0.06s. Raw out/part26h/task-1.
+  Initial compiling functional RED before production; counter checks existed but
+  were first reached by a postimplementation mutation RED/GREEN, explicitly not
+  separate strict test-first evidence. Full report in task-1-report.md.
+  Independent review identified Important duplicate numeric blocks and missing
+  independent literal fingerprint witness; fix round1 planned under written spec
+  addendum, no finding discarded or test weakened.
 - Task2 pending: semantic scene/plan ordinary-reference parity.
 - Task3 pending: WARP/CPU pixels and cache/lifetime proof.
 - Final review/full platform/private-boundary gates and report pending.
