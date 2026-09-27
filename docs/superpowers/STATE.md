@@ -1,6 +1,29 @@
 # AveMotion autonomous work state
 
-Updated: 2026-09-27
+Updated: 2026-09-28
+
+## Latest direction — real Telegram stickers first
+
+User redirected the next acceptance milestone to downloadable real Telegram
+animations, not another synthetic-only extension. Three unchanged Duck TGS files
+from TelegramMessenger/TelegramStickersImport b8951c8a02b245142142d341644d0756cf16278c
+are downloaded only under ignored out/real-stickers-2026-09-28/assets, with pinned
+source and SHA-256. Local evaluation only; no artwork redistribution decision.
+Reference corpus3/3 and reference CPU15 phase samples pass. Own-path probe0/3:
+all three hit the existing4096-value reader limit before model admission. They
+also require precomposition, authored paths/strokes/trim and fuller animation
+support, so raising a constant alone is not a solution. Report:
+docs/REAL_STICKER_BASELINE_2026-09-28.md. Next target is a-3.tgs (Duck think),
+with a measured missing-feature plan and acceptance in the same Avelabs UI.
+
+Part26M Task2 is frozen, NOT complete:22 product/test files are uncommitted after
+cc589b0. Model/resources/stream focused gates pass; latest differential011 builds
+but fails canonicalPaint.sourceKey on first multi-item frame (legacy3/3 pass).
+Capture/full gates/review/host Task3/install have not run. No live implementer;
+partial report in matching SDD/task-2-report.md. Preserve edits/raw; do not
+promote or claim a completed seven-shape stage, and do not repeat Task1. Current
+canonical L EXE/PDB remains unchanged. No automation change. Read latest direction
+and report before resuming the older M prospective plan below.
 
 ## Current work — Part26M bounded own primitive groups
 

@@ -55,3 +55,23 @@ hand-derived expected-decimal normalization corrections; initial missing-VS CTes
 legacy_subproject configure42/43 (rerun43/43); root/worker cmd-regex launch errors;
 temporary fix C4244 warnings corrected before final builds. No product workarounds
 or weakened tests. Canonical L EXE and host unchanged. Full report/reviews in SDD.
+
+## Execution redirect — 2026-09-28
+
+User explicitly requested testing real downloadable Telegram stickers now.
+Task2 writer /root/primitive_engine_implementer frozen at safe checkpoint after
+011 differential: build succeeds, legacy3/3 pass, new multi-item frame0 fails
+canonicalPaint.sourceKey. Model/resources/stream focused gates passed, but no
+capture/full-suite/task review or host/install acceptance.22 modified/new
+product/test files remain uncommitted after cc589b0; preserve them and all raw.
+Partial report is in matching ignored SDD/task-2-report.md. No live writer.
+
+Ruling6: real-sticker acceptance now takes priority over completing synthetic M
+installation. Reason: explicit user correction of next visible milestone. Cost:
+M remains a partial checkpoint; it is not safe to call it complete or promote.
+Three pinned official Duck TGS files downloaded only into ignored local evidence.
+Reference3/3 and15 CPU phase samples pass; own0/3 hits4096-value reader resource
+limit, with wider precomposition/path/stroke/trim/animation gaps also identified.
+Selected next target a-3.tgs Duck think. Detailed evidence, hashes and limits:
+docs/REAL_STICKER_BASELINE_2026-09-28.md. No fixture redistribution/licensing change,
+no fallback/public API relaxation, no blind limit increase or canonical mutation.

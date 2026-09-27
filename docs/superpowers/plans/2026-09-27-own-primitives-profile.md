@@ -10,6 +10,17 @@
 
 **Spec:** docs/superpowers/specs/2026-09-27-own-primitives-profile-design.md (0cbe264).
 
+## Execution priority amendment — 2026-09-28
+
+The user redirected acceptance to real downloadable Telegram stickers. Task1
+remains complete; Task2 is frozen with partial uncommitted implementation and a
+failing first multi-item differential (`canonicalPaint.sourceKey`). Tasks3/4
+have not started. Do not automatically resume this synthetic-only acceptance
+chain. Read STATE and docs/REAL_STICKER_BASELINE_2026-09-28.md first: three official
+Duck files are now tested, all reference-readable but rejected by the own reader.
+Next milestone is unchanged a-3.tgs in the same UI, with a missing-feature plan.
+Retain M work as lower-level regression groundwork, not proof of sticker support.
+
 ## Global Constraints
 
 - One2D shape layer with1..16 direct groups, subject also to current4096 value-node limit. Each group is exactly `[el-or-rc, fl, tr]`, with optional inert names.
