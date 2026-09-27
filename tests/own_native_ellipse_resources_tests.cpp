@@ -24,17 +24,61 @@
 namespace {
 using namespace avemotion;
 using namespace avemotion::model;
-void require(bool value, std::string_view text) { if (!value) throw std::runtime_error(std::string{text}); }
+void require(bool value, std::string_view text) {
+    if (!value) {
+        throw std::runtime_error(std::string{text});
+    }
+}
 
 // Test-owned FNV-1a encoding: no product hashing helper constructs expectations.
-struct Fnv { std::uint64_t v = 14695981039346656037ULL; void b(std::uint8_t x) { v = (v ^ x) * 1099511628211ULL; }
-    void u32(std::uint32_t x) { for (unsigned i=0;i!=4;++i) b(static_cast<std::uint8_t>(x >> (8*i))); }
-    void u64(std::uint64_t x) { for (unsigned i=0;i!=8;++i) b(static_cast<std::uint8_t>(x >> (8*i))); }
-    void f64(double x) { if (x==0) x=0; u64(std::bit_cast<std::uint64_t>(x)); }
-    void text(std::string_view x) { u64(x.size()); for (char c:x) b(static_cast<std::uint8_t>(c)); } };
-std::uint64_t raw(std::string_view s) { Fnv h; for(char c:s) h.b(static_cast<std::uint8_t>(c)); return h.v; }
-std::uint64_t nameHash(std::string_view s) { Fnv h; h.text(s); return h.v; }
-std::uint64_t parsedHash(std::string_view s) { Fnv h; h.text("AveMotion.OwnEllipse.Authored.v1"); h.text(s); return h.v; }
+struct Fnv {
+    std::uint64_t v = 14695981039346656037ULL;
+
+    void b(std::uint8_t x) { v = (v ^ x) * 1099511628211ULL; }
+    void u32(std::uint32_t x) {
+        for (unsigned i = 0; i != 4; ++i) {
+            b(static_cast<std::uint8_t>(x >> (8 * i)));
+        }
+    }
+    void u64(std::uint64_t x) {
+        for (unsigned i = 0; i != 8; ++i) {
+            b(static_cast<std::uint8_t>(x >> (8 * i)));
+        }
+    }
+    void f64(double x) {
+        if (x == 0) {
+            x = 0;
+        }
+        u64(std::bit_cast<std::uint64_t>(x));
+    }
+    void text(std::string_view x) {
+        u64(x.size());
+        for (char c : x) {
+            b(static_cast<std::uint8_t>(c));
+        }
+    }
+};
+
+std::uint64_t raw(std::string_view s) {
+    Fnv h;
+    for (char c : s) {
+        h.b(static_cast<std::uint8_t>(c));
+    }
+    return h.v;
+}
+
+std::uint64_t nameHash(std::string_view s) {
+    Fnv h;
+    h.text(s);
+    return h.v;
+}
+
+std::uint64_t parsedHash(std::string_view s) {
+    Fnv h;
+    h.text("AveMotion.OwnEllipse.Authored.v1");
+    h.text(s);
+    return h.v;
+}
 
 std::uint64_t topologyHash(std::string_view layer, bool animated) {
     Fnv h; h.u32(2); h.u64(2); h.u64(1); h.u64(1); h.u64(1); h.u64(1);
@@ -45,16 +89,80 @@ std::uint64_t topologyHash(std::string_view layer, bool animated) {
 std::uint64_t resourceHash(std::uint64_t geometry, std::uint64_t paint, bool animated) { Fnv h; h.u64(1); h.b(1); h.u32(0); h.b(animated?1:2); h.u64(animated?0:geometry); h.u64(1); h.b(1); h.u32(0); h.b(2); h.u64(paint); return h.v; }
 std::uint64_t fullHash(std::string_view s, std::uint64_t topology, std::uint64_t resources) { Fnv h; h.u32(2); h.u64(raw(s)); h.u64(512); h.u64(512); h.f64(60); h.u64(61); h.u64(topology); h.u64(resources); h.u64(parsedHash(s)); return h.v; }
 
-std::string repl(std::string s, std::string_view a, std::string_view b) { return test::replaceEllipseOnce(std::move(s), a, b); }
-std::string staticSource() { auto s=test::staticEllipseFixture(test::ellipseFixture()); s=repl(std::move(s), "[-32768,32768]", "[0,0]"); s=repl(std::move(s), "[120, 120]", "[2, 2]"); return repl(std::move(s), "[0.08, 0.72, 0.95, 1]", "[0.5, 0.1, 0.999, 1]"); }
-runtime::detail::NativeEllipseInput literalInput() { using runtime::detail::NativeEllipseInput; using runtime::detail::NativeEllipseStaticPosition; auto d=[](bool n,const char* s,bool pn=false,const char* p="0"){return runtime::detail::NativeEllipseDecimal{n,s,{pn,p}};}; NativeEllipseInput x; x.width=512;x.height=512;x.endFrame=61;x.frameRate=d(false,"6",false,"1");x.layerId=1;x.layerInFrame=0;x.layerOutFrame=61;x.layerTranslation={d(false,"256"),d(false,"256")};x.size={d(false,"2"),d(false,"2")};x.position=NativeEllipseStaticPosition{{d(false,"0"),d(false,"0")}};x.fillColor={d(false,"5",true,"1"),d(false,"1",true,"1"),d(false,"999",true,"3"),d(false,"1")};x.version="5.7.4";x.name="AveMotion Telegram sticker profile fixture";x.layerName="Moving Circle";x.groupName="Circle Group";x.ellipseName="Animated Ellipse";x.fillName="Fill";x.transformName="Transform";return x; }
-runtime::detail::NativeEllipseNumericValues literalValues() { return {60,{256,256},{2,2},{0,0},{},{},{},{.5F,.1F,.999F,1},false,0,0}; }
-std::shared_ptr<const runtime::detail::OwnNativeEllipseModel> owner(std::string_view s) { auto j=formats::detail::readOwnJson(s); require(static_cast<bool>(j),"source parsed"); auto r=runtime::detail::buildOwnNativeEllipseModel(*j.document); require(static_cast<bool>(r),"authored model"); return r.prepared; }
-std::shared_ptr<const render::detail::OwnNativeEllipsePreparedAsset> prep(std::string_view s) { auto r=render::detail::prepareOwnNativeEllipseAsset(owner(s)); require(static_cast<bool>(r),"own resources prepared"); return r.prepared; }
+std::string repl(std::string s, std::string_view a, std::string_view b) {
+    return test::replaceEllipseOnce(std::move(s), a, b);
+}
+
+std::string staticSource() {
+    auto s = test::staticEllipseFixture(test::ellipseFixture());
+    s = repl(std::move(s), "[-32768,32768]", "[0,0]");
+    s = repl(std::move(s), "[120, 120]", "[2, 2]");
+    return repl(std::move(s), "[0.08, 0.72, 0.95, 1]", "[0.5, 0.1, 0.999, 1]");
+}
+
+runtime::detail::NativeEllipseInput literalInput() {
+    using runtime::detail::NativeEllipseInput;
+    using runtime::detail::NativeEllipseStaticPosition;
+    const auto decimal = [](bool negative, const char* significand, bool powerNegative = false,
+                            const char* power = "0") {
+        return runtime::detail::NativeEllipseDecimal{
+            negative, significand, {powerNegative, power}};
+    };
+
+    NativeEllipseInput input;
+    input.width = 512;
+    input.height = 512;
+    input.endFrame = 61;
+    input.frameRate = decimal(false, "6", false, "1");
+    input.layerId = 1;
+    input.layerInFrame = 0;
+    input.layerOutFrame = 61;
+    input.layerTranslation = {decimal(false, "256"), decimal(false, "256")};
+    input.size = {decimal(false, "2"), decimal(false, "2")};
+    input.position = NativeEllipseStaticPosition{{decimal(false, "0"), decimal(false, "0")}};
+    input.fillColor = {decimal(false, "5", true, "1"), decimal(false, "1", true, "1"),
+        decimal(false, "999", true, "3"), decimal(false, "1")};
+    input.version = "5.7.4";
+    input.name = "AveMotion Telegram sticker profile fixture";
+    input.layerName = "Moving Circle";
+    input.groupName = "Circle Group";
+    input.ellipseName = "Animated Ellipse";
+    input.fillName = "Fill";
+    input.transformName = "Transform";
+    return input;
+}
+
+runtime::detail::NativeEllipseNumericValues literalValues() {
+    return {60, {256, 256}, {2, 2}, {0, 0}, {}, {}, {}, {.5F, .1F, .999F, 1}, false, 0, 0};
+}
+
+std::shared_ptr<const runtime::detail::OwnNativeEllipseModel> owner(std::string_view s) {
+    const auto json = formats::detail::readOwnJson(s);
+    require(static_cast<bool>(json), "source parsed");
+    const auto result = runtime::detail::buildOwnNativeEllipseModel(*json.document);
+    require(static_cast<bool>(result), "authored model");
+    return result.prepared;
+}
+
+std::shared_ptr<const render::detail::OwnNativeEllipsePreparedAsset> prep(std::string_view s) {
+    const auto result = render::detail::prepareOwnNativeEllipseAsset(owner(s));
+    require(static_cast<bool>(result), "own resources prepared");
+    return result.prepared;
+}
 
 void requireCompleteRenderRows(const MotionAssetModel& m) {
-    require(m.layers.size()==2 && m.nodes.size()==1 && m.geometries.size()==1 && m.paints.size()==1 && m.clips.size()==1 && m.drawOrder==std::vector<NodeId>{makeId<NodeId>(0)} && m.childLayerIds==std::vector<LayerId>{makeId<LayerId>(1)} && m.layerNodeIds==std::vector<NodeId>{makeId<NodeId>(0)},"all render table counts/order");
-    const auto& root=m.layers[0]; const auto& shape=m.layers[1]; const auto& node=m.nodes[0]; const auto& geometry=m.geometries[0]; const auto& paint=m.paints[0]; const auto& clip=m.clips[0];
+    require(m.layers.size() == 2 && m.nodes.size() == 1 && m.geometries.size() == 1
+            && m.paints.size() == 1 && m.clips.size() == 1
+            && m.drawOrder == std::vector<NodeId>{makeId<NodeId>(0)}
+            && m.childLayerIds == std::vector<LayerId>{makeId<LayerId>(1)}
+            && m.layerNodeIds == std::vector<NodeId>{makeId<NodeId>(0)},
+        "all render table counts/order");
+    const auto& root = m.layers[0];
+    const auto& shape = m.layers[1];
+    const auto& node = m.nodes[0];
+    const auto& geometry = m.geometries[0];
+    const auto& paint = m.paints[0];
+    const auto& clip = m.clips[0];
     require(root.present && root.id==makeId<LayerId>(0) && !root.parent.valid() && root.children.first==0 && root.children.count==1 && root.nodes.first==0 && root.nodes.count==0 && root.masks.first==0 && root.masks.count==0 && root.debugName=="__" && root.nameHash==nameHash("__") && root.dependencyBits==StaticDependencyNone && root.matte==runtime::MatteMode::None,"root all fields");
     require(shape.present && shape.id==makeId<LayerId>(1) && shape.parent==makeId<LayerId>(0) && shape.children.first==0 && shape.children.count==0 && shape.nodes.first==0 && shape.nodes.count==1 && shape.masks.first==0 && shape.masks.count==0 && shape.debugName=="Moving Circle" && shape.nameHash==nameHash("Moving Circle") && shape.dependencyBits==StaticDependencyNone && shape.matte==runtime::MatteMode::None,"shape all fields");
     require(node.present && node.id==makeId<NodeId>(0) && node.drawItem==makeId<DrawItemId>(0) && node.layer==makeId<LayerId>(1) && node.geometry==makeId<GeometryId>(0) && node.paint==makeId<PaintId>(0) && node.drawOrder==0 && node.dependencyBits==StaticDependencyTransform,"node all fields");

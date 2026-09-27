@@ -5,8 +5,11 @@
 #include "avemotion/core/Hash.hpp"
 #include "avemotion/evaluation/PropertyEvaluator.hpp"
 
+#include <array>
 #include <cstddef>
+#include <optional>
 #include <span>
+#include <string_view>
 #include <utility>
 
 namespace avemotion::runtime::detail {
