@@ -1,20 +1,57 @@
 # AveMotion autonomous work state
 
-Updated: 2026-09-24
+Updated: 2026-09-27
 
-## Current handoff — Part26F plan/preflight ready
+## Current handoff — Part26F Task1 accepted; own adapter next
+
+Latest2026-09-27: Task1 product4c9237d independently approved for spec and quality,
+zero findings. Fresh none33/33, Telegram focused8/8 and root core/compat2/2 pass.
+No active implementer/reviewer. Current docs handoff untracks only the mistakenly
+committed SDD report, preserving local bytes and append-only history. Then guarded
+ordinary push and Task2 own-document adapter from its existing brief. F is not yet
+complete: own adapter, final platform/private-boundary gates and whole-stage review
+remain. Recovery details below are historical, not another active worker.
+
+2026-09-27 recovery: user explicitly resumed. Old worker stopped on an unavailable
+model error, with its scoped product changes uncommitted and no final report.
+No live old executor remained. HEAD/remote13d2603 still match. Current sole writer
+/root/own_admission_core_resume (terra/high) inspects and finishes that exact task;
+do not start it over. Existing September24 RED/GREEN and none33/33/TG focused8/8
+are historical evidence, not fresh acceptance. Recovery will run fresh covering
+checks, scoped commit, independent review, then Task2. Old active labels below are
+historical. Scratch F gate instruments and G dependency inventory are complete;
+neither is product approval. No new scheduler or UI activity.
+
+Recovery writer is now quiescent. Task1 product4c9237d, report-only752c2d9 local;
+fresh worker none33/33, Telegram6/6 plus stream2/2; root core/compat2/2,0.11s.
+Independent task review /root/own_admission_core_task_review is running on complete
+13d2603..752c2d9. Do not dispatch Task2 before its verdict. Report was accidentally
+tracked in ignored SDD; next docs-only commit will untrack it while preserving
+the local report and append-only history. No product fix is implied.
 
 E accepted and ordinary-pushed7000dd0b7470a17fd21ad3515a44eb7f140adae9; exact remote
 equality and clean tree verified. Do not repeat E tasks. F controller-approved spec
 docs/superpowers/specs/2026-09-24-own-ellipse-admission-design.md committed009dd2e;
 plan docs/superpowers/plans/2026-09-24-own-ellipse-admission.md; durable ledger
 docs/superpowers/ledgers/2026-09-24-own-ellipse-admission.md. Preflight complete,
-SDD chosen under delegated authority; ordinary docs push before sole Task1 writer.
+SDD chosen under delegated authority; docs13d260310a22a449937b4fc27ee8fd44edd27b85
+ordinary-pushed and remote equality/clean tree verified. Sole Task1 writer
+/root/own_admission_core_implementation active from that BASE; no second writer.
+SDD .superpowers/sdd/2026-09-24-own-ellipse-admission/progress.md. Scratch final
+instruments being adapted only under out/part26f by separate audit agent, no shared
+gate execution while product work is active; E instruments/evidence immutable.
 Task1 shared compiled decimal/grammar/materializer plus preserved Telegram frontend;
 Task2 separate own-document adapter/all-variant literal tests; then fresh full gates.
 No own model/playback or UI activation implied. Keep old APIs/tests/route protected,
 explicit E scalar/path differences, borrowed token lifetimes and noncontiguous
 sibling links. Follow current ledger/actual Git/agents, not historical running labels.
+
+Task1 worker reports unchanged legacy focused2/2 GREEN, successful-build new core
+functional RED, and pre-refactor literal compatibility24 rows GREEN; extraction
+is active, not yet accepted. Controller corrected the sibling-swap expected first
+error (Ruling6) before its witness was implemented. Read-only future model dependency
+inventory is separate scratch research; no G design/product task is started. Host
+freshly remains clean712d454 and EXE C92F26EE...82C2 unchanged, UI/out absent.
 
 ## Previous handoff — Part26E accepted; Part26F design next
 

@@ -109,7 +109,7 @@ Mutation helpers assert unique source fragments, never mutate committed fixture.
 Projection is test infrastructure, not expected grammar output, and may copy the
 accepted E node indexes only because every row is retained in original order.
 
-- [ ] **Step 1: Preserve literal legacy baseline and establish new core functional RED.**
+- [x] **Step 1: Preserve literal legacy baseline and establish new core functional RED.**
 
 Run current old admission/input tests once under VsDevCmd (GREEN baseline, not RED).
 Write helper's complete expected fixture descriptor without product normalization:
@@ -160,7 +160,7 @@ Successful none configure/build must precede focused functional RED on accepted
 descriptor, not a missing header/symbol/compiler. Preserve actual log and source
 identity before extracting logic. Test table source lifetime must enclose call.
 
-- [ ] **Step 2: Extract exact grammar/math/materialization once.**
+- [x] **Step 2: Extract exact grammar/math/materialization once.**
 
 Move first-party decimal functions and schema/materialize logic from the current
 legacy file to core, retaining comparisons, constants, required/optional order
@@ -189,7 +189,7 @@ projector output. Root/size/sentinel preconditions and bounded projector travers
 must make invalid internal layouts fail clearly, not loop or silently publish.
 Do not add a user-selectable second resource policy to core.
 
-- [ ] **Step 3: Connect legacy frontend without eligibility/diagnostic changes.**
+- [x] **Step 3: Connect legacy frontend without eligibility/diagnostic changes.**
 
 Keep old byte/NUL gate, pinned DOM parse flags, BFS resources/path helper EXACTLY
 in ordering/behavior. Preserve raw SAX flags and every parse/kind/count mismatch
@@ -230,7 +230,7 @@ Also accepted baseline, reordered root fields, fr=1e-9999, all7 absent/empty nam
 and static position[-32768,32768] with full independently expected descriptor.
 Store result before replacing source/retiring frontend; compare full fields later.
 
-- [ ] **Step 4: Core topology and rejection/publication evidence.**
+- [x] **Step 4: Core topology and rejection/publication evidence.**
 
 Verify projected valid fixture contains nested descendants between immediate
 siblings; assert actual first-child ordinal+1 is not assumed next sibling. Add
@@ -238,13 +238,15 @@ deterministic table permutation remapping every link while keeping root0, child
 order/key/value bytes; expected full descriptor unchanged. Retain one plain
 literal assertion (root child key order / array nested-child indexes) independent
 of remapping code. Mutation witness: exchange two shape siblings and assert
-UnsupportedValue at `/layers/0/shapes/0/it/0/ty`, no descriptor. This must fail if
+UnsupportedField at `/layers/0/shapes/0/it/0/c`, no descriptor. Unknown Fill member
+`c` wins before ellipse's literal `ty` validation (actual Fill order ty,c,o,r,nm).
+This must fail if
 core ignores sibling order. Core audit-only nullptr returns Accepted with empty
 path without entering materializer (inspect branch; no global allocation claim).
 Prepopulate output with an independent descriptor before rejected core input and
 verify it is cleared. Earlier successful owned descriptors remain unchanged.
 
-- [ ] **Step 5: GREEN, regression, review report and scoped commit.**
+- [x] **Step 5: GREEN, regression, review report and scoped commit.**
 
 Run focused core in none and core/compat/unchanged admission/input in Telegram.
 Run full none suite once, and Telegram C/D tests matching
