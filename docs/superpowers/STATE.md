@@ -2,56 +2,39 @@
 
 Updated: 2026-09-27
 
-## Current handoff — Part26F Task1 accepted; own adapter next
+## Current handoff — Part26F tasks accepted; final gates next
 
-Latest2026-09-27: Task1 product4c9237d independently approved for spec and quality,
-zero findings. Fresh none33/33, Telegram focused8/8 and root core/compat2/2 pass.
-No active implementer/reviewer. Current docs handoff untracks only the mistakenly
-committed SDD report, preserving local bytes and append-only history. Then guarded
-ordinary push and Task2 own-document adapter from its existing brief. F is not yet
-complete: own adapter, final platform/private-boundary gates and whole-stage review
-remain. Recovery details below are historical, not another active worker.
+Task1 product4c9237d and Task2 productb44dedf plus test-only fix9269b8e are
+independently accepted. Task1 spec/quality review has zero findings; Task2's one
+missing precedence-coverage finding is closed by scoped re-review. No product
+writer remains active. Task1 handoff6d9e9ca was ordinary-pushed with exact remote
+equality; Task2 docs handoff/guarded ordinary push follows. Verify actual Git.
 
-2026-09-27 recovery: user explicitly resumed. Old worker stopped on an unavailable
-model error, with its scoped product changes uncommitted and no final report.
-No live old executor remained. HEAD/remote13d2603 still match. Current sole writer
-/root/own_admission_core_resume (terra/high) inspects and finishes that exact task;
-do not start it over. Existing September24 RED/GREEN and none33/33/TG focused8/8
-are historical evidence, not fresh acceptance. Recovery will run fresh covering
-checks, scoped commit, independent review, then Task2. Old active labels below are
-historical. Scratch F gate instruments and G dependency inventory are complete;
-neither is product approval. No new scheduler or UI activity.
+Current spec docs/superpowers/specs/2026-09-24-own-ellipse-admission-design.md;
+plan docs/superpowers/plans/2026-09-24-own-ellipse-admission.md;
+durable ledger docs/superpowers/ledgers/2026-09-24-own-ellipse-admission.md;
+SDD .superpowers/sdd/2026-09-24-own-ellipse-admission/progress.md. Raw out/part26f.
+Draft report docs/PART26F_OWN_ELLIPSE_ADMISSION_REPORT.md. Do not repeat tasks.
 
-Recovery writer is now quiescent. Task1 product4c9237d, report-only752c2d9 local;
-fresh worker none33/33, Telegram6/6 plus stream2/2; root core/compat2/2,0.11s.
-Independent task review /root/own_admission_core_task_review is running on complete
-13d2603..752c2d9. Do not dispatch Task2 before its verdict. Report was accidentally
-tracked in ignored SDD; next docs-only commit will untrack it while preserving
-the local report and append-only history. No product fix is implied.
+Task1 fresh none33/33, TG focused8/8, root2/2. Task2 scratch none34/34, TG7/7;
+root rebuilt missing C/D targets and ran own2+C/D4,6/6. Fix focused none/TG1/1 each.
+These are task checks, NOT final F acceptance. Next root fresh full none/Telegram/
+Win32-preview, Samsung configure/provenance, actual include/link/install closure,
+and independent whole-stage review (read-only review may overlap stable gates).
+Use existing five scratch instruments; retain every failed attempt and identity.
 
-E accepted and ordinary-pushed7000dd0b7470a17fd21ad3515a44eb7f140adae9; exact remote
-equality and clean tree verified. Do not repeat E tasks. F controller-approved spec
-docs/superpowers/specs/2026-09-24-own-ellipse-admission-design.md committed009dd2e;
-plan docs/superpowers/plans/2026-09-24-own-ellipse-admission.md; durable ledger
-docs/superpowers/ledgers/2026-09-24-own-ellipse-admission.md. Preflight complete,
-SDD chosen under delegated authority; docs13d260310a22a449937b4fc27ee8fd44edd27b85
-ordinary-pushed and remote equality/clean tree verified. Sole Task1 writer
-/root/own_admission_core_implementation active from that BASE; no second writer.
-SDD .superpowers/sdd/2026-09-24-own-ellipse-admission/progress.md. Scratch final
-instruments being adapted only under out/part26f by separate audit agent, no shared
-gate execution while product work is active; E instruments/evidence immutable.
-Task1 shared compiled decimal/grammar/materializer plus preserved Telegram frontend;
-Task2 separate own-document adapter/all-variant literal tests; then fresh full gates.
-No own model/playback or UI activation implied. Keep old APIs/tests/route protected,
-explicit E scalar/path differences, borrowed token lifetimes and noncontiguous
-sibling links. Follow current ledger/actual Git/agents, not historical running labels.
+September24 work stopped on a model-availability error; September27 resumed the
+same preserved changes, no reimplementation or manufactured RED history. Old active
+labels in historical sections are not proof of a live executor. Accidental SDD
+report tracking in752c2d9 was removed in6d9e9ca; local bytes/history were retained.
 
-Task1 worker reports unchanged legacy focused2/2 GREEN, successful-build new core
-functional RED, and pre-refactor literal compatibility24 rows GREEN; extraction
-is active, not yet accepted. Controller corrected the sibling-swap expected first
-error (Ruling6) before its witness was implemented. Read-only future model dependency
-inventory is separate scratch research; no G design/product task is started. Host
-freshly remains clean712d454 and EXE C92F26EE...82C2 unchanged, UI/out absent.
+No UI writes/builds/GUI, UI/out recreation, new automation/dependency/settings/
+license change. Host stays at accepted712d454, EXE C92F26EE...82C2. Production
+Runtime still uses reference loading/playback; F supplies only an independent
+private own-document admission path for the narrow ellipse subset. After acceptance,
+separate own-model/resources/certificate design (source inventory already at
+out/part26g-design/dependency-inventory.md), then timeline/pixels and isolated
+static Avelabs acceptance. User's delegated main commits/ordinary push continue.
 
 ## Previous handoff — Part26E accepted; Part26F design next
 

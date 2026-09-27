@@ -280,7 +280,7 @@ includes OwnJsonReader.hpp and core header; no pinned parser or old frontend cal
 Default empty document safely returns InvalidJson `/`, null input. No new byte/
 audit overload, public header, format-loader facade or Runtime route.
 
-- [ ] **Step 1: Compiling adapter stub and functional RED.**
+- [x] **Step 1: Compiling adapter stub and functional RED.**
 
 Add own source unconditionally to Runtime. Create all-variant target
 avemotion_own_native_ellipse_admission_tests / CTest
@@ -301,7 +301,7 @@ require(static_cast<bool>(input), "own document admits ellipse");
 require(input.admission.path.empty() && *input.input==expectedEllipseBaseline(), "own exact baseline");
 ```
 
-- [ ] **Step 2: Borrowed projection and explicit test-caller composition.**
+- [x] **Step 2: Borrowed projection and explicit test-caller composition.**
 
 Retain all own document rows in original order so original child/sibling IDs map
 unchanged. Switch every kind explicitly; preserve key presence and byte views;
@@ -329,7 +329,7 @@ NativeEllipseInputResult readThenAdmit(std::string_view json) {
 This is a test caller seam, not production route or a claim that the document
 adapter accepts byte input. No enum casting. Caller error paths remain E-owned.
 
-- [ ] **Step 3: Independent descriptors, boundaries and lifetime.**
+- [x] **Step 3: Independent descriptors, boundaries and lifetime.**
 
 Use literal helper expectedEllipseBaseline and modify expected fields directly,
 never ask either decoder or normalizer for expected data. Include baseline,
@@ -357,7 +357,7 @@ must yield distinct complete expected descriptors and repeat serially. No shared
 test counter race, static cache or TSan claim. Existing telegram_sticker_basic.tgs
 through Formats decode must yield full baseline descriptor; no new corpus/fixture.
 
-- [ ] **Step 4: Supplementary Telegram differential with explicit policies.**
+- [x] **Step 4: Supplementary Telegram differential with explicit policies.**
 
 Create Telegram-only avemotion_own_native_ellipse_admission_differential_tests /
 CTest avemotion.runtime.own_native_ellipse_admission_differential. Links Runtime,
@@ -389,7 +389,7 @@ Counts separate actual common/deliberate cases; no skipped mismatch or automatic
 whitelist. For numericaccepted cases assert literal normalized fields, not just
 status. Include old audit-only alongside decode outcomes where applicable.
 
-- [ ] **Step 5: Focused GREEN, full none, report and scoped commit.**
+- [x] **Step 5: Focused GREEN, full none, report and scoped commit.**
 
 Build/run core and own tests under none; all four F targets plus unchanged legacy
 admission/input and C/D regression under Telegram. Run full none once; root final

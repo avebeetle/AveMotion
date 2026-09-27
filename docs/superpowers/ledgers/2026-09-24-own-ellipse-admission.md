@@ -66,7 +66,7 @@ test, not an artificial regression of old behavior; old baseline GREEN stays lab
 ## Tasks
 
 - [x] Task1 shared core and preserved legacy frontend, product4c9237d independently approved.
-- [ ] Task2 own adapter and independent/all-variant evidence, only after Task1 review.
+- [x] Task2 own adapter and independent/all-variant evidence, productb44dedf and reviewed test fix9269b8e.
 - [ ] Root final platform/provenance/include/link/install gates and independent whole-stage review.
 - [ ] Next own-model/resources/certificate design, not F own-playback completion.
 
@@ -116,3 +116,27 @@ keeps report bytes locally, removes its Git tracking in this append-only docs
 handoff, and verifies remote remains13d2603 before ordinary push. Final F gates
 remain pending; this is not whole-stage acceptance. Next Task2 original brief,
 one fresh product writer, no redo of the reviewed core.
+
+Task1 handoff6d9e9ca ordinary-pushed; exact remote equality and clean tree verified.
+The report was untracked with git rm --cached, hash unchanged and local bytes
+retained; original report commit remains in history. Task2 BASE6d9e9ca98f0cb5dbc071e8ef07bebd4e5c457faa,
+writer /root/own_admission_adapter_implementation (terra/high), brief regenerated
+from the approved plan. Functional compiling-stub RED, then own projection and
+independent literal/policy/lifetime evidence; report remains local, not force-added.
+
+Task2 productb44dedf16a9044efe9b30dc3c9cbe0400ec8b6c4 local, writer quiescent;
+functional compiling-stub RED/GREEN, full scratch none34/34, Telegram selected7/7.
+Read-only task review /root/own_admission_adapter_task_review active. Worker omitted
+the planned C/D regression run: root rebuilt all four targets against this Runtime
+(four relinks) and ran own/differential plus binding/certificate/stream/lifecycle,
+6/6 pass in10.90s. Exact runner/root-b44dedf-regression.log in out/part26f/task2.
+No test requirement is weakened and no product correction was needed for this gap.
+Full platform checks and actual include/link/install closure remain final gates.
+
+Task2: fix round1/5 (one addressed, zero open; b44dedf..9269b8e). Reviewer found
+three missing literal own-path precedence witnesses; worker added only those test
+rows, no production change or artificial RED. Focused none/TG each1/1 pass; scoped
+re-review task-2-fix1-review.md accepts all with no new breakage. Task2: complete
+(6d9e9ca..9269b8e, independent review clean after one fix). No deferred findings.
+Next docs handoff/ordinary guarded push, then root final stable-SHA gates and
+whole-stage review. No current product writer; no own playback claim.
