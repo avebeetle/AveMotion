@@ -37,6 +37,35 @@ Raw/SDD evidence retained. Date2026-09-28.
    equivalence and zero backend skips are mandatory per-scene assertions — cost
    if wrong: parity proof fails and needs a bounded test-only renderer decision.
    Detailed read-only analysis: out/part26n-design/oracle-strategy.md.
+8. Ruling: Task2 may expose a private numeric-token helper from the existing
+   NativeEllipseAdmissionCore, adding its header/source to task scope — source
+   inspection confirms exact normalization is internal there; reuse prevents
+   duplicate decimal parsing or rounded numeric admission — cost if wrong:
+   private coupling may later warrant extraction. Legacy callers remain
+   unchanged; functional boundary and full primitive tests must protect them.
+9. Ruling: actual canonical native testing may use normal application Open/Exit,
+   with its inherent geometry/file-dialog history/log writes — user explicitly
+   requested testing in this EXE and delegated ordinary reversible decisions;
+   requiring no app persistence would demand an unnecessary new harness — cost
+   if wrong: normal Avelabs geometry or shared Qt dialog history may be updated.
+   No manual registry/Windows setting edits, restore script, injection, production
+   test backdoor or user-process termination. Audit records exact known writes;
+   no settings-isolation, mixed-DPI or exhaustive OS-side-effect claim follows.
+10. Ruling: document rather than erase the pinned oracle's inactive stroke miter
+    default mismatch — local LOTStrokeData defaults0 while approved own subset
+    defaults4. Only omitted ml with Round/Bevel may assert the exact4/0 pair;
+    explicit ml and Miter must still match, active mutation must fail, pixels
+    still compared — cost if wrong: pixel/backend parity gate exposes a hidden
+    effect and requires a new bounded decision. No backend/vendor change.
+    Pinned parseLayer also defaults ddd=true until its key is read: shared
+    first-party oracle fixture now states ddd0 before ks; own omission-default
+    regression stays separate. Original external Duck is not edited.
+11. Ruling: N temporal Bezier x/y controls both use [0,1], scalar or equal-channel
+    arrays — measured Duck and existing narrow own profile need only this range;
+    generic property component bounds do not imply overshoot admission — cost
+    if wrong: a future overshooting sticker is rejected until separately tested
+    coverage, never clamped or silently approximated. Add explicit rejection
+    witness; no new interpolation/product edit is required by this clarification.
 
 Pinned parser inspection resolves303/304: layer16's final rotation key at180
 has h=1 and is retained as a zero-length hold; ordinary terminal keys only update
@@ -80,4 +109,18 @@ corrected to existing `tst_own_motion_renderer.cpp` before dispatch.
   unchanged admission/numeric already reviewed520297f and exercised by current
   suites; final actual product linkage and Duck/UI/WARP proof explicitly belong
   to Tasks3/4 and are not prerequisite success claims. No load-bearing gap open.
-- Tasks2–4 pending. Canonical Part26L EXE/PDB untouched; no automation change.
+- Task2 complete: independent task review and scoped fix1 accepted. I1's exact
+  neutrality/equality bypasses were reproduced as five functional RED witnesses
+  and fixed before conversion; no new breakage. Final none46/46 (10.41s),
+  TG98/98 (112.08s); root041 focused3/3 (2.62s), original TGS compile and186
+  ordinary property samples pass, max3.05176e-05,304segments,13 explicitly
+  verified inactive-miter roles. Root read RED033 and GREEN034 and verified all
+  current package hashes before commit. Original review has15files; scoped fix
+  package5changed files was derived from exact reviewed-byte snapshots (the
+  already edited test was reconstructed from its full added-file patch and its
+  original SHA256 verified). No source/index/HEAD change by reviewers.
+  M1 inherited C4251 deferred without vendor edits; latest incremental runs being
+  warning-free does not erase historical warnings. Scene/link/UI proof remains
+  Tasks3/4; review cannot-verify items are explicitly assigned there. Raw/report
+  chronology retained and final corrected code received full gates.
+- Tasks3/4 pending. Canonical Part26L EXE/PDB untouched; no automation change.

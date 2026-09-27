@@ -85,12 +85,22 @@ The product/test delta from M is included in this task's independent review.
 
 ### Task 2: Compile the real vector subset into canonical authored data
 
+Execution outcome: complete, task review and scoped fix1 accepted. Functional
+REDs retained, exact neutrality/equality corrected before float conversion.
+Final none46/46,TG98/98; root3/3 plus unchanged original TGS inventory and186
+ordinary property samples, max3.05176e-05. Not rendering/UI acceptance. The
+steps below retain implementation intent; durable ledger/SDD have exact evidence.
+
 **Files:** create `src/runtime/OwnVectorModel.hpp/.cpp`,
 `src/runtime/OwnVectorPropertyCompiler.hpp/.cpp` (typed keyframe conversion),
 `tests/own_vector_model_tests.cpp`, `tests/own_vector_model_differential_tests.cpp`,
 `tests/support/OwnVectorTestData.hpp`, first-party fixtures in
 `tests/fixtures/own_vector/`; modify `src/formats/OwnJsonReader.hpp/.cpp`,
 `tests/own_json_reader_tests.cpp`, `CMakeLists.txt`.
+
+Approved implementation clarification: also modify private
+`src/runtime/NativeEllipseAdmissionCore.hpp/.cpp` to share the existing exact
+numeric-token validation/conversion mechanics; no legacy behavior change.
 
 **Interfaces:** add
 `OwnJsonReadResult readOwnJson(std::string_view, OwnJsonReadLimits)` with limits
@@ -227,8 +237,10 @@ error handling. No new panel, public loader, worker or timer.
   with target/source/backup validation and fault-recovery tests. Recheck current
   canonical hash/process, save entire26-file package+PDB, promote, verify copied
   hashes/readiness/symbol match. Never terminate an unknown/user process.
-- [ ] Exercise canonical application under a safe native harness if available
-  without changing user settings. Otherwise explicitly record that native GUI/
+- [ ] Exercise canonical application through available native tools and ordinary
+  owned-process interaction under the spec's normal-app-side-effect clarification.
+  Do not claim settings isolation or manually change Windows/registry settings.
+  If unavailable, explicitly record that native GUI/
   DPI/tray remains unverified; Qt capture alone does not complete that check.
   Preserve verified candidate if the required acceptance cannot safely run.
 - [ ] Update user-facing report with exact engine/hostSHAs, commands/results,

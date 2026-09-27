@@ -82,6 +82,9 @@ case. Existing primitive and strict legacy admission contracts remain intact.
   equal-channel arrays, and paired spatial position tangents. Reject unequal
   channel easing, malformed terminal/ordering/topology, unsupported expressions
   or separated dimensions. Do not truncate curves to the root last frame.
+  For this bounded profile both temporal control coordinates x/y are [0,1];
+  overshooting temporal y is explicitly unsupported and rejected, not clamped.
+  This meets the measured Duck input without introducing broader curve coverage.
 
 Strictly validate every semantic field; accept only explicitly listed metadata
 (`nm`, `v`, `tgs`, neutral `hd/bm/ddd/ao`, path `ind`, and property indexing
@@ -101,6 +104,13 @@ expansion exceeds a bound. Property component magnitude <=32,768, scales
 must be finite and bounds-checked; discrete IDs/dimensions/times requiring
 integers cannot silently round into range. Preserve existing exact primitive
 numeric gates. No unbounded recursive walk or allocation guarantee claim.
+
+Task2 implementation clarification: expose a private numeric-token conversion
+helper from `NativeEllipseAdmissionCore.hpp/.cpp` for the new vector compiler.
+It reuses existing JSON-number validation, exact decimal normalization/domain
+and integral checks before finite conversion. No duplicate decimal parser,
+public API or change to established primitive admission. Focused regressions
+must reject rounded-into-range/fractional integer inputs and extreme exponents.
 
 Duck's measured subset is 36 precomp child layers (32 shapes, 4 nulls), 31 parent
 edges, 32 paths, 21 fills, 15 strokes, 7 trims and 33 animated properties. Direct
@@ -175,6 +185,14 @@ choice. Keep raw failures and successful evidence; no test/golden weakening.
    reported maxima, not a tolerance increased to hide errors. Resource identities
    and history are tested within each own stream. Mutation witnesses must catch
    omitted trim, parent-opacity inheritance, paint reordering and changed curves.
+   One pinned-reference inactive-field difference is explicit: for an authored
+   stroke with omitted `ml` and round/bevel join, own default4 versus reference
+   default0 must be asserted and counted as that exact pair, not erased or
+   loosely tolerated. Miter joins and any explicit `ml` retain normal equality;
+   a mutation must prove active-miter differences fail. Rendered parity remains
+   required. Shared first-party oracle fixtures explicitly state `ddd:0` before
+   `ks` because this pinned parser otherwise defaults3D; own omitted-neutral
+   defaults retain separate hand-derived tests. Original Duck bytes never change.
 4. Same-backend WARP comparison at frames0,10,15,20,45,90,110,135,179 and
    viewports128/256/512; exact pixels where equivalent input arithmetic permits.
    Record any nonzero image diff and investigate; CPU-vs-WARP uses only the
@@ -191,6 +209,16 @@ choice. Keep raw failures and successful evidence; no test/golden weakening.
    canonical `build/Release`. Recheck process ownership before replacement.
    Do not close the user's process. Native desktop/DPI/tray acceptance is
    distinct from Qt test-page screenshots and is claimed only if exercised.
+
+Native acceptance clarification (controller decision under delegated reversible
+UI-test authority): use ordinary owned-process interaction with the actual EXE.
+It is not settings-isolated: normal Open/Exit may persist Avelabs window geometry,
+Qt file-dialog history and ordinary bounded logs. Those inherent application-use
+side effects are permitted for this requested test; do not manually edit or
+restore registry values, change Windows preferences, add a product test hook,
+or terminate a user process. Avoid unnecessary window/DPI/layout changes. Exact
+write paths and procedure are recorded in the native-acceptance audit. This
+clarifies normal UI use, not authority to modify system/security settings.
 
 ## Exclusions and stop boundaries
 

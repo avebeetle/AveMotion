@@ -916,4 +916,19 @@ bool exactOwnPrimitiveBound(const NativeEllipseDecimal& value,
         && compareDecimal(exact, wholeNumber(high)) <= 0;
 }
 
+bool convertOwnNumericToken(std::string_view token, std::int64_t low, std::int64_t high,
+                            bool integral, bool strictLow, float& output) {
+    if (!validNumberToken(token) || low > high) return false;
+    const auto exact = normalizeNumber(token);
+    if (integral && !exact.integral()) return false;
+    const NativeEllipseDecimal value{exact.negative, exact.digits,
+        {exact.power.negative, exact.power.magnitude}};
+    return exactOwnPrimitiveBound(value, low, high, strictLow) && numeric::convert(value, output);
+}
+
+bool equalOwnNumericTokens(std::string_view left, std::string_view right) {
+    return validNumberToken(left) && validNumberToken(right)
+        && compareDecimal(normalizeNumber(left), normalizeNumber(right)) == 0;
+}
+
 } // namespace avemotion::runtime::detail

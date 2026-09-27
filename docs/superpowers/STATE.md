@@ -13,8 +13,16 @@ Task1 complete: all22 carried M files independently reviewed/accepted after
 canonical resource key fix and preserved legacy null-owner diagnostic. Full
 none45/45, Telegram96/96 (108.88s); root focused4/4 (16.31s); whole/overlap each
 126 scene/plan comparisons. Raw failures retained; no comparator weakening.
-Historical vendorC4251 remains a qualification, no clean-rebuild claim. Next
-Task2 own vector compiler. M separate synthetic host/promotion work is superseded,
+Historical vendorC4251 remains a qualification, no clean-rebuild claim. Task2
+own vector compiler complete and independently accepted including fix round1
+for exact pre-conversion neutrality/equality. Final none46/46 (10.41s),
+TG98/98 (112.08s), root focused3/3 (2.62s) plus real original TGS compile and
+186property samples pass, max error3.05176e-05. Inventory37layers including
+container,36draws,33tracks,304segments. Spec documents bounded temporal handles
+and exact inactive-miter exception; no arbitrary field/tolerance weakening.
+Next Task3 common scene preparation/emission and real scene/WARP parity, then
+Task4 same UI/static working Release. Compiler success is not scene/UI success.
+M separate synthetic host/promotion work is superseded,
 not completed. No new automation. Installed L EXE/PDB remains protected and its
 hash freshly matches the existing report. Real artwork stays local.
 Do not repeat previous stages or claim compiler/reference success as own UI

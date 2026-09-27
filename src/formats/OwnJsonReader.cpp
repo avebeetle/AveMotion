@@ -7,8 +7,6 @@
 namespace avemotion::formats::detail {
 namespace {
 constexpr std::size_t MaxInput = 1'048'576;
-constexpr std::size_t MaxValues = 4'096;
-constexpr std::uint32_t MaxDepth = 32;
 static_assert(MaxInput + 1 <= std::numeric_limits<OwnJsonNodeId>::max());
 
 enum class State : std::uint8_t {
@@ -92,7 +90,8 @@ std::optional<std::string_view> OwnJsonDocument::memberName(OwnJsonNodeId id) co
 
 class OwnJsonBuilder final {
 public:
-    explicit OwnJsonBuilder(std::string_view source) : document_(std::make_shared<OwnJsonDocument>()) {
+    explicit OwnJsonBuilder(std::string_view source, OwnJsonReadLimits limits)
+        : document_(std::make_shared<OwnJsonDocument>()), limits_(limits) {
         document_->source_.assign(source);
         result_.statistics.inputBytes = source.size();
         result_.statistics.sourceBytes = source.size();
@@ -339,7 +338,7 @@ private:
     }
     std::optional<std::pair<OwnJsonReadCode, std::string>> inspectResources() {
         std::vector<QueueEntry> queue;
-        queue.reserve(MaxValues);
+        queue.reserve(limits_.maxValues);
         queue.push_back(QueueEntry{0, 0, 1, 0});
         result_.statistics.resourceQueueCount = 1;
         for (std::size_t cursor = 0; cursor < queue.size(); ++cursor) {
@@ -347,7 +346,7 @@ private:
             const auto& node = document_->nodes_[current.node];
             const bool container = node.kind == OwnJsonKind::Object || node.kind == OwnJsonKind::Array;
             if (!container) continue;
-            if (current.depth > MaxDepth) {
+            if (current.depth > limits_.maxDepth) {
                 return std::pair{OwnJsonReadCode::ResourceLimit,
                     pathFor(queue, static_cast<std::uint32_t>(cursor), OwnJsonNoNode, 0)};
             }
@@ -363,7 +362,7 @@ private:
                         }
                     }
                 }
-                if (queue.size() == MaxValues) {
+                if (queue.size() == limits_.maxValues) {
                     return std::pair{OwnJsonReadCode::ResourceLimit,
                         pathFor(queue, static_cast<std::uint32_t>(cursor), child, arrayIndex)};
                 }
@@ -382,9 +381,20 @@ private:
     std::vector<Frame> frames_;
     std::size_t position_ = 0;
     OwnJsonReadResult result_;
+    OwnJsonReadLimits limits_;
 };
 
 OwnJsonReadResult readOwnJson(std::string_view bytes) {
+    return readOwnJson(bytes, {});
+}
+OwnJsonReadResult readOwnJson(std::string_view bytes, OwnJsonReadLimits limits) {
+    if (limits.maxValues == 0 || limits.maxValues > 65536 || limits.maxDepth == 0 || limits.maxDepth > 32) {
+        OwnJsonReadResult result;
+        result.code = OwnJsonReadCode::ResourceLimit;
+        result.path = "/";
+        result.statistics.inputBytes = bytes.size();
+        return result;
+    }
     if (bytes.size() > MaxInput || bytes.empty() || bytes.find('\0') != std::string_view::npos) {
         OwnJsonReadResult result;
         result.code = bytes.size() > MaxInput ? OwnJsonReadCode::ResourceLimit : OwnJsonReadCode::InvalidJson;
@@ -394,6 +404,6 @@ OwnJsonReadResult readOwnJson(std::string_view bytes) {
         result.statistics.frameSizeBytes = sizeof(Frame);
         return result;
     }
-    return OwnJsonBuilder{bytes}.run();
+    return OwnJsonBuilder{bytes, limits}.run();
 }
 } // namespace avemotion::formats::detail

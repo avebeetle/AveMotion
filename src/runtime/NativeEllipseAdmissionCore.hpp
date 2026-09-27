@@ -35,4 +35,12 @@ struct NativeEllipseValue final {
                                           std::int64_t low, std::int64_t high,
                                           bool strictLow = false);
 
+// Private bounded import conversion, shared with the vector compiler. Exact
+// domain/integrality checks precede the established finite-float conversion.
+[[nodiscard]] bool convertOwnNumericToken(std::string_view token,
+    std::int64_t low, std::int64_t high, bool integral, bool strictLow, float& output);
+
+// Numerical equality of valid JSON decimal tokens, before float rounding.
+[[nodiscard]] bool equalOwnNumericTokens(std::string_view left, std::string_view right);
+
 } // namespace avemotion::runtime::detail

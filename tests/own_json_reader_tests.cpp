@@ -390,6 +390,19 @@ void ownershipAndFixtures() {
 }
 
 int main() {
+    require(static_cast<bool>(readOwnJson(arrayOfNulls(4096), {65536,32})), "explicit vector profile admits more than 4096 values");
+    const auto largeObject="{\"payload\":"+arrayOfNulls(4095)+"}";
+    require(readOwnJson(largeObject).code==OwnJsonReadCode::ResourceLimit && static_cast<bool>(readOwnJson(largeObject,{65536,32})), "large valid object requires explicit profile");
+    OwnJsonReadResult ownedExplicit;
+    { std::string input="{\"label\":\"\\u00e9\"}"; ownedExplicit=readOwnJson(input,{65536,32}); }
+    require(static_cast<bool>(ownedExplicit) && ownedExplicit.document->valueBytes(1)=="\xc3\xa9", "explicit decoded ownership survives input destruction");
+    require(!readOwnJson(arrayOfNulls(65536), {65536,32}), "hard vector value ceiling");
+    require(!readOwnJson(nestedArrays(33), {65536,32}), "vector depth ceiling");
+    for(auto limits : {OwnJsonReadLimits{0,32}, OwnJsonReadLimits{65537,32}, OwnJsonReadLimits{10,0}, OwnJsonReadLimits{10,33}}) {
+        const auto invalid=readOwnJson("{",limits);
+        require(invalid.code==OwnJsonReadCode::ResourceLimit && invalid.statistics.nodeCount==0, "invalid explicit limits rejected before syntax parse");
+    }
+    require(readOwnJson("{\"\xc3\xa9\":1,\"\\u00e9\":2}",{65536,32}).code==OwnJsonReadCode::InvalidJson, "explicit UTF8 duplicate keys");
     reachabilityWitness();
     const std::string input = R"({"a":[true,null,-0.00e+12],"s":"A\u00e9"})";
     auto parsed = readOwnJson(input);

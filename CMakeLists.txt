@@ -132,6 +132,8 @@ set(AVEMOTION_RUNTIME_SOURCES
     src/runtime/OwnPrimitiveNumeric.cpp
     src/runtime/OwnPrimitiveBinding.cpp
     src/runtime/OwnNativeEllipseModel.cpp
+    src/runtime/OwnVectorModel.cpp
+    src/runtime/OwnVectorPropertyCompiler.cpp
     src/runtime/NativeEllipseBinding.cpp)
 if(AVEMOTION_RLOTTIE_AVAILABLE)
     list(APPEND AVEMOTION_RUNTIME_SOURCES
@@ -488,6 +490,17 @@ if(BUILD_TESTING)
         AVEMOTION_FIXTURE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures")
     avemotion_set_warnings(avemotion_tgs_tests)
     add_test(NAME avemotion.formats.tgs COMMAND avemotion_tgs_tests)
+
+    add_executable(avemotion_own_vector_model_tests tests/own_vector_model_tests.cpp)
+    target_include_directories(avemotion_own_vector_model_tests PRIVATE
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/runtime"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/formats"
+        "${CMAKE_CURRENT_SOURCE_DIR}/tests/support")
+    target_link_libraries(avemotion_own_vector_model_tests PRIVATE AveMotion::Runtime)
+    target_compile_definitions(avemotion_own_vector_model_tests PRIVATE
+        AVEMOTION_FIXTURE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures")
+    avemotion_set_warnings(avemotion_own_vector_model_tests)
+    add_test(NAME avemotion.own_vector_model COMMAND avemotion_own_vector_model_tests)
 
     add_executable(avemotion_own_json_reader_tests tests/own_json_reader_tests.cpp)
     target_include_directories(avemotion_own_json_reader_tests PRIVATE
@@ -1106,6 +1119,20 @@ if(BUILD_TESTING)
             avemotion_set_warnings(avemotion_own_native_ellipse_stream_differential_tests)
             add_test(NAME avemotion.own_native_ellipse_stream_differential
                 COMMAND avemotion_own_native_ellipse_stream_differential_tests)
+
+        add_executable(avemotion_own_vector_model_differential_tests
+            tests/own_vector_model_differential_tests.cpp)
+        target_include_directories(avemotion_own_vector_model_differential_tests PRIVATE
+            "${CMAKE_CURRENT_SOURCE_DIR}/src/runtime"
+            "${CMAKE_CURRENT_SOURCE_DIR}/src/formats"
+            "${CMAKE_CURRENT_SOURCE_DIR}/src/model"
+            "${CMAKE_CURRENT_SOURCE_DIR}/tests/support")
+        target_link_libraries(avemotion_own_vector_model_differential_tests PRIVATE AveMotion::Rendering)
+        target_compile_definitions(avemotion_own_vector_model_differential_tests PRIVATE
+            AVEMOTION_FIXTURE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures")
+        avemotion_set_warnings(avemotion_own_vector_model_differential_tests)
+        add_test(NAME avemotion.own_vector_model_differential
+            COMMAND avemotion_own_vector_model_differential_tests)
 
         add_executable(avemotion_own_primitive_differential_tests
                 tests/own_primitive_differential_tests.cpp)

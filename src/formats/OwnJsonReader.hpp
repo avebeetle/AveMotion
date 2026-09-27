@@ -73,5 +73,10 @@ struct OwnJsonReadResult final {
 };
 
 [[nodiscard]] OwnJsonReadResult readOwnJson(std::string_view bytes);
+struct OwnJsonReadLimits final {
+    std::size_t maxValues = 4096;
+    std::uint32_t maxDepth = 32;
+};
+[[nodiscard]] OwnJsonReadResult readOwnJson(std::string_view bytes, OwnJsonReadLimits limits);
 
 } // namespace avemotion::formats::detail
