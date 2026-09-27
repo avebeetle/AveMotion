@@ -1,5 +1,6 @@
 #include "avemotion/runtime/Runtime.hpp"
 
+#include "PlaybackControl.hpp"
 #include "RlottieSceneBridge.hpp"
 #include "../model/AssetModelBuilder.hpp"
 #if AVEMOTION_TELEGRAM_PARSED_MODEL
@@ -215,17 +216,6 @@ struct AssetData final {
     }
 };
 
-struct PlaybackControl final {
-    PlaybackStatus status = PlaybackStatus::Stopped;
-    PlaybackDirection direction = PlaybackDirection::Forward;
-    PlaybackLoopMode loopMode = PlaybackLoopMode::Loop;
-    model::ClipId clip{0U};
-    double playbackRate = 1.0;
-    double anchorPosition = 0.0;
-    MotionTime anchorTime;
-    std::uint64_t revision = 1U;
-};
-
 struct InstanceData final {
     std::shared_ptr<const Asset> asset;
     std::shared_ptr<const AssetData> assetData;
@@ -249,10 +239,6 @@ struct InstanceData final {
 } // namespace detail
 namespace {
 
-[[nodiscard]] double clampNormalized(double value) noexcept {
-    return std::isfinite(value) ? std::clamp(value, 0.0, 1.0) : 0.0;
-}
-
 #if AVEMOTION_HAS_RLOTTIE
 using Clock = std::chrono::steady_clock;
 
@@ -272,67 +258,6 @@ using Clock = std::chrono::steady_clock;
     return metadata.totalFrames == 0U
         ? 0U
         : std::min(requested, metadata.totalFrames - 1U);
-}
-
-[[nodiscard]] double positiveUnitModulo(double value) noexcept {
-    if (!std::isfinite(value)) return 0.0;
-    const auto result = value - std::floor(value);
-    return result >= 1.0 ? 0.0 : (result < 0.0 ? result + 1.0 : result);
-}
-
-struct ResolvedPlayback final {
-    double position = 0.0;
-    bool completed = false;
-};
-
-[[nodiscard]] ResolvedPlayback resolvePlayback(
-    const detail::InstanceData& instance,
-    MotionTime presentationTime) noexcept {
-    const auto& control = instance.playback;
-    if (control.status != PlaybackStatus::Playing) {
-        return {
-            clampNormalized(control.anchorPosition),
-            control.status == PlaybackStatus::Holding};
-    }
-    const auto duration = instance.asset->metadata().durationSeconds;
-    if (!std::isfinite(duration) || duration <= 0.0
-        || !std::isfinite(control.playbackRate)
-        || control.playbackRate <= 0.0) {
-        return {clampNormalized(control.anchorPosition), true};
-    }
-    const long double deltaNanoseconds =
-        static_cast<long double>(presentationTime.nanoseconds)
-        - static_cast<long double>(control.anchorTime.nanoseconds);
-    const long double elapsedSeconds = deltaNanoseconds / 1'000'000'000.0L;
-    const auto sign = control.direction == PlaybackDirection::Forward
-        ? 1.0L : -1.0L;
-    const long double raw = static_cast<long double>(control.anchorPosition)
-        + sign * elapsedSeconds
-            * static_cast<long double>(control.playbackRate)
-            / static_cast<long double>(duration);
-    const auto rawDouble = static_cast<double>(raw);
-    if (control.loopMode == PlaybackLoopMode::Loop) {
-        // Reverse playback authored from the terminal endpoint must expose the
-        // last sample at its exact anchor time before wrapping on later ticks.
-        if (control.direction == PlaybackDirection::Reverse
-            && control.anchorPosition == 1.0
-            && presentationTime == control.anchorTime) {
-            return {1.0, false};
-        }
-        return {positiveUnitModulo(rawDouble), false};
-    }
-    if (control.direction == PlaybackDirection::Forward) {
-        return {clampNormalized(rawDouble), rawDouble >= 1.0};
-    }
-    return {clampNormalized(rawDouble), rawDouble <= 0.0};
-}
-
-void reanchor(
-    detail::InstanceData& instance,
-    MotionTime presentationTime) noexcept {
-    const auto resolved = resolvePlayback(instance, presentationTime);
-    instance.playback.anchorPosition = resolved.position;
-    instance.playback.anchorTime = presentationTime;
 }
 
 [[nodiscard]] std::uint64_t deriveSourceItemKey(
@@ -979,11 +904,12 @@ std::size_t Instance::frameAtPosition(double normalizedPosition) const noexcept 
     const auto& metadata = data_->asset->metadata();
     if (metadata.totalFrames > static_cast<std::size_t>(std::numeric_limits<long>::max())) {
         return clampFrame(
-            data_->sceneAnimation->frameAtPos(clampNormalized(normalizedPosition)),
+            data_->sceneAnimation->frameAtPos(
+                detail::clampPlaybackPosition(normalizedPosition)),
             metadata);
     }
     if (metadata.totalFrames <= 1U) return 0U;
-    const double scaled = clampNormalized(normalizedPosition)
+    const double scaled = detail::clampPlaybackPosition(normalizedPosition)
         * static_cast<double>(metadata.totalFrames - 1U);
 #if AVEMOTION_REFERENCE_ROUND_FRAME_POSITION
     const auto frame = static_cast<std::size_t>(std::round(scaled));
@@ -999,14 +925,7 @@ std::size_t Instance::frameAtPosition(double normalizedPosition) const noexcept 
 
 void Instance::play(MotionTime presentationTime) noexcept {
 #if AVEMOTION_HAS_RLOTTIE
-    if (data_->playback.status == PlaybackStatus::Playing) return;
-    if (data_->playback.status == PlaybackStatus::Holding) {
-        data_->playback.anchorPosition =
-            data_->playback.direction == PlaybackDirection::Forward ? 0.0 : 1.0;
-    }
-    data_->playback.anchorTime = presentationTime;
-    data_->playback.status = PlaybackStatus::Playing;
-    ++data_->playback.revision;
+    detail::playPlayback(data_->playback, presentationTime);
 #else
     static_cast<void>(presentationTime);
 #endif
@@ -1014,10 +933,8 @@ void Instance::play(MotionTime presentationTime) noexcept {
 
 void Instance::pause(MotionTime presentationTime) noexcept {
 #if AVEMOTION_HAS_RLOTTIE
-    if (data_->playback.status != PlaybackStatus::Playing) return;
-    reanchor(*data_, presentationTime);
-    data_->playback.status = PlaybackStatus::Paused;
-    ++data_->playback.revision;
+    detail::pausePlayback(data_->playback,
+        data_->asset->metadata().durationSeconds, presentationTime);
 #else
     static_cast<void>(presentationTime);
 #endif
@@ -1025,79 +942,66 @@ void Instance::pause(MotionTime presentationTime) noexcept {
 
 void Instance::resume(MotionTime presentationTime) noexcept {
 #if AVEMOTION_HAS_RLOTTIE
-    if (data_->playback.status == PlaybackStatus::Playing) return;
-    data_->playback.anchorTime = presentationTime;
-    data_->playback.status = PlaybackStatus::Playing;
-    ++data_->playback.revision;
+    detail::resumePlayback(data_->playback, presentationTime);
 #else
     static_cast<void>(presentationTime);
 #endif
 }
 
 void Instance::stop() noexcept {
-    data_->playback.status = PlaybackStatus::Stopped;
-    data_->playback.anchorPosition =
-        data_->playback.direction == PlaybackDirection::Forward ? 0.0 : 1.0;
-    ++data_->playback.revision;
+    detail::stopPlayback(data_->playback);
 }
 
 void Instance::seekNormalized(
     double normalizedPosition,
     MotionTime presentationTime) noexcept {
-    data_->playback.anchorPosition = clampNormalized(normalizedPosition);
-    data_->playback.anchorTime = presentationTime;
-    if (data_->playback.status == PlaybackStatus::Holding) {
-        data_->playback.status = PlaybackStatus::Paused;
-    }
-    ++data_->playback.revision;
+    detail::seekPlayback(data_->playback, normalizedPosition, presentationTime);
 }
 
 void Instance::setControlledProgress(double normalizedPosition) noexcept {
-    data_->playback.anchorPosition = clampNormalized(normalizedPosition);
-    data_->playback.status = PlaybackStatus::Controlled;
-    ++data_->playback.revision;
+    detail::controlPlayback(data_->playback, normalizedPosition);
 }
 
 void Instance::setDirection(
     PlaybackDirection direction,
     MotionTime presentationTime) noexcept {
 #if AVEMOTION_HAS_RLOTTIE
-    if (data_->playback.direction == direction) return;
-    if (data_->playback.status == PlaybackStatus::Stopped) {
-        data_->playback.anchorPosition =
-            direction == PlaybackDirection::Forward ? 0.0 : 1.0;
-        data_->playback.anchorTime = presentationTime;
-    } else {
-        reanchor(*data_, presentationTime);
-    }
+    detail::setPlaybackDirection(data_->playback, direction,
+        data_->asset->metadata().durationSeconds, presentationTime);
 #else
     static_cast<void>(presentationTime);
-#endif
     data_->playback.direction = direction;
     ++data_->playback.revision;
+#endif
 }
 
 bool Instance::setPlaybackRate(
     double playbackRate,
     MotionTime presentationTime) noexcept {
-    if (!std::isfinite(playbackRate) || playbackRate <= 0.0) return false;
 #if AVEMOTION_HAS_RLOTTIE
-    reanchor(*data_, presentationTime);
+    return detail::setPlaybackRate(data_->playback, playbackRate,
+        data_->asset->metadata().durationSeconds, presentationTime);
 #else
+    if (!std::isfinite(playbackRate) || playbackRate <= 0.0) return false;
     static_cast<void>(presentationTime);
-#endif
     data_->playback.playbackRate = playbackRate;
     ++data_->playback.revision;
     return true;
+#endif
 }
 
 void Instance::setLoopMode(PlaybackLoopMode loopMode) noexcept {
-    data_->playback.loopMode = loopMode;
-    ++data_->playback.revision;
+    detail::setPlaybackLoopMode(data_->playback, loopMode);
 }
 
 PlaybackSnapshot Instance::playbackSnapshot(
     MotionTime presentationTime) const noexcept {
+#if AVEMOTION_HAS_RLOTTIE
+    auto snapshot = detail::snapshotPlayback(data_->playback,
+        data_->asset->metadata().durationSeconds, presentationTime);
+    snapshot.frameIndex = frameAtPosition(snapshot.normalizedPosition);
+    return snapshot;
+#else
     PlaybackSnapshot snapshot;
     snapshot.status = data_->playback.status;
     snapshot.direction = data_->playback.direction;
@@ -1105,18 +1009,9 @@ PlaybackSnapshot Instance::playbackSnapshot(
     snapshot.clip = data_->playback.clip;
     snapshot.playbackRate = data_->playback.playbackRate;
     snapshot.revision = data_->playback.revision;
-#if AVEMOTION_HAS_RLOTTIE
-    const auto resolved = resolvePlayback(*data_, presentationTime);
-    snapshot.normalizedPosition = resolved.position;
-    snapshot.frameIndex = frameAtPosition(resolved.position);
-    snapshot.completed = resolved.completed;
-    if (resolved.completed && snapshot.status == PlaybackStatus::Playing) {
-        snapshot.status = PlaybackStatus::Holding;
-    }
-#else
     static_cast<void>(presentationTime);
-#endif
     return snapshot;
+#endif
 }
 
 Instance::SceneResult Instance::evaluateFrame(
@@ -1188,14 +1083,8 @@ Instance::SceneResult Instance::evaluateAt(
     if (result) {
         data_->runtimeState->playbackEvaluations.fetch_add(
             1U, std::memory_order_relaxed);
-        if (snapshot.completed
-            && data_->playback.status == PlaybackStatus::Playing
-            && data_->playback.loopMode == PlaybackLoopMode::Once) {
-            data_->playback.anchorPosition = snapshot.normalizedPosition;
-            data_->playback.anchorTime = presentationTime;
-            data_->playback.status = PlaybackStatus::Holding;
-            ++data_->playback.revision;
-        }
+        detail::commitPlaybackCompletion(
+            data_->playback, snapshot, presentationTime);
     }
     return result;
 }

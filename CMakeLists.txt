@@ -124,6 +124,7 @@ target_compile_definitions(avemotion_reference
 set(AVEMOTION_RUNTIME_SOURCES
     src/runtime/Runtime.cpp
     src/runtime/Playback.cpp
+    src/runtime/PlaybackControl.cpp
     src/runtime/RecordingBackend.cpp
     src/runtime/NativeEllipseAdmissionCore.cpp
     src/runtime/OwnNativeEllipseAdmission.cpp
@@ -422,6 +423,15 @@ endif()
 
 include(CTest)
 if(BUILD_TESTING)
+    add_executable(avemotion_playback_control_tests
+        tests/playback_control_tests.cpp)
+    target_link_libraries(avemotion_playback_control_tests
+        PRIVATE AveMotion::Runtime)
+    target_include_directories(avemotion_playback_control_tests PRIVATE
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/runtime")
+    avemotion_set_warnings(avemotion_playback_control_tests)
+    add_test(NAME avemotion.runtime.playback_control
+        COMMAND avemotion_playback_control_tests)
     find_package(Python3 REQUIRED COMPONENTS Interpreter)
     find_package(Threads REQUIRED)
 
