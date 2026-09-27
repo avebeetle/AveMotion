@@ -12,7 +12,14 @@ stream/lifecycle, Task2 ordinary scene/plan parity, Task3 WARP/CPU pixels; then
 independent whole-stage review and fresh full platform/private closure gates.
 Root owns ALL Git writes; one product writer. H own-only planner/backend domains,
 unique nonrecycled IDs, invalid Runtime handles. No public loader or UI changes.
-Raw/SDD retained; no automation resumed. Task1 not yet dispatched at this checkpoint.
+Raw/SDD retained; no automation resumed. Task1 complete: product4e0a957 and
+fixd95dea3, independent review and round1 scoped re-review accepted all findings.
+Written design addendum594d336 permits identical private helper extraction and
+legacy delegation, not a legacy policy change. Latest full none38/38,4.97s;
+TG own/legacy/lifecycle3/3,10.37s; root fresh3/3,10.67s. Counter mutation RED is
+postimplementation; overwritten failed py-launcher scratch output explicitly
+disclosed, not claimed as retained evidence. Writers/reviewers quiescent.
+Task2 ordinary scene/plan parity next, Task3 pixels then full final gates.
 Baseline none37/37 under VsDevCmd; prior plain-shell compiler discovery failure
 retained, not product regression/functional RED. Current SDD is
 .superpowers/sdd/2026-09-27-own-ellipse-stream/progress.md.

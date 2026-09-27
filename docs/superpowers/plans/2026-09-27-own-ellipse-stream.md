@@ -82,25 +82,25 @@ Test support `prepareOwnEllipseForTest(const std::string&)` returns the sealed
 prepared shared owner, through own reader/model/resource factories; throws test
 failure on any error. Later tasks consume this helper and the stream API only.
 
-- [ ] Write compiling stubs and literal tests: Ready from own JSON, invalid null,
+- [x] Write compiling stubs and literal tests: Ready from own JSON, invalid null,
   static and animated source/default/layer/draw/path/paint facts, invalid handles,
   independent stable fingerprint checks, activity10<=frame<20, frame999=>60,
   four viewports, reverse/mixed/repeated access, zero viewport advances attempt
   but not history. Existing tiny animated collapse vs static rejection, TGS path.
-- [ ] Observe functional RED before implementation; retain exact output.
-- [ ] Implement own scene assembly with existing G binding/evaluator/generator/
+- [x] Observe functional RED before implementation; retain exact output.
+- [x] Implement own scene assembly with existing G binding/evaluator/generator/
   materializer/applyModel/fingerprint functions, no copied numeric algorithms.
   Comment own-only domain/single-writer/allocator lifetime at private API.
-- [ ] Add focused counter RED/GREEN tests (atomic MAX-1=>MAX=>failure; plain
+- [x] Add focused counter RED/GREEN tests (atomic MAX-1=>MAX=>failure; plain
   sequence likewise; no live counter reset). Test distinct same-owner, identical
   separately prepared and different-source IDs; destruction/recreation; four
   concurrent workers each constructing/emitting eight streams with local outputs.
-- [ ] One shared planner tests A/B first/repeat/advance, static sharing/different
+- [x] One shared planner tests A/B first/repeat/advance, static sharing/different
   source partition, retained snapshots/aliases/model after releasing all external
   owners, stale/equal/forget/rebuild, immutable source model. Synthetic copied
   scenes pin duplicate raw-ID and packed Runtime-handle collision behavior as
   characterization, not supported own/reference mixing.
-- [ ] `cmake --preset windows-msvc-direct2d`, build same preset --parallel4,
+- [x] `cmake --preset windows-msvc-direct2d`, build same preset --parallel4,
   `ctest --test-dir out/build/windows-msvc-direct2d --output-on-failure` in VS
   environment: full suite including new `avemotion.own_native_ellipse_stream`.
   Self-review, report raw evidence. Root verifies, normal scoped commit,

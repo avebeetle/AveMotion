@@ -42,7 +42,8 @@ out/part26h-design/baseline-none-vsdev-2606632.log. Both attempts retained.
 
 ## Queue
 
-- Task1 product4e0a957 root normal commit, task review pending; writer quiescent.
+- Task1 complete: product4e0a957, fixd95dea3, independent round1 scoped review
+  accepts both findings with no new breakage/minors; writer/reviewer quiescent.
   Worker full none38/38,6.05s; root fresh own stream1/1,0.06s. Raw out/part26h/task-1.
   Initial compiling functional RED before production; counter checks existed but
   were first reached by a postimplementation mutation RED/GREEN, explicitly not
@@ -50,6 +51,11 @@ out/part26h-design/baseline-none-vsdev-2606632.log. Both attempts retained.
   Independent review identified Important duplicate numeric blocks and missing
   independent literal fingerprint witness; fix round1 planned under written spec
   addendum, no finding discarded or test weakened.
+  Fix productd95dea3, scoped review accepted; full none38/38,4.97s; TG3/3,10.37s;
+  root fresh TG3/3,10.67s. Independent byte-layout FNV script and functional
+  helper RED/GREEN retained. Failed py-launcher scratch output was overwritten
+  by worker; report discloses this retention gap, successful python derivation
+  is retained and no reconstructed output is accepted as original evidence.
 - Task2 pending: semantic scene/plan ordinary-reference parity.
 - Task3 pending: WARP/CPU pixels and cache/lifetime proof.
 - Final review/full platform/private-boundary gates and report pending.
