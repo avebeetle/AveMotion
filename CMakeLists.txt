@@ -130,6 +130,7 @@ set(AVEMOTION_RUNTIME_SOURCES
     src/runtime/OwnNativeEllipseAdmission.cpp
     src/runtime/NativeEllipseNumeric.cpp
     src/runtime/OwnPrimitiveNumeric.cpp
+    src/runtime/OwnPrimitiveBinding.cpp
     src/runtime/OwnNativeEllipseModel.cpp
     src/runtime/NativeEllipseBinding.cpp)
 if(AVEMOTION_RLOTTIE_AVAILABLE)
@@ -623,6 +624,26 @@ if(BUILD_TESTING)
     add_test(NAME avemotion.runtime.own_native_ellipse_admission
         COMMAND avemotion_own_native_ellipse_admission_tests)
 
+    add_executable(avemotion_own_primitive_stream_tests tests/own_primitive_stream_tests.cpp)
+    target_include_directories(avemotion_own_primitive_stream_tests PRIVATE
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/render" "${CMAKE_CURRENT_SOURCE_DIR}/src/runtime"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/formats" "${CMAKE_CURRENT_SOURCE_DIR}/tests/support")
+    target_link_libraries(avemotion_own_primitive_stream_tests PRIVATE AveMotion::Rendering)
+    target_compile_definitions(avemotion_own_primitive_stream_tests PRIVATE
+        AVEMOTION_FIXTURE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures")
+    avemotion_set_warnings(avemotion_own_primitive_stream_tests)
+    add_test(NAME avemotion.render.own_primitive_stream COMMAND avemotion_own_primitive_stream_tests)
+
+    add_executable(avemotion_own_primitive_model_tests tests/own_primitive_model_tests.cpp)
+    target_include_directories(avemotion_own_primitive_model_tests PRIVATE
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/runtime" "${CMAKE_CURRENT_SOURCE_DIR}/src/formats"
+        "${CMAKE_CURRENT_SOURCE_DIR}/tests/support")
+    target_link_libraries(avemotion_own_primitive_model_tests PRIVATE AveMotion::Runtime)
+    target_compile_definitions(avemotion_own_primitive_model_tests PRIVATE
+        AVEMOTION_FIXTURE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures")
+    avemotion_set_warnings(avemotion_own_primitive_model_tests)
+    add_test(NAME avemotion.runtime.own_primitive_model COMMAND avemotion_own_primitive_model_tests)
+
     add_executable(avemotion_own_primitive_admission_tests
         tests/own_primitive_admission_tests.cpp)
     target_include_directories(avemotion_own_primitive_admission_tests PRIVATE
@@ -1085,6 +1106,28 @@ if(BUILD_TESTING)
             avemotion_set_warnings(avemotion_own_native_ellipse_stream_differential_tests)
             add_test(NAME avemotion.own_native_ellipse_stream_differential
                 COMMAND avemotion_own_native_ellipse_stream_differential_tests)
+
+        add_executable(avemotion_own_primitive_differential_tests
+                tests/own_primitive_differential_tests.cpp)
+            target_include_directories(avemotion_own_primitive_differential_tests PRIVATE
+                "${CMAKE_CURRENT_SOURCE_DIR}/src/render"
+                "${CMAKE_CURRENT_SOURCE_DIR}/src/runtime"
+                "${CMAKE_CURRENT_SOURCE_DIR}/src/formats"
+                "${CMAKE_CURRENT_SOURCE_DIR}/src/model"
+                "${CMAKE_CURRENT_SOURCE_DIR}/tests"
+                "${CMAKE_CURRENT_SOURCE_DIR}/tests/support"
+                "${AVEMOTION_RLOTTIE_INCLUDE_DIR}"
+                "${AVEMOTION_RLOTTIE_INTERNAL_LOTTIE_DIR}"
+                "${AVEMOTION_RLOTTIE_INTERNAL_VECTOR_DIR}"
+                "${AVEMOTION_RLOTTIE_INTERNAL_PIXMAN_DIR}"
+                "${AVEMOTION_RLOTTIE_GENERATED_INCLUDE_DIR}")
+            target_link_libraries(avemotion_own_primitive_differential_tests PRIVATE
+                AveMotion::Rendering rlottie::rlottie Threads::Threads)
+            target_compile_definitions(avemotion_own_primitive_differential_tests PRIVATE
+                AVEMOTION_FIXTURE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures")
+            avemotion_set_warnings(avemotion_own_primitive_differential_tests)
+            add_test(NAME avemotion.own_primitive_differential
+                COMMAND avemotion_own_primitive_differential_tests)
 
             add_executable(avemotion_native_ellipse_stream_tests
                 tests/native_ellipse_stream_tests.cpp)

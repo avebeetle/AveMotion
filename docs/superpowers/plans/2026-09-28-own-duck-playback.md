@@ -47,6 +47,10 @@ prepared owner. Additional task-local test support stays under tests/support.
 
 ### Task 1: Reconcile the preserved multi-resource prerequisite
 
+Execution outcome: complete, independently Approved across all22 carried files.
+Full none45/45, TG96/96; root focused4/4. See durable ledger/raw report for
+failures and historical warning qualification. Steps below retain design intent.
+
 **Files:** the22 preserved files enumerated in
 `.superpowers/sdd/2026-09-27-own-primitives-profile/task-2-report.md`, especially
 `src/render/OwnNativeEllipsePreparedAsset.cpp`,
@@ -187,6 +191,7 @@ renderer or silently drop features. Stream/playback/Player API stays unchanged.
 ### Task 4: Same UI, verified static candidate and canonical promotion
 
 **Files:** host `src/app/motionlab/OwnMotionRenderer.cpp`,
+`src/app/motionlab/MotionLabPage.cpp` only for the truthful badge,
 `tests/motionlab/tst_own_motion_renderer.cpp` and actual corresponding own page/
 worker test files discovered from `tests/motionlab/CMakeLists.txt`, focused test
 support if needed; host current-release/own Motion Lab docs and engine report/
@@ -202,7 +207,9 @@ error handling. No new panel, public loader, worker or timer.
 - [ ] Read ROADMAP, maintenance and system-tray contracts. Functional RED through
   actual host own load of explicit original TGS; verify old preparation rejects
   it. Add path input to test harness, not production baked file/asset lookup.
-- [ ] Switch only preparation entry/diagnostics, retain controls. GREEN actual
+- [ ] Switch only preparation entry/diagnostics, retain controls. Own badge becomes
+  `Experimental — own vector subset / WARP readback`; reference badge unchanged.
+  GREEN actual
   Duck load/play/pause/seek/resize/visibility,1/4/16instances, errors/limits,
   stale completion and shutdown. Capture distinct actual own page frames for
   visual inspection; label Qt test-page versus canonical-native evidence.

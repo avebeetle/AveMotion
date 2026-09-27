@@ -1,7 +1,7 @@
 #pragma once
 
-#include "NativeEllipseBinding.hpp"
-#include "NativeEllipseNumeric.hpp"
+#include "OwnPrimitiveBinding.hpp"
+#include "OwnPrimitiveNumeric.hpp"
 #include "OwnNativeEllipseAdmission.hpp"
 
 #include <memory>
@@ -25,20 +25,20 @@ enum class OwnNativeEllipseModelCode {
 class OwnNativeEllipseModel final {
 public:
     const std::string exactJson;
-    const std::shared_ptr<const NativeEllipseInput> input;
+    const std::shared_ptr<const OwnPrimitiveInput> input;
     const std::shared_ptr<const model::MotionAssetModel> model;
-    const NativeEllipseNumericValues values;
-    const NativeEllipseModelBinding binding;
+    const OwnPrimitiveNumericValues values;
+    const OwnPrimitiveBinding binding;
 
 private:
     friend OwnNativeEllipseModelResult buildOwnNativeEllipseModel(
         const formats::detail::OwnJsonDocument&);
 
     OwnNativeEllipseModel(std::string exactJsonValue,
-                          std::shared_ptr<const NativeEllipseInput> inputValue,
+                          std::shared_ptr<const OwnPrimitiveInput> inputValue,
                           std::shared_ptr<const model::MotionAssetModel> modelValue,
-                          NativeEllipseNumericValues valuesValue,
-                          NativeEllipseModelBinding bindingValue);
+                          OwnPrimitiveNumericValues valuesValue,
+                          OwnPrimitiveBinding bindingValue);
 };
 
 struct OwnNativeEllipseModelResult final {

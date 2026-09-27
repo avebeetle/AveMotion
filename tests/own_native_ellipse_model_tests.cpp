@@ -199,10 +199,10 @@ void authoredBoundaryAndNameMatrixIsIndependent() {
     require(prepared->input->frameRate == boundaryInput.frameRate, "boundary frame rate descriptor");
     require(prepared->input->layerId == boundaryInput.layerId, "boundary layer id descriptor");
     require(prepared->input->layerTranslation == boundaryInput.layerTranslation, "boundary translation descriptor");
-    require(prepared->input->size == boundaryInput.size, "boundary size descriptor");
-    require(prepared->input->fillColor == boundaryInput.fillColor, "boundary color descriptor");
+    require(avemotion::test::ownLegacyInput(*prepared->input).size == boundaryInput.size, "boundary size descriptor");
+    require(avemotion::test::ownLegacyInput(*prepared->input).fillColor == boundaryInput.fillColor, "boundary color descriptor");
     require(prepared->input->layerName == boundaryInput.layerName, "boundary layer name descriptor");
-    require(prepared->input->groupName == boundaryInput.groupName, "boundary group name descriptor");
+    require(avemotion::test::ownLegacyInput(*prepared->input).groupName == boundaryInput.groupName, "boundary group name descriptor");
     avemotion::test::assertOwnAuthoredModel(*prepared, boundaryInput, expected, boundary);
 
     auto absent = source;
@@ -215,9 +215,9 @@ void authoredBoundaryAndNameMatrixIsIndependent() {
     absent = replaced(std::move(absent), "\"v\": \"5.7.4\",\n", "");
     const auto absentPrepared = preparedFrom(absent);
     require(!absentPrepared->input->version && !absentPrepared->input->name
-        && !absentPrepared->input->layerName && !absentPrepared->input->groupName
-        && !absentPrepared->input->ellipseName && !absentPrepared->input->fillName
-        && !absentPrepared->input->transformName, "all optional names absent");
+        && !absentPrepared->input->layerName && !avemotion::test::ownLegacyInput(*absentPrepared->input).groupName
+        && !avemotion::test::ownLegacyInput(*absentPrepared->input).ellipseName && !avemotion::test::ownLegacyInput(*absentPrepared->input).fillName
+        && !avemotion::test::ownLegacyInput(*absentPrepared->input).transformName, "all optional names absent");
     auto absentInput = avemotion::test::expectedEllipseBaseline();
     absentInput.version.reset(); absentInput.name.reset(); absentInput.layerName.reset();
     absentInput.groupName.reset(); absentInput.ellipseName.reset(); absentInput.fillName.reset();
@@ -266,7 +266,7 @@ void authoredAnimationAndFailureMatrixIsIndependent() {
 
     auto subnormal = replaced(source, "[120, 120]", "[1e-45, 120]");
     const auto subnormalPrepared = preparedFrom(subnormal);
-    require(subnormalPrepared->values.size.x == std::numeric_limits<float>::denorm_min()
+    require(avemotion::test::ownLegacyValues(subnormalPrepared->values).size.x == std::numeric_limits<float>::denorm_min()
         && subnormalPrepared->model->vec2Values[2].x == std::numeric_limits<float>::denorm_min(),
         "subnormal authored size survives model construction");
 
@@ -320,28 +320,28 @@ void evaluatorAndBinderIsolationContractsHold() {
     avemotion::test::assertOwnAuthoredModel(*prepared, expectedLinearInput(), linearExpected, linear);
 
     require(static_cast<bool>(avemotion::runtime::detail::bindNativeEllipseModel(
-        *prepared->input, *prepared->model)), "binder accepts own authored model");
+        avemotion::test::ownLegacyInput(*prepared->input), *prepared->model)), "binder accepts own authored model");
     auto wrongOwner = *prepared->model;
     wrongOwner.properties[4].owner = avemotion::model::makeId<avemotion::model::SourceNodeId>(4);
-    require(!avemotion::runtime::detail::bindNativeEllipseModel(*prepared->input, wrongOwner),
+    require(!avemotion::runtime::detail::bindNativeEllipseModel(avemotion::test::ownLegacyInput(*prepared->input), wrongOwner),
         "binder rejects wrong property owner");
     auto aliasedScalar = *prepared->model;
     aliasedScalar.properties[3].staticValue = aliasedScalar.properties[1].staticValue;
-    require(!avemotion::runtime::detail::bindNativeEllipseModel(*prepared->input, aliasedScalar),
+    require(!avemotion::runtime::detail::bindNativeEllipseModel(avemotion::test::ownLegacyInput(*prepared->input), aliasedScalar),
         "binder rejects aliased scalar value");
     auto extraRow = *prepared->model;
     extraRow.scalarValues.push_back(100.0F);
-    require(!avemotion::runtime::detail::bindNativeEllipseModel(*prepared->input, extraRow),
+    require(!avemotion::runtime::detail::bindNativeEllipseModel(avemotion::test::ownLegacyInput(*prepared->input), extraRow),
         "binder rejects extra typed row");
     auto reordered = *prepared->model;
     std::swap(reordered.sourceChildIds[2], reordered.sourceChildIds[3]);
-    require(!avemotion::runtime::detail::bindNativeEllipseModel(*prepared->input, reordered),
+    require(!avemotion::runtime::detail::bindNativeEllipseModel(avemotion::test::ownLegacyInput(*prepared->input), reordered),
         "binder rejects reordered child edge");
     auto reindexed = *prepared->model;
     std::swap(reindexed.properties[0], reindexed.properties[1]);
     reindexed.properties[0].id = avemotion::model::makeId<avemotion::model::PropertyId>(0);
     reindexed.properties[1].id = avemotion::model::makeId<avemotion::model::PropertyId>(1);
-    require(static_cast<bool>(avemotion::runtime::detail::bindNativeEllipseModel(*prepared->input, reindexed)),
+    require(static_cast<bool>(avemotion::runtime::detail::bindNativeEllipseModel(avemotion::test::ownLegacyInput(*prepared->input), reindexed)),
         "binder accepts semantic property row reindexing");
 
     const auto other = preparedFrom(replaced(replaced(source, "[256, 256, 0]", "[11, 22, 0]"),

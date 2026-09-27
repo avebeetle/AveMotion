@@ -93,7 +93,7 @@ void matrixCase(const test::NativeEllipseTestAsset& testAsset,
             name + " original scene metadata and attempt history");
         reference.instanceId = kOrdinaryPlanId;
         const auto sceneDifference = comparator.sceneDifference(reference, *binding.binding,
-            candidate, owner->authored->binding, kOrdinaryPlanId);
+            candidate, test::ownLegacyBinding(owner->authored->binding), kOrdinaryPlanId);
         require(sceneDifference.empty(), name + " full scene: " + sceneDifference);
         auto ordinaryPlan = ordinaryPlanner.build(
             std::make_shared<const runtime::EvaluatedScene>(reference));
@@ -101,7 +101,7 @@ void matrixCase(const test::NativeEllipseTestAsset& testAsset,
             std::make_shared<const runtime::EvaluatedScene>(candidate));
         require(bool(ordinaryPlan) && bool(ownPlan), name + " plans built");
         const auto planDifference = comparator.planDifference(ordinaryPlan.plan,
-            *binding.binding, ownPlan.plan, owner->authored->binding, kOrdinaryPlanId);
+            *binding.binding, ownPlan.plan, test::ownLegacyBinding(owner->authored->binding), kOrdinaryPlanId);
         require(planDifference.empty(), name + " full plan: " + planDifference);
         equalSnapshot(own.playback->playbackSnapshot(now), old.playbackSnapshot(now),
             name + " after successful commit");

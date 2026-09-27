@@ -70,7 +70,7 @@ void sharedEvaluationHelpers() {
     const auto view = evaluator.evaluate(0.0, workspace);
     require(view, "static own evaluation view valid");
     model::MotionVec2Value position{-1, -1}, size{-1, -1};
-    const auto& binding = owner->authored->binding;
+    const auto& binding = owner->authored->binding.groups[0];
     require(render::detail::resolveNativeEllipseVec2(
         *owner->model, view, binding.position, position)
         && position == model::MotionVec2Value{0, 0},

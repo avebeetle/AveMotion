@@ -9,10 +9,14 @@ Controller-approved spec1eb21da, plan and durable ledger dated
 2026-09-28-own-duck-playback; matching SDD/progress is the execution checkpoint.
 Four tasks: reconcile carried M delta; bounded own vector compiler; shared
 scene stream and real-sticker parity; same-host acceptance/static promotion.
-Task1 pending.22 M files remain preserved/uncommitted and unverified; they are
-explicitly in Task1 review scope. M separate synthetic host/promotion work is
-superseded, not completed. No new product writer until Task1 dispatch, no new
-automation. Installed L EXE/PDB remains protected. Real artwork stays local.
+Task1 complete: all22 carried M files independently reviewed/accepted after
+canonical resource key fix and preserved legacy null-owner diagnostic. Full
+none45/45, Telegram96/96 (108.88s); root focused4/4 (16.31s); whole/overlap each
+126 scene/plan comparisons. Raw failures retained; no comparator weakening.
+Historical vendorC4251 remains a qualification, no clean-rebuild claim. Next
+Task2 own vector compiler. M separate synthetic host/promotion work is superseded,
+not completed. No new automation. Installed L EXE/PDB remains protected and its
+hash freshly matches the existing report. Real artwork stays local.
 Do not repeat previous stages or claim compiler/reference success as own UI
 playback. Read current N spec/plan/ledger before historical M material below.
 

@@ -70,9 +70,13 @@ OwnNativeEllipseCreateResult OwnNativeEllipseStream::create(
         || !prepared->authored->model || !prepared->model
         || prepared->model->totalFrames == 0 || prepared->model->logicalWidth == 0
         || prepared->model->logicalHeight == 0 || prepared->model->layers.size() != 2
-        || prepared->model->nodes.size() != 1 || prepared->model->geometries.size() != 1
-        || prepared->model->paints.size() != 1
-        || !prepared->model->paints[0].staticValue) {
+        || prepared->authored->binding.groups.empty()
+        || prepared->model->nodes.size() != prepared->authored->binding.groups.size()
+        || prepared->model->geometries.size() != prepared->authored->binding.groups.size()
+        || prepared->model->paints.size() != prepared->authored->binding.groups.size()
+        || std::any_of(prepared->model->paints.begin(), prepared->model->paints.end(),
+            [](const auto& paint) { return !paint.staticValue; })
+        || !runtime::detail::bindOwnPrimitiveModel(*prepared->authored->input, *prepared->model)) {
         return {OwnNativeEllipseCreateCode::InvalidPreparedAsset,
                 "incomplete own ellipse preparation", nullptr};
     }
@@ -108,7 +112,7 @@ OwnNativeEllipseFrameResult OwnNativeEllipseStream::emit(
     const auto& authored = *prepared_->authored;
     const auto& input = *authored.input;
     const auto& model = *prepared_->model;
-    const auto& binding = authored.binding;
+    const auto count = static_cast<std::uint32_t>(authored.binding.groups.size());
     frame = std::min(frame, model.totalFrames - 1U);
     const auto view = evaluator_.evaluate(static_cast<double>(frame), workspace_);
     if (!view) {
@@ -129,18 +133,23 @@ OwnNativeEllipseFrameResult OwnNativeEllipseStream::emit(
     scene.modelPaintCount = static_cast<std::uint32_t>(model.paints.size());
     const bool active = frame >= input.layerInFrame && frame < input.layerOutFrame;
     scene.layers.push_back(makeLayer(model.layers[0], true, 0));
-    scene.layers.push_back(makeLayer(model.layers[1], active, active ? 1U : 0U));
+    scene.layers.push_back(makeLayer(model.layers[1], active, active ? count : 0U));
     scene.childLayerIndices.push_back(1);
     scene.statistics.layerCount = 2;
     scene.statistics.visibleLayerCount = active ? 2 : 1;
 
-    if (active) {
+    if (active) for (std::uint32_t slot = 0; slot < count; ++slot) {
+        const auto g = count - 1U - slot;
+        const auto& binding = authored.binding.groups[g];
+        const auto& values = authored.values.groups[g];
         model::MotionVec2Value position, size;
+        float roundness = 0;
         if (!resolveNativeEllipseVec2(model, view, binding.position, position)
             || !resolveNativeEllipseVec2(model, view, binding.size, size)
+            || (binding.roundness && !resolveNativeEllipseScalar(model, view, *binding.roundness, roundness))
             || binding.group.index() >= view.nodeTransforms.size()) {
             return {OwnNativeEllipseFrameCode::EvaluationFailed,
-                    "bound ellipse property or transform unavailable", std::nullopt};
+                    "bound primitive property or transform unavailable", std::nullopt};
         }
         const auto& group = view.nodeTransforms[binding.group.index()];
         if (group.node != binding.group || !group.worldSupported()) {
@@ -153,19 +162,21 @@ OwnNativeEllipseFrameResult OwnNativeEllipseStream::emit(
             return {OwnNativeEllipseFrameCode::UnsupportedNumericOutput,
                     "non-finite viewport transform", std::nullopt};
         }
-        const auto* ellipse = model.sourceNode(binding.ellipse);
-        if (!ellipse) {
+        const auto* sourcePrimitive = model.sourceNode(binding.primitive);
+        if (!sourcePrimitive) {
             return {OwnNativeEllipseFrameCode::EvaluationFailed,
-                    "bound ellipse node unavailable", std::nullopt};
+                    "bound primitive node unavailable", std::nullopt};
         }
-        const auto primitive = generateEllipsePath(position, size, ellipse->pathDirection);
+        const auto primitive = sourcePrimitive->kind == model::SourceNodeKind::Rectangle
+            ? generateRectanglePath(position, size, roundness, sourcePrimitive->pathDirection)
+            : generateEllipsePath(position, size, sourcePrimitive->pathDirection);
         runtime::EvaluatedDrawItem item;
-        const auto& node = model.nodes[0];
+        const auto& node = model.nodes[slot];
         item.modelDrawItem = node.drawItem;
         item.modelNode = node.id;
         item.modelGeometry = node.geometry;
         item.modelPaint = node.paint;
-        item.sourcePathNode = binding.ellipse;
+        item.sourcePathNode = binding.primitive;
         item.sourcePaintNode = binding.fill;
         item.sourcePathCount = 1;
         item.sourcePathModifierFree = true;
@@ -173,24 +184,34 @@ OwnNativeEllipseFrameResult OwnNativeEllipseStream::emit(
         item.drawOrder = node.drawOrder;
         item.fillRule = runtime::FillRule::Winding;
         item.localGeometryAvailable = true;
-        item.localGeometryStaticCandidate = !authored.values.animated;
+        item.localGeometryStaticCandidate = !values.position.animated && !values.size.animated
+            && !(values.roundness && values.roundness->animated);
         item.localToViewport = *transform;
         item.localPaintAvailable = true;
         item.localPaintStaticCandidate = true;
-        item.paint = model.paints[0].staticValue->paint;
-        item.localPaint = model.paints[0].staticValue->paint;
+        item.paint = model.paints[slot].staticValue->paint;
+        item.localPaint = model.paints[slot].staticValue->paint;
         item.opacitySeparated = true;
         item.separatedOpacity = 1.0F;
         if (!materializeNativeEllipsePath(primitive, nullptr, item.localPath)
             || !materializeNativeEllipsePath(primitive, &*transform, item.path)) {
             return {OwnNativeEllipseFrameCode::UnsupportedNumericOutput,
-                    "non-finite ellipse path", std::nullopt};
+                    "non-finite primitive path", std::nullopt};
         }
-        scene.statistics.drawItemCount = 1;
-        scene.statistics.solidPaintCount = 1;
-        scene.statistics.pathVerbCount = item.path.verbs.size();
-        scene.statistics.pathPointCount = item.path.points.size();
-        scene.controlBounds = item.path.controlBounds;
+        ++scene.statistics.drawItemCount;
+        ++scene.statistics.solidPaintCount;
+        scene.statistics.pathVerbCount += item.path.verbs.size();
+        scene.statistics.pathPointCount += item.path.points.size();
+        const auto& bounds = item.path.controlBounds;
+        if (bounds.valid) {
+            if (!scene.controlBounds.valid) scene.controlBounds = bounds;
+            else {
+                scene.controlBounds.left = std::min(scene.controlBounds.left, bounds.left);
+                scene.controlBounds.top = std::min(scene.controlBounds.top, bounds.top);
+                scene.controlBounds.right = std::max(scene.controlBounds.right, bounds.right);
+                scene.controlBounds.bottom = std::max(scene.controlBounds.bottom, bounds.bottom);
+            }
+        }
         scene.drawItems.push_back(std::move(item));
     }
 

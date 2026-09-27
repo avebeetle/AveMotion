@@ -117,7 +117,7 @@ std::size_t mutationWitnesses(const std::string& json) {
     require(own.drawItems.size() == 1 && !own.drawItems[0].localPath.points.empty(),
         "witness visible geometry");
     const test::OwnNativeEllipseStreamComparison comparator;
-    require(comparator.sceneDifference(reference, *bound.binding, own, owner->authored->binding,
+    require(comparator.sceneDifference(reference, *bound.binding, own, test::ownLegacyBinding(owner->authored->binding),
         kFixedOrdinaryPlanId).empty(), "witness scene baseline");
     std::size_t witnesses = 0;
     const auto witnessScene = [&](const char* name, auto mutate) {
@@ -125,7 +125,7 @@ std::size_t mutationWitnesses(const std::string& json) {
         mutate(changed);
         changed.fingerprints = runtime::computeSceneFingerprints(changed);
         const auto difference = comparator.sceneDifference(reference, *bound.binding,
-            changed, owner->authored->binding, kFixedOrdinaryPlanId);
+            changed, test::ownLegacyBinding(owner->authored->binding), kFixedOrdinaryPlanId);
         require(!difference.empty(), std::string{name} + " mutation escaped scene comparator");
         std::cout << "WITNESS " << name << " rejected=" << difference << '\n';
         ++witnesses;
@@ -145,7 +145,7 @@ std::size_t mutationWitnesses(const std::string& json) {
     });
     witnessScene("scene-bounds", [](auto& scene) { scene.controlBounds.right += 1; });
     witnessScene("wrong-source-role", [&](auto& scene) {
-        scene.drawItems[0].sourcePathNode = owner->authored->binding.group;
+        scene.drawItems[0].sourcePathNode = test::ownLegacyBinding(owner->authored->binding).group;
     });
 
     render::MotionRenderPlanner referencePlanner, ownPlanner;
@@ -154,13 +154,13 @@ std::size_t mutationWitnesses(const std::string& json) {
     const auto ownPlan = ownPlanner.build(std::make_shared<const runtime::EvaluatedScene>(own));
     require(bool(referencePlan) && bool(ownPlan), "witness plans built");
     require(comparator.planDifference(referencePlan.plan, *bound.binding, ownPlan.plan,
-        owner->authored->binding, kFixedOrdinaryPlanId).empty(), "witness plan baseline");
+        test::ownLegacyBinding(owner->authored->binding), kFixedOrdinaryPlanId).empty(), "witness plan baseline");
     const auto witnessPlan = [&](const char* name, auto mutate) {
         auto changed = ownPlan.plan;
         mutate(changed);
         changed.fingerprints = render::computeRenderPlanFingerprints(changed);
         const auto difference = comparator.planDifference(referencePlan.plan, *bound.binding,
-            changed, owner->authored->binding, kFixedOrdinaryPlanId);
+            changed, test::ownLegacyBinding(owner->authored->binding), kFixedOrdinaryPlanId);
         require(!difference.empty(), std::string{name} + " mutation escaped plan comparator");
         std::cout << "WITNESS " << name << " rejected=" << difference << '\n';
         ++witnesses;
@@ -225,7 +225,7 @@ int main() {
                 auto stream = render::detail::OwnNativeEllipseStream::create(own);
                 require(bool(stream), testAsset.name + " own stream creation");
                 SequenceContext context{oracle, *stream.stream, *bound.binding,
-                    own->authored->binding};
+                    test::ownLegacyBinding(own->authored->binding)};
                 context.sourceHash = test::ownRawHash(testAsset.json);
                 for (std::size_t frame = 0; frame <= 60; ++frame)
                     compareFrame(context, testAsset.name, "forward", frame, width, height);
@@ -246,7 +246,7 @@ int main() {
             auto stream = render::detail::OwnNativeEllipseStream::create(own);
             require(bool(stream), testAsset.name + " mixed own stream");
             SequenceContext mixed{oracle, *stream.stream, *bound.binding,
-                own->authored->binding};
+                test::ownLegacyBinding(own->authored->binding)};
             mixed.sourceHash = test::ownRawHash(testAsset.json);
             for (std::size_t index = 0; index < seeks.size(); ++index) {
                 const auto [width, height] = viewports[index % viewports.size()];

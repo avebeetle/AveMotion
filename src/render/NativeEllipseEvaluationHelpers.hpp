@@ -10,6 +10,24 @@
 
 namespace avemotion::render::detail {
 
+[[nodiscard]] inline bool resolveNativeEllipseScalar(
+    const model::MotionAssetModel& model, const evaluation::PropertyEvaluationView& view,
+    model::PropertyId id, float& value) noexcept {
+    const auto* property = model.property(id);
+    if (!property || property->valueType != model::PropertyValueType::Scalar
+        || id.index() >= view.properties.size()) return false;
+    const auto& evaluated = view.properties[id.index()];
+    if (evaluated.id != id || evaluated.value.type != model::PropertyValueType::Scalar) return false;
+    if (evaluated.value.storage == evaluation::PropertyStorageKind::Materialized) {
+        value = evaluated.value.scalar;
+    } else if (evaluated.value.storage == evaluation::PropertyStorageKind::AssetReference) {
+        const auto ref = evaluated.value.assetReference;
+        if (ref.type != model::PropertyValueType::Scalar || ref.index >= model.scalarValues.size()) return false;
+        value = model.scalarValues[ref.index];
+    } else return false;
+    return std::isfinite(value);
+}
+
 [[nodiscard]] inline bool resolveNativeEllipseVec2(
     const model::MotionAssetModel& model, const evaluation::PropertyEvaluationView& view,
     model::PropertyId id, model::MotionVec2Value& value) noexcept {

@@ -27,6 +27,24 @@ Raw/SDD evidence retained. Date2026-09-28.
    evaluator can evaluate one frame clock and transform/opacity ancestry without
    a new runtime — cost if wrong: reject broader precomp input until semantics
    and clipping are separately implemented and tested.
+6. Ruling: review explicit working-tree package before product commit, rather
+   than requiring a pre-review commit for the skill's range-only package tool —
+   honors the user's test/review/commit/push order with carried untracked files —
+   cost if wrong: package must hash/include every task file to prevent review gaps.
+7. Ruling: test-only ordinary scene oracle may bypass source admission through
+   existing cache-disabled renderTree/bridge, not by changing product policy —
+   independently tests the same visible vectors; full-canvas precomp clip
+   equivalence and zero backend skips are mandatory per-scene assertions — cost
+   if wrong: parity proof fails and needs a bounded test-only renderer decision.
+   Detailed read-only analysis: out/part26n-design/oracle-strategy.md.
+
+Pinned parser inspection resolves303/304: layer16's final rotation key at180
+has h=1 and is retained as a zero-length hold; ordinary terminal keys only update
+the preceding end. Regression guidance recorded before compiler implementation.
+Host badge update narrowed to truthful own-vector-subset label. Native canonical
+test isolation is unavailable in current settings contract: default QSettings
+uses registry, whereas Qt test helpers set INI internally. APPDATA redirection
+alone is not an isolation mechanism. No registry or production test hook added.
 
 ## Plan preflight
 
@@ -50,5 +68,16 @@ corrected to existing `tst_own_motion_renderer.cpp` before dispatch.
 ## Progress
 
 - Design/inventory complete; source TGS unchanged and local-only.
-- Task1 pending: reconcile carried M delta with independent review.
+- Task1 complete: all22 carried files and fixes independently approved in
+  task-1-review.md. Later static canonical resources now use modelID+1; preserved
+  null-owner diagnostic. Final full none45/45 (6.69s), TG96/96 (108.88s), root
+  focused4/4 (16.31s). Whole/overlap each126 comparisons, no comparator weakening.
+  Initial semantic/identity REDs and full-suite null-message failure retained.
+  Root launcher009 failed before execution due forward-slash cmd path; corrected
+  absolute backslash invocation010 passed, no product workaround.
+  Minor historical vendorC4251 retained; final incremental logs show no warnings,
+  not evidence of a warning-free clean rebuild. Reviewer cannot-verify items:
+  unchanged admission/numeric already reviewed520297f and exercised by current
+  suites; final actual product linkage and Duck/UI/WARP proof explicitly belong
+  to Tasks3/4 and are not prerequisite success claims. No load-bearing gap open.
 - Tasks2–4 pending. Canonical Part26L EXE/PDB untouched; no automation change.

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "OwnNativeEllipseModel.hpp"
+#include "NativeEllipseNumeric.hpp"
 
 #include <cstddef>
 #include <array>
@@ -15,6 +16,47 @@ namespace avemotion::test {
 
 inline void requireOwn(bool value, std::string_view message) {
     if (!value) throw std::runtime_error(std::string{message});
+}
+
+inline runtime::detail::NativeEllipseInput ownLegacyInput(const runtime::detail::OwnPrimitiveInput& in) {
+    using namespace runtime::detail;
+    requireOwn(in.groups.size()==1, "checked legacy descriptor has one group");
+    const auto& g=in.groups.front();
+    requireOwn(g.kind==OwnPrimitiveKind::Ellipse && g.direction==model::SourcePathDirection::Clockwise
+        && !g.roundness && std::holds_alternative<NativeEllipseStaticPosition>(g.size),
+        "checked legacy descriptor is a clockwise ellipse with static size");
+    return {in.width,in.height,in.endFrame,in.frameRate,in.layerId,in.layerInFrame,in.layerOutFrame,
+        in.layerTranslation,std::get<NativeEllipseStaticPosition>(g.size).value,g.position,g.fillColor,
+        in.version,in.name,in.layerName,g.groupName,g.primitiveName,g.fillName,g.transformName};
+}
+
+inline runtime::detail::NativeEllipseNumericValues ownLegacyValues(
+    const runtime::detail::OwnPrimitiveNumericValues& in) {
+    requireOwn(in.groups.size()==1, "checked legacy numeric view has one group");
+    const auto& g=in.groups.front();
+    const auto staticInvariant = [](const auto& v) {
+        return !v.animated && v.start==v.end && v.firstFrame==0 && v.lastFrame==0
+            && v.incoming==model::MotionVec2Value{} && v.outgoing==model::MotionVec2Value{};
+    };
+    requireOwn(!g.roundness && staticInvariant(g.size), "new static size invariant before projection");
+    if (!g.position.animated) requireOwn(staticInvariant(g.position), "new static position invariant before projection");
+    runtime::detail::NativeEllipseNumericValues result;
+    result.frameRate=in.frameRate; result.translation=in.translation; result.size=g.size.start;
+    result.start=g.position.start; result.color=g.color; result.animated=g.position.animated;
+    // Legacy static endpoints/controls were unused and default-initialized.
+    if (g.position.animated) {
+        result.end=g.position.end; result.outgoing=g.position.outgoing; result.incoming=g.position.incoming;
+        result.firstFrame=g.position.firstFrame; result.lastFrame=g.position.lastFrame;
+    }
+    return result;
+}
+
+inline runtime::detail::NativeEllipseModelBinding ownLegacyBinding(
+    const runtime::detail::OwnPrimitiveBinding& b) {
+    requireOwn(b.groups.size()==1 && !b.groups.front().roundness, "checked one-ellipse binding");
+    const auto& g=b.groups.front();
+    return {b.root,b.layer,g.group,g.primitive,g.fill,b.layerTransform,b.layerOpacity,
+        g.groupTransform,g.groupOpacity,g.position,g.size,g.color,g.fillOpacity};
 }
 
 inline void ownAppendByte(std::uint64_t& hash, std::uint8_t byte) {
@@ -54,17 +96,20 @@ inline void assertOwnAuthoredModel(
     std::string_view exactSource) {
     using namespace model;
     const auto& asset = *prepared.model;
-    requireOwn(prepared.input && *prepared.input == input, "retained admitted input");
-    requireOwn(prepared.input->version == input.version && prepared.input->name == input.name
-        && prepared.input->layerName == input.layerName && prepared.input->groupName == input.groupName
-        && prepared.input->ellipseName == input.ellipseName && prepared.input->fillName == input.fillName
-        && prepared.input->transformName == input.transformName, "all optional fields retain absent versus empty state");
-    requireOwn(prepared.values.frameRate == values.frameRate
-        && prepared.values.translation == values.translation && prepared.values.size == values.size
-        && prepared.values.start == values.start && prepared.values.end == values.end
-        && prepared.values.outgoing == values.outgoing && prepared.values.incoming == values.incoming
-        && prepared.values.color == values.color && prepared.values.animated == values.animated
-        && prepared.values.firstFrame == values.firstFrame && prepared.values.lastFrame == values.lastFrame,
+    const auto oldInput=ownLegacyInput(*prepared.input);
+    const auto oldValues=ownLegacyValues(prepared.values);
+    const auto oldBinding=ownLegacyBinding(prepared.binding);
+    requireOwn(prepared.input && oldInput == input, "retained admitted input");
+    requireOwn(oldInput.version == input.version && oldInput.name == input.name
+        && oldInput.layerName == input.layerName && oldInput.groupName == input.groupName
+        && oldInput.ellipseName == input.ellipseName && oldInput.fillName == input.fillName
+        && oldInput.transformName == input.transformName, "all optional fields retain absent versus empty state");
+    requireOwn(oldValues.frameRate == values.frameRate
+        && oldValues.translation == values.translation && oldValues.size == values.size
+        && oldValues.start == values.start && oldValues.end == values.end
+        && oldValues.outgoing == values.outgoing && oldValues.incoming == values.incoming
+        && oldValues.color == values.color && oldValues.animated == values.animated
+        && oldValues.firstFrame == values.firstFrame && oldValues.lastFrame == values.lastFrame,
         "retained numeric values");
     requireOwn(asset.schemaVersion == 2 && asset.revision == 1 && !asset.assetHandle.valid(),
         "authored metadata identity");
@@ -211,15 +256,15 @@ inline void assertOwnAuthoredModel(
         && asset.statistics.colorValueCount == 1 && asset.statistics.matrixValueCount == 2
         && asset.statistics.shapeValueCount == 0 && asset.statistics.gradientValueCount == 0,
         "complete authored statistics");
-    requireOwn(prepared.binding.root == makeId<SourceNodeId>(0)
-        && prepared.binding.layer == makeId<SourceNodeId>(1) && prepared.binding.group == makeId<SourceNodeId>(2)
-        && prepared.binding.ellipse == makeId<SourceNodeId>(3) && prepared.binding.fill == makeId<SourceNodeId>(4)
-        && prepared.binding.layerTransform == makeId<PropertyId>(0)
-        && prepared.binding.layerOpacity == makeId<PropertyId>(1)
-        && prepared.binding.groupTransform == makeId<PropertyId>(2)
-        && prepared.binding.groupOpacity == makeId<PropertyId>(3)
-        && prepared.binding.position == makeId<PropertyId>(4) && prepared.binding.size == makeId<PropertyId>(5)
-        && prepared.binding.color == makeId<PropertyId>(6) && prepared.binding.fillOpacity == makeId<PropertyId>(7),
+    requireOwn(oldBinding.root == makeId<SourceNodeId>(0)
+        && oldBinding.layer == makeId<SourceNodeId>(1) && oldBinding.group == makeId<SourceNodeId>(2)
+        && oldBinding.ellipse == makeId<SourceNodeId>(3) && oldBinding.fill == makeId<SourceNodeId>(4)
+        && oldBinding.layerTransform == makeId<PropertyId>(0)
+        && oldBinding.layerOpacity == makeId<PropertyId>(1)
+        && oldBinding.groupTransform == makeId<PropertyId>(2)
+        && oldBinding.groupOpacity == makeId<PropertyId>(3)
+        && oldBinding.position == makeId<PropertyId>(4) && oldBinding.size == makeId<PropertyId>(5)
+        && oldBinding.color == makeId<PropertyId>(6) && oldBinding.fillOpacity == makeId<PropertyId>(7),
         "bound semantic identifiers");
 }
 

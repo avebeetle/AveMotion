@@ -1,5 +1,6 @@
 #include "NativeEllipseBinding.hpp"
 #include "NativeEllipseNumeric.hpp"
+#include "NativeEllipseBindingHelpers.hpp"
 
 #include "avemotion/core/Hash.hpp"
 
@@ -12,77 +13,10 @@
 namespace avemotion::runtime::detail {
 namespace {
 using namespace model;
+using namespace binding_helpers;
 
 [[nodiscard]] NativeEllipseBindingResult fail(NativeEllipseBindingCode code) {
     return {code, std::nullopt};
-}
-
-[[nodiscard]] bool range(IndexRange value, std::size_t size) noexcept {
-    const auto first = static_cast<std::size_t>(value.first);
-    return first <= size && static_cast<std::size_t>(value.count) <= size - first;
-}
-
-[[nodiscard]] std::uint64_t nameHash(const std::string& name) noexcept {
-    core::Fnv1a64 hash;
-    hash.appendString(name);
-    return hash.value();
-}
-
-[[nodiscard]] std::string effective(const std::optional<std::string>& name,
-                                    std::string fallback) {
-    return name && !name->empty() ? *name : std::move(fallback);
-}
-
-[[nodiscard]] bool finite(const MotionVec2Value& value) noexcept {
-    return std::isfinite(value.x) && std::isfinite(value.y);
-}
-[[nodiscard]] bool finite(const MotionColorValue& value) noexcept {
-    return std::isfinite(value.r) && std::isfinite(value.g)
-        && std::isfinite(value.b) && std::isfinite(value.a);
-}
-[[nodiscard]] bool finite(const MotionMatrix3x2Value& value) noexcept {
-    return std::isfinite(value.m11) && std::isfinite(value.m12)
-        && std::isfinite(value.m21) && std::isfinite(value.m22)
-        && std::isfinite(value.dx) && std::isfinite(value.dy);
-}
-
-[[nodiscard]] bool defaultNode(const MotionSourceNodeRecord& node,
-                               bool animated) noexcept {
-    return node.present && !node.hidden && node.enabled && !node.autoOrient
-        && !node.transformParent.valid() && !node.referencedComposition.valid()
-        && node.authoredStatic == !animated
-        && node.dependencyBits == (animated ? StaticDependencyTimeline : StaticDependencyNone)
-        && node.authoredParentLayerId == -1
-        && node.matteMode == SourceMatteMode::None
-        && node.maskMode == SourceMaskMode::None && !node.maskInverted
-        && node.blendMode == SourceBlendMode::Normal
-        && node.fillRule == SourceFillRule::Winding
-        && node.strokeCap == SourceStrokeCap::Flat
-        && node.strokeJoin == SourceStrokeJoin::Miter
-        && node.gradientType == SourceGradientType::None
-        && node.pathDirection == SourcePathDirection::Clockwise
-        && node.polystarType == SourcePolystarType::None
-        && node.trimMode == SourceTrimMode::None
-        && node.miterLimit == 0.0F && node.repeaterMaximumCopies == 0.0F
-        && node.gradientColorPointCount == 0 && node.layerWidth == 0
-        && node.layerHeight == 0 && finite(node.solidColor)
-        && node.solidColor == MotionColorValue{0, 0, 0, 1}
-        && node.sourceAssetRefHash == 0
-        && std::isfinite(node.inFrame) && std::isfinite(node.outFrame)
-        && std::isfinite(node.startFrame) && std::isfinite(node.timeStretch)
-        && node.startFrame == 0.0 && node.timeStretch == 1.0F;
-}
-
-[[nodiscard]] bool valueRef(const MotionAssetModel& model, MotionValueRef ref,
-                            PropertyValueType type) noexcept {
-    if (!ref.valid() || ref.type != type) return false;
-    switch (type) {
-    case PropertyValueType::Scalar: return ref.index < model.scalarValues.size();
-    case PropertyValueType::Vec2: return ref.index < model.vec2Values.size();
-    case PropertyValueType::Color: return ref.index < model.colorValues.size();
-    case PropertyValueType::Matrix3x2: return ref.index < model.matrixValues.size();
-    default: return false;
-    }
 }
 
 [[nodiscard]] bool tableShape(const MotionAssetModel& model, bool animated) noexcept {
@@ -110,11 +44,7 @@ using namespace model;
         && stats.shapeValueCount == 0 && stats.gradientValueCount == 0;
 }
 
-[[nodiscard]] bool staticValue(const MotionAssetModel& model, const MotionPropertyRecord& property,
-                               PropertyValueType type) noexcept {
-    return property.flags == PropertyFlagStatic && property.valueType == type
-        && !property.track.valid() && valueRef(model, property.staticValue, type);
-}
+
 }
 
 NativeEllipseBindingResult bindNativeEllipseModel(

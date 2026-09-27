@@ -579,7 +579,7 @@ void sourceDefaultComparatorWitnesses() {
 }
 
 BoundIds ownIds(const render::detail::OwnNativeEllipsePreparedAsset& prepared) {
-    const auto& binding = prepared.authored->binding;
+    const auto binding = test::ownLegacyBinding(prepared.authored->binding);
     return {binding.root, binding.layer, binding.group, binding.ellipse, binding.fill,
         binding.layerTransform, binding.layerOpacity, binding.groupTransform, binding.groupOpacity,
         binding.position, binding.size, binding.color, binding.fillOpacity,
