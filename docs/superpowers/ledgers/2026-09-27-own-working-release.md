@@ -17,6 +17,13 @@ Ruling: Explicit own-working flag permits host package only; other labs retain g
 Ruling: Preserve existing notices and mark local-development-only, select no public license — current repository licensing is unresolved — cost is no claim of public distribution readiness.
 Ruling: L working-package first, then whole primitive_geometry support — separates reversible installation from a wider own-model change — cost is the first installed version still supports only the existing ellipse subset.
 
+Ruling: Routine diagnostic commands still install the successful own build into
+the canonical package/PDB; Task1 tests fake external execution rather than
+running that install — the user wants ordinary and diagnostic builds to update
+one working EXE, while Task1's prohibition concerns test execution — cost is
+that subsequent real installs still require the documented backup discipline;
+this is not a new atomic updater. Compilation itself remains intermediate.
+
 Spec self-reviewed/committed1bc19f7. Plan self-reviewed and controller-approved;
 SDD selected under delegated authority. Task1 pending; Task2 pending. Root owns
 Git/promotion, no writer may touch canonical Release/PDB before root backup.
