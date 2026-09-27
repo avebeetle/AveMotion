@@ -1,10 +1,10 @@
 #include "NativeEllipseBinding.hpp"
+#include "NativeEllipseNumeric.hpp"
 
 #include "avemotion/core/Hash.hpp"
 
 #include <algorithm>
 #include <array>
-#include <charconv>
 #include <cmath>
 #include <limits>
 #include <string>
@@ -15,49 +15,6 @@ using namespace model;
 
 [[nodiscard]] NativeEllipseBindingResult fail(NativeEllipseBindingCode code) {
     return {code, std::nullopt};
-}
-
-[[nodiscard]] bool canonical(const NativeEllipseDecimal& value) {
-    const auto digits = [](const std::string& text) {
-        return !text.empty() && std::all_of(text.begin(), text.end(), [](char c) {
-            return c >= '0' && c <= '9';
-        });
-    };
-    if (!digits(value.digits) || !digits(value.power.magnitude)) return false;
-    if (value.power.magnitude.size() > 1 && value.power.magnitude.front() == '0') return false;
-    if (value.power.magnitude == "0" && value.power.negative) return false;
-    if (value.digits == "0") {
-        return !value.negative && !value.power.negative && value.power.magnitude == "0";
-    }
-    return value.digits.front() != '0' && value.digits.back() != '0';
-}
-
-[[nodiscard]] bool convert(const NativeEllipseDecimal& value, float& output,
-                           bool positive = false) {
-    if (!canonical(value)) return false;
-    std::string token;
-    token.reserve(value.digits.size() + value.power.magnitude.size() + 3);
-    if (value.negative) token += '-';
-    token += value.digits;
-    token += 'e';
-    token += value.power.negative ? '-' : '+';
-    token += value.power.magnitude;
-    double parsed = 0.0;
-    const auto converted = std::from_chars(token.data(), token.data() + token.size(), parsed);
-    if (converted.ec != std::errc{} || converted.ptr != token.data() + token.size()
-        || !std::isfinite(parsed) || std::abs(parsed) > std::numeric_limits<float>::max()) {
-        return false;
-    }
-    output = static_cast<float>(parsed);
-    if (!std::isfinite(output) || (value.digits != "0" && output == 0.0F)
-        || (positive && output <= 0.0F)) return false;
-    if (output == 0.0F) output = 0.0F;
-    return true;
-}
-
-[[nodiscard]] bool convert(const NativeEllipseVec2& value, MotionVec2Value& output,
-                           bool positive = false) {
-    return convert(value[0], output.x, positive) && convert(value[1], output.y, positive);
 }
 
 [[nodiscard]] bool range(IndexRange value, std::size_t size) noexcept {
@@ -153,56 +110,6 @@ using namespace model;
         && stats.shapeValueCount == 0 && stats.gradientValueCount == 0;
 }
 
-struct ExpectedValues final {
-    float frameRate = 0;
-    MotionVec2Value translation, size, start, end, outgoing, incoming;
-    MotionColorValue color;
-    bool animated = false;
-    std::uint32_t firstFrame = 0, lastFrame = 0;
-};
-
-[[nodiscard]] bool interpret(const NativeEllipseInput& input, ExpectedValues& expected) {
-    if (input.width == 0 || input.width > 8192 || input.height == 0 || input.height > 8192
-        || input.endFrame < 2 || input.endFrame > 10000 || input.layerId < 1
-        || input.layerInFrame >= input.layerOutFrame || input.layerOutFrame > input.endFrame
-        || !convert(input.frameRate, expected.frameRate, true)
-        || !convert(input.layerTranslation, expected.translation)
-        || !convert(input.size, expected.size, true)
-        || !convert(input.fillColor[0], expected.color.r)
-        || !convert(input.fillColor[1], expected.color.g)
-        || !convert(input.fillColor[2], expected.color.b)
-        || !convert(input.fillColor[3], expected.color.a)
-        || expected.frameRate > 240.0F
-        || std::abs(expected.translation.x) > 32768.0F
-        || std::abs(expected.translation.y) > 32768.0F
-        || expected.size.x > 16384.0F || expected.size.y > 16384.0F
-        || expected.color.r < 0.0F || expected.color.r > 1.0F
-        || expected.color.g < 0.0F || expected.color.g > 1.0F
-        || expected.color.b < 0.0F || expected.color.b > 1.0F
-        || expected.color.a != 1.0F) return false;
-    expected.animated = std::holds_alternative<NativeEllipseAnimatedPosition>(input.position);
-    if (expected.animated) {
-        const auto& motion = std::get<NativeEllipseAnimatedPosition>(input.position);
-        expected.firstFrame = motion.firstFrame;
-        expected.lastFrame = motion.lastFrame;
-        return motion.firstFrame == 0 && motion.lastFrame == input.endFrame - 1
-            && convert(motion.start, expected.start) && convert(motion.end, expected.end)
-            && convert(motion.outgoing, expected.outgoing)
-            && convert(motion.incoming, expected.incoming)
-            && std::abs(expected.start.x) <= 32768.0F
-            && std::abs(expected.start.y) <= 32768.0F
-            && std::abs(expected.end.x) <= 32768.0F
-            && std::abs(expected.end.y) <= 32768.0F
-            && expected.outgoing.x >= 0.0F && expected.outgoing.x <= 1.0F
-            && expected.outgoing.y >= 0.0F && expected.outgoing.y <= 1.0F
-            && expected.incoming.x >= 0.0F && expected.incoming.x <= 1.0F
-            && expected.incoming.y >= 0.0F && expected.incoming.y <= 1.0F;
-    }
-    return convert(std::get<NativeEllipseStaticPosition>(input.position).value, expected.start)
-        && std::abs(expected.start.x) <= 32768.0F
-        && std::abs(expected.start.y) <= 32768.0F;
-}
-
 [[nodiscard]] bool staticValue(const MotionAssetModel& model, const MotionPropertyRecord& property,
                                PropertyValueType type) noexcept {
     return property.flags == PropertyFlagStatic && property.valueType == type
@@ -212,8 +119,9 @@ struct ExpectedValues final {
 
 NativeEllipseBindingResult bindNativeEllipseModel(
     const NativeEllipseInput& input, const MotionAssetModel& model) {
-    ExpectedValues expected;
-    if (!interpret(input, expected)) return fail(NativeEllipseBindingCode::UnsupportedNumericConversion);
+    const auto numeric = interpretNativeEllipseInput(input);
+    if (!numeric) return fail(NativeEllipseBindingCode::UnsupportedNumericConversion);
+    const auto& expected = *numeric;
     if (!tableShape(model, expected.animated)) return fail(NativeEllipseBindingCode::InvalidModelTable);
 
     const auto& composition = model.compositions.front();
