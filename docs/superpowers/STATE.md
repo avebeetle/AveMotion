@@ -2,7 +2,24 @@
 
 Updated: 2026-09-27
 
-## Current handoff — Part26F accepted; own prepared model design next
+## Current handoff — Part26G own model/resources preflight complete
+
+F final seal c00f686450c1fd725b39e543badd42cdf23df20c ordinary-pushed and remote
+equality verified. Do not repeat F. G spec efc12e9, controller-approved under user
+delegation: docs/superpowers/specs/2026-09-27-own-ellipse-model-design.md.
+Plan docs/superpowers/plans/2026-09-27-own-ellipse-model.md; durable ledger
+docs/superpowers/ledgers/2026-09-27-own-ellipse-model.md; SDD workspace
+.superpowers/sdd/2026-09-27-own-ellipse-model/progress.md. Preflight table and seven
+rulings/costs recorded. Task1 pending dispatch after scoped docs commit/push.
+Task1 shared numeric conversion + sealed own authored graph in Runtime; Task2
+canonical resources + sealed prepared owner in Rendering; Task3 semantic oracle
+comparison. Root final full none/Telegram/preview and private-boundary gates.
+No fake Runtime handles, certificate weakening, full loader switch or UI action.
+Own stream/frame/pixel proof and static Avelabs acceptance remain later stages.
+One product writer, TDD and fresh task reviews. No automation resumed. No active
+writer/build at preflight; reconcile actual agents/Git rather than stale running.
+
+## Previous handoff — Part26F accepted; own prepared model design next
 
 F product4c9237d/b44dedf and test fix9269b8e accepted. Final tested HEAD880020d.
 Task reviews and whole-stage7000dd0..880020d have no open findings. Root final002
