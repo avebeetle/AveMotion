@@ -589,6 +589,22 @@ if(BUILD_TESTING)
         avemotion_set_warnings(avemotion_own_native_ellipse_admission_differential_tests)
         add_test(NAME avemotion.runtime.own_native_ellipse_admission_differential
             COMMAND avemotion_own_native_ellipse_admission_differential_tests)
+
+        add_executable(avemotion_own_native_ellipse_model_differential_tests
+            tests/own_native_ellipse_model_differential_tests.cpp)
+        target_include_directories(avemotion_own_native_ellipse_model_differential_tests PRIVATE
+            "${CMAKE_CURRENT_SOURCE_DIR}/src/render"
+            "${CMAKE_CURRENT_SOURCE_DIR}/src/runtime"
+            "${CMAKE_CURRENT_SOURCE_DIR}/src/formats"
+            "${CMAKE_CURRENT_SOURCE_DIR}/src/model"
+            "${CMAKE_CURRENT_SOURCE_DIR}/tests/support")
+        target_link_libraries(avemotion_own_native_ellipse_model_differential_tests PRIVATE
+            AveMotion::Rendering)
+        target_compile_definitions(avemotion_own_native_ellipse_model_differential_tests PRIVATE
+            AVEMOTION_FIXTURE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures")
+        avemotion_set_warnings(avemotion_own_native_ellipse_model_differential_tests)
+        add_test(NAME avemotion.runtime.own_native_ellipse_model_differential
+            COMMAND avemotion_own_native_ellipse_model_differential_tests)
     endif()
 
     add_executable(avemotion_tgs_runtime_tests tests/tgs_runtime_tests.cpp)
