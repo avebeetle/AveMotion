@@ -41,6 +41,13 @@ struct OwnNativeEllipseFrameResult final {
     }
 };
 
+// One linked, nonrecycling allocator supplies identities for own-only
+// planner/backend domains. Do not mix Runtime, legacy caller IDs, or separately
+// loaded allocator copies in a domain. Each stream is single-writer; distinct
+// streams may emit concurrently while sharing an immutable prepared owner.
+// Retire associated scenes, plans, and cache domains before allocator module
+// unload/reload. Callers manage planner/backend forget or reset; destroying a
+// stream does not evict entries from externally owned caches.
 class OwnNativeEllipseStream final {
 public:
     [[nodiscard]] static OwnNativeEllipseCreateResult create(
