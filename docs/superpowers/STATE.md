@@ -2,7 +2,23 @@
 
 Updated: 2026-09-27
 
-## Current handoff — Part26L own working Release installed
+## Current work — Part26M bounded own primitive groups
+
+L complete and installed (details below). M spec0cbe264 and plan/durable ledger
+dated2026-09-27-own-primitives-profile controller-approved under delegated
+authority. Bases engine1f2f601 / host0d56e83. Next Task1 typed own admission and
+numeric payload, then atomic model/resources/stream migration, same-host UI
+acceptance, final gates/promotion. No M product change yet. Keep canonical L
+EXE93B10E5C...1645/PDB014ACD8C...3DFFF until final verified candidate/backup.
+Chosen unchanged first-party primitive_geometry has seven shapes, not a real
+downloaded Telegram sticker. Bounded1..16 direct groups, strict legacy APIs
+unchanged, same private own route and Player/worker/timer; no fallback. Plan,
+durable ledger and matching ignored SDD are recovery authorities. One product
+writer, independent reviews, root-only main commits/ordinary pushes, raw kept.
+No new automation, dependencies, Windows changes, vendor/golden edits or license
+decision. See spec for exact bounds/parity and report L for installed artifacts.
+
+## Previous handoff — Part26L own working Release installed
 
 User explicitly requested own integration in the canonical host build/Release,
 ordinary commits/push and controller selection of the next example. L spec
