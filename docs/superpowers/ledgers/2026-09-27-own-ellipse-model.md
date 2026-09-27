@@ -204,3 +204,48 @@ on new autoOrient witness retained, then current raw12cases/255samples/
 No product fix or new policy/ruling. Writers/reviewers idle; docs/guarded ordinary
 push then one whole-stage review fromc00f686, triaging three deferred Minors;
 one combined final fix wave/scoped review maximum, then fresh platform/closure.
+
+Task3 docs0fab926 ordinary-pushed/equality verified. Whole-stage reviewc00f686..
+0fab926 found no Critical/Important, three Minors: own model direct array/optional/
+string_view, model test direct limits/stdexcept, resource-test readability. Single
+combined final cleanup writer /root/own_ellipse_model_final_cleanup (terra/medium)
+dispatched at0fab926; three files only, no semantic change, root all Git writes.
+After it, exactly one scoped review then root full gates; no extra fix/review seat.
+
+Ruling: accept the final review's explicit non-G deferrals while retaining every mandatory G verification — the following six dispositions preserve the approved boundary rather than treating unrun checks as passes — costs a separate stream/UI/completeness validation stage; if the boundary is wrong, G alone cannot establish production playback readiness.
+
+1. Own stream/identity/frame/access-order/visibility/pixels/scheduling/static UI:
+   deferred to the separate next design, not judged or shipped by G.
+2. Existing loader/fallback/Player/Direct2D/ANGLE/UI behavior: no functional changes
+   authorized; root still verifies unchanged source plus specified regression and
+   host-preservation gates, not new backend or host-feature coverage.
+3. Full grammar/playback/universal scalar/race/zero-allocation/memory/speedup:
+   no such claim; no new requirement is silently inferred from G task timing.
+4. Samsung execution: configure/provenance only as approved; no Samsung all-green
+   execution claim, and no revival of the known baseline golden issue here.
+5. Full MSVC/preview/capture/WARP/traces/install/link/vendor/TGS/UI checks:
+   remain REQUIRED root gates after cleanup; review's non-execution is not a waiver.
+6. Vendor/dependency/license/fixture/golden changes: still forbidden; verify byte/
+   Git protection through final provenance and source checks, no license decision.
+
+## Final acceptance at ae2163023925552763b8e48344232d091fea0e7a
+
+Root normal final cleanup commit (includes/test setup only), none2/2/TG3/3 and
+root fresh TG3/3,0.61s. Single scoped final re-review accepted all3 Minors, no new
+breakage. No second whole-stage review/fix wave. Root full frozen-identity gates
+then passed: none37/37,5.38s; Telegram84/84,91.19s; preview78/78,96.73s, no skipped/
+failed tests. Existing graphics/WARP/device-recreation checks execute; this is not
+own frame/pixel parity. Samsung configure/registration only; both vendor trees/
+committed corpus integrity and16 TGS assets verified.
+
+Actual include traces12/12: per-preset numeric/model/path/prepared113/109/106/111
+headers, first-party7/13/7/15, unknown0.909 source/config + six instrument hashes
+stable; actual objects/graphs stable after traces. Boundary verifier and root
+manual50 link blocks/rules, source extraction/ownership, install/export and host
+closure accepted. See out/part26g/root-final-boundary-review.md and report.
+All final attempts001; not clean rebuilds or benchmarks. Existing vendor C4251
+warnings remain; no no-warning claim. UI checkpoint unchanged/clean/out absent.
+
+G is accepted within the nine explicit rulings above. No new authority, scope,
+vendor/license/fixture/golden/UI change or full playback claim. Docs-only seal
+and ordinary guarded push next; next work is a separate own-stream design.

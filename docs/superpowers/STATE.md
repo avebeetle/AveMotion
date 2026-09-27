@@ -2,7 +2,40 @@
 
 Updated: 2026-09-27
 
-## Current handoff — Part26G Tasks1–3 accepted; whole-stage review/gates next
+## Current handoff — Part26G accepted; own scene-stream design next
+
+G product Tasks1–3 and all task/scoped reviews accepted. Whole-stage review
+c00f686..0fab926 found no Critical/Important; single final cleanup
+ae2163023925552763b8e48344232d091fea0e7a and exactly one scoped re-review accepted
+all three Minors, no remaining finding. No extra review/fix wave or task rerun.
+
+Root final fresh configure/incremental build/full CTest at ae21630: none37/37,
+5.38s; Telegram84/84,91.19s; Win32-preview78/78,96.73s. No skipped/failed tests;
+explicit capture/WARP/device recreation and preview gates ran. Samsung configure/
+listing only, both vendor trees/committed corpus and TGS16 integrity PASS.
+Twelve actual MSVC include traces + private-boundary verifier + root manual
+50-link-block/install/source/host closure accepted.909 source/config inputs and
+six gate instruments stable. All final attempts001, raw evidence preserved in
+out/part26g; root-final-boundary-review.md records manual dispositions. These
+are not clean rebuilds, performance or Samsung full-execution claims.
+
+Final report docs/PART26G_OWN_ELLIPSE_MODEL_REPORT.md. All nine rulings/costs in
+docs/superpowers/ledgers/2026-09-27-own-ellipse-model.md; plan and ignored SDD
+progress updated. Initial Task1 raw-retention miss and Task2 forbidden local
+amend/incomplete test claim are disclosed, not erased. Root owns ALL Git writes.
+The documentation-only seal leaves tested product inputs unchanged; inspect Git
+and the final ignored SDD checkpoint for publication identity on resume.
+
+Next: separately design an own Rendering-private scene stream, honest identity,
+frame/access-order/instance/viewport and pixel parity against reference; only
+then own scheduling and isolated static Avelabs acceptance. No new UI action or
+production loader switch is included in G. out/part26h-design/identity-inventory.md
+is an earlier read-only snapshot: its Task2 stubs are historical, now completed.
+Do not repeat that inventory or completed G tasks. No automation resumed.
+Host checkpoint stays clean712d454, UI/out absent and accepted Release hash
+C92F26EE8FEB4FF03F6DC7F4AFFF4B11FB48142743D1EDCCB4E213AAA81F82C2.
+
+## Historical execution detail — Part26G task/review sequence
 
 F final seal c00f686450c1fd725b39e543badd42cdf23df20c ordinary-pushed and remote
 equality verified. Do not repeat F. G spec efc12e9, controller-approved under user
@@ -44,6 +77,17 @@ accepted all findings, no new breakage/observations. Latest exact18/18,13.83s;
 Task3 complete. Transform/reference roles/absence remain semantic, not raw ID/hash
 equality. Writers/reviewers idle; docs/guarded push then one whole-stage review
 fromc00f686 and at most one combined final fix wave before fresh full gates.
+Task3 docs0fab9266752be07a9bded08d760665fc06942005 ordinary-pushed, remote
+equality/clean tree verified. Whole-stage /root/own_ellipse_model_whole_stage_review
+(gpt-5.5/high) completed c00f686..0fab926: no Critical/Important, three Minor
+include/readability findings. Single final cleanup writer
+/root/own_ellipse_model_final_cleanup (terra/medium) finished at BASE0fab926,
+three files only; root normal commit ae2163023925552763b8e48344232d091fea0e7a.
+Focused none2/2 and TG3/3 pass; root fresh TG3/3,0.61s. One scoped re-review
+by the same whole-stage reviewer accepted all three findings, no new breakage.
+Frozen final gate HEAD ae2163023925552763b8e48344232d091fea0e7a; root running
+full none/Telegram/preview then provenance/traces/boundary/manual closure.
+Do not spawn another final review/fix wave. All product writers/reviewers idle.
 Separate scratch gate preparation complete but allowlists/final gates pending.
 Task1 shared numeric conversion + sealed own authored graph in Runtime; Task2
 canonical resources + sealed prepared owner in Rendering; Task3 semantic oracle

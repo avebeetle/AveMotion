@@ -1,7 +1,8 @@
-# Part26G — own ellipse model/resources (in progress)
+# Part26G — own ellipse model/resources accepted
 
-This report is not stage acceptance. Product tasks, reviews and final gates below
-must be filled from actual evidence before claiming completion.
+Accepted private own-model/resource boundary at tested product HEAD
+ae2163023925552763b8e48344232d091fea0e7a. This is not own playback or full
+Lottie/SVG support. The final documentation-only handoff commit follows this SHA.
 
 ## Intent and boundary
 
@@ -18,12 +19,13 @@ acceptance are subsequent work. This stage is not full Lottie/SVG or Telegram pa
 
 ## Verification status
 
-- Task1 numeric/model: product077b682, test fixesb2cbff3/ab377ae/75eb1c5; task review plus three scoped fix rounds accepted, no open Important/Critical. Two direct-include Minors await final triage.
-- Task2 resource preparation: productd39fcde, tests-only fix1a2baa8; independent task review plus one scoped fix accepted. Dense-test readability Minor deferred to final triage.
+- Task1 numeric/model: product077b682, test fixesb2cbff3/ab377ae/75eb1c5; task review plus three scoped fix rounds accepted, no open Important/Critical. Direct-include Minors resolved in final cleanup.
+- Task2 resource preparation: productd39fcde, tests-only fix1a2baa8; independent task review plus one scoped fix accepted. Test-setup readability Minor resolved sufficiently in final cleanup.
 - Task3 semantic comparison: testbcffbd6, source-default fix3d8ca05; task review and one scoped fix accepted, no open findings.
-- Root full MSVC none/Telegram/Win32-preview: pending.
-- Samsung configure/listing, vendor/TGS16 integrity: pending (no Samsung build/test claim).
-- Actual compiler include/link/private-install closure and whole-stage review: pending.
+- Root full MSVC none/Telegram/Win32-preview: PASS at ae21630; 37/37 (5.38s), 84/84 (91.19s), 78/78 (96.73s), no skipped/failed tests.
+- Samsung configure/listing and both vendor trees/committed corpus/TGS16 integrity: PASS (no Samsung build/test claim).
+- Twelve actual compiler include traces, link/source ownership/private-install closure and root manual review: PASS; 909 source/config inputs and six instruments stayed identical.
+- Whole-stage c00f686..0fab926 review: no Critical/Important, three Minors. One combined final cleanup ae2163023925552763b8e48344232d091fea0e7a and one scoped re-review accepted all three; no new findings. No further review/fix wave.
 
 Pre-stage read-only host check: Avelabs clean main712d454a7c5c175ad59a3ca547c6b22ce8392da1,
 UI/out absent, accepted Release EXE SHA256
@@ -68,6 +70,74 @@ missing source-default fields were added with role/absence normalization, not
 raw identity equality. Full schema exclusions and actual low-surrogate legacy
 certification outcome are in the task report. This is not pixel/playback parity.
 
+Final cleanup changed direct standard includes and resource-test setup formatting,
+not product behavior. Raw none2/2 (0.37s), Telegram3/3 (0.66s), root fresh3/3
+(0.61s). An initial shortened none-test regex selected no tests and exited8;
+the corrected exact test names passed, original log retained. Full acceptance
+uses frozen ae2163023925552763b8e48344232d091fea0e7a and the same six hashed
+gate inputs, not these focused results alone.
+
+## Final commands and evidence
+
+Run from the repository root; wrappers establish the installed x64 VsDevCmd
+environment. All commands exited0. The first three invoke fresh configure,
+incremental `cmake --build --preset ... --parallel 4` and full
+`ctest --preset ... --output-on-failure --no-tests=error --output-junit ...`.
+
+```powershell
+out/part26g/run-preset-gate.cmd windows-msvc-direct2d ae2163023925552763b8e48344232d091fea0e7a
+out/part26g/run-preset-gate.cmd windows-msvc-telegram-debug ae2163023925552763b8e48344232d091fea0e7a
+out/part26g/run-preset-gate.cmd windows-msvc-win32-preview ae2163023925552763b8e48344232d091fea0e7a
+out/part26g/provenance-gate.cmd ae2163023925552763b8e48344232d091fea0e7a
+pwsh -NoProfile -File out/part26g/trace-includes.ps1 -EvidenceTag ae2163023925552763b8e48344232d091fea0e7a
+pwsh -NoProfile -File out/part26g/verify-boundaries.ps1 -EvidenceTag ae2163023925552763b8e48344232d091fea0e7a
+```
+
+Every final attempt is001. Raw directories
+`out/part26g/ae2163023925552763b8e48344232d091fea0e7a-*-gate-001/` contain
+commands, raw stdout/stderr, XML, exact registrations, source/instrument/graph
+hashes and success manifests. Provenance runs Samsung configure/listing only,
+`python scripts/verify_vendor.py --variant all` and
+`python scripts/generate_tgs_compatibility_corpus.py --check`.
+Include evidence is in `...-include-trace-001/`; final boundary JSON is
+`...-private-boundaries.json`. Manual disposition:
+`out/part26g/root-final-boundary-review.md`.
+All24 generated graph files were additionally copied without modification to
+`out/part26g/final-generated-graphs-ae21630/`; every copy hash matches its frozen
+success manifest, so later preset reconfiguration need not erase the G graphs.
+
+The required preview/capture/preflight/header/contract/smoke tests executed.
+Actual existing capture corpus output:75 cases,150 draw calls; preflight75 cases,
+900 draw items/870 projected. These are backend regression results, NOT a new
+own-stream/GPU pixel-equivalence result. Builds are not clean rebuilds or speed
+benchmarks. Existing rlottie.h C4251 warnings appear five times in each final
+Telegram/preview build; no new first-party warning observed in final build logs.
+
+Root reviewed50 generated library/test link blocks plus their command rules and
+variable/library closure. Runtime never links Rendering. None has no rlottie
+compile/link dependency; existing embedded miniz remains. Reference builds remain
+intentionally reference-linked. Private G headers are not installed; public
+include directory/export interfaces and reference-linked install prohibition are
+unchanged. No system installation was performed.
+
+For each of the three built presets, actual numeric/model/path/prepared traces
+have113/109/106/111 unique headers (first-party7/13/7/15), unknown0; all compiler/
+SDK roots classified. Original build graphs/objects remain unchanged after
+syntax-only traces. Exact compile commands were traced separately, not inferred
+from equal filenames or Ninja dependency records. Avelabs host checkpoint remains
+the clean SHA/absent out/unchanged accepted EXE stated above.
+
+## Next bounded stage
+
+Design a Rendering-private own scene stream consuming the sealed prepared owner,
+with honest source/instance identity and invalid Runtime handles. Prove repeated/
+reversed access, separate instances, viewport/active-range behavior, scene/plan
+and pixel comparison against the unchanged reference path. Scheduling and the
+isolated static Avelabs integration follow that proof; do not weaken the reference
+certificate or switch the public loader as a shortcut. Expand feature coverage
+only through an explicit support/parity matrix. Telegram remains the comparison
+oracle; broad parity is not inferred from this ellipse stage.
+
 ## Evidence and decisions
 
 Binding spec: docs/superpowers/specs/2026-09-27-own-ellipse-model-design.md.
@@ -77,6 +147,8 @@ SDD briefs/reports/reviews: .superpowers/sdd/2026-09-27-own-ellipse-model/.
 Raw tests and final gate instruments/evidence: out/part26g/.
 Design inventory and literal-hash evidence: out/part26g-design/.
 
-Seven initial architectural/workflow rulings plus the pre-Task2 correction of
-animated render-node dependency bits are recorded in the ledger. No performance,
-memory improvement, race-detector, zero-allocation or complete playback claim.
+All nine rulings and costs are recorded in the ledger: the seven original
+architecture/workflow choices, the pre-Task2 correction of animated render-node
+dependency bits, and final explicit future-scope deferrals without waiving any G
+verification. No performance, memory improvement, race-detector, zero-allocation
+or complete playback claim.

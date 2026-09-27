@@ -326,11 +326,15 @@ render/runtime/formats/model/testsupport, existing fixture directory.
 ## Root final gates, preflight and handoff
 
 - [x] Task1 review/fixes/STATE/ledger/ordinary guarded main push; then Task2, then Task3. SDD workspace reports retained, no duplicate live writer.
-- [ ] Final full MSVC configure/build/CTest none, Telegram, Win32-preview; explicit capture/header/contract/smoke/preflight/preview-selftest; no skipped required tests.
-- [ ] Samsung configure/listing only; both vendor trees/corpus/TGS16; no license or golden updates.
-- [ ] Actual include/link/source ownership and no Runtime->Rendering cycle; private headers uninstalled, unchanged production route/old certificate; UI hash/out absence.
-- [ ] Whole-stage review fromc00f686, at most one combined final fix wave/scoped review; fresh final gates for changed product/instruments. Record all decisions/costs and limitations.
+- [x] Final full MSVC configure/build/CTest none, Telegram, Win32-preview; explicit capture/header/contract/smoke/preflight/preview-selftest; no skipped required tests. ae21630:37/37,84/84,78/78.
+- [x] Samsung configure/listing only; both vendor trees/corpus/TGS16; no license or golden updates.
+- [x] Actual include/link/source ownership and no Runtime->Rendering cycle; private headers uninstalled, unchanged production route/old certificate; UI hash/out absence. Twelve actual traces and root manual closure accepted.
+- [x] Whole-stage review fromc00f686, at most one combined final fix wave/scoped review; fresh final gates for changed product/instruments. All nine decisions/costs and limitations recorded.
 - [ ] Separate next own stream/identity/frame/pixel design, then isolated static UI acceptance. No new automation.
+
+The remaining unchecked item is the next-stage handoff, not an unrun G gate.
+G accepted at ae2163023925552763b8e48344232d091fea0e7a; report and durable ledger
+record exact final results, deviations, all nine rulings/costs and scope limits.
 
 Preflight self-review maps numeric policy/authored rows to Task1, render resources/
 sealed ownership/helper extraction to Task2, independent semantic matrix to Task3,
