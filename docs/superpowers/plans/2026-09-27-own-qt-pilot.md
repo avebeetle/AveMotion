@@ -150,25 +150,25 @@ Avelabs docs/build/own-motion-lab.md may receive results. No new product scope.
 **Interfaces:** consumes reviewed Task1 mode/targets and recorded commands.
 Produces honest evidence of static own app, actual UI pixels and preserved base.
 
-- [ ] Step 1: Freeze product SHAs, run independent whole-stage review of
+- [x] Step 1: Freeze product SHAs, run independent whole-stage review of
   Avelabs712d454..HEAD and AveMotion docs stage. Resolve findings with at most
   one combined final fix and one scoped re-review, preserve failed attempts.
-- [ ] Step 2: Fresh full reference and own standalone QtTest runs; capture own
+- [x] Step 2: Fresh full reference and own standalone QtTest runs; capture own
   page AFTER its loaded animated fixture at two different seek positions.
   View PNGs, verify visible own badge/content and changed position. Qt grab is
   not a native desktop/DPI/hardware acceptance. GUI tests serial, own processes.
-- [ ] Step 3: Configure isolated static own app under
+- [x] Step 3: Configure isolated static own app under
   build/cmake/part26k-own-static using existing Qt6.10 /MT dependencies, build
   AvelabsUI and own smoke, run CTest. Preserve configure/build/smoke logs.
   Verify generated app link closure has no rlottie/avemotion_reference, no
   install scripts and no Qt/CRT DLL imports via existing static audit tool.
   Check default OFF configuration still excludes engine; don't build accepted
   normal target. Do not claim static UI runtime from dynamic QtTest evidence.
-- [ ] Step 4: Fresh engine full none and explicit windows-msvc-win32-preview
+- [x] Step 4: Fresh engine full none and explicit windows-msvc-win32-preview
   CTest under VsDevCmd, sequential after host workers finish; no engine source
   delta expected. Preserve exact source hashes rather than attributing tests
   to earlier binaries. No repeated full Samsung gate for host-only change.
-- [ ] Step 5: Record measured renderer target/device/readback counters and
+- [x] Step 5: Record measured renderer target/device/readback counters and
   observed render times for bounded test cases, not an A/B speedup. Recheck
   accepted Release SHA, no Avelabs/out, both clean scoped Git diffs/remotes.
   Root updates ledger/STATE/report, normal commits and guarded ordinary pushes.

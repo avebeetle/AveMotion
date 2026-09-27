@@ -2,21 +2,34 @@
 
 Updated: 2026-09-27
 
-## Current work — Part26K own Qt visual pilot
+## Current handoff — Part26K own Qt visual pilot complete
 
 J is complete; user now requested the own visual path in Avelabs. Bases
 AveMotion1bab64b / Avelabs712d454, both clean/equal remotes at preflight.
 Spec9170bc5 and plan/ledger dated2026-09-27-own-qt-pilot are controller-approved
 under delegated authority. Task1 complete: host7e0ec58 + testfixe701e3f,
-independent task review/fix1 accepted. Reference3/3(QtTest42), own4/4(QtTest52),
-then added translucent-pixel test own renderer10/10; final full suites pending.
-Boundary31PASS, all failed attempts/mutation evidence retained. One Minor
-cached in-place mode-switch issue deferred to whole review; fresh trees required.
-Task2 review/static/visual/full gates and handoff now pending. No new engine product API,
-primitive/scheduler/worker, no rlottie in own mode. Defaultreference preserved.
-Accepted Avelabs build/Release stays byte-identical; isolated build/cmake and
-build/checks only, no out recreation/install/dependency/Windows/automation.
-Check new ledger/live agents before proceeding. Do not repeat completed J.
+independent task review/fix1 accepted. Whole-stage review has no Critical/
+Important; one cached in-place mode-switch Minor deferred under fresh-tree use.
+Task2 final frozen heads hoste701e3f/engineecac1a5 (engine docs-only stage):
+reference3/3,6.45s(QtTest42); own4/4,7.13s(QtTest53); none42/42,5.18s;
+preview87/87,106.34s, all zero fail/skip/disabled. Incremental builds, not clean.
+Fresh static Qt6.10 /MT app+ownsmoke built in host build/cmake/part26k-own-static;
+CTest1/1,0.09s, actual app/smoke graph/link/import audit accepted, no rlottie/
+Reference build/link and no Qt/CRT DLL imports. App SHA256613550DF...F3A2F.
+Root scratch audit initially used wrong smoke EXE path; original failure/raw
+retained, corrected audit-only completion passed with517 selected stable inputs.
+Boundary31PASS; no product fix or test weakening for that instrumentation error.
+Dynamic Qt page grabs show actual own pixels/movement; NOT static app native
+desktop/DPI acceptance. Device/target reuse measured; no speedup/hardware claim.
+No engine product API/primitive/scheduler/worker added, default reference kept.
+Protected accepted EXE C92F26EE...82C2 unchanged; host out absent. No install,
+dependencies/Windows/automation/vendor/golden changes. Native HRESULT/device-loss
+injection remains unverified; current own input is only supported ellipse subset.
+Report docs/PART26K_OWN_QT_PILOT_REPORT.md; raw/SDD retained. Docs-only handoff
+seal records final published SHAs without rebuilding unchanged product inputs.
+Next separately choose measured own feature coverage toward a provenance-cleared
+sticker using this same UI. No new shell/scheduler or unmeasured native-output
+rewrite. Do not repeat completed J/K or claim full own SVG/Lottie/sticker support.
 
 ## Previous handoff — Part26J own Player bridge complete
 
