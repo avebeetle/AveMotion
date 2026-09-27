@@ -836,6 +836,32 @@ if(BUILD_TESTING)
                 COMMAND avemotion_direct2d_capture_tests)
             set_tests_properties(avemotion.direct2d.capture PROPERTIES
                 TIMEOUT 300)
+
+            add_executable(avemotion_own_native_ellipse_stream_capture_tests
+                tests/own_native_ellipse_stream_capture_tests.cpp)
+            target_include_directories(avemotion_own_native_ellipse_stream_capture_tests PRIVATE
+                "${CMAKE_CURRENT_SOURCE_DIR}/src/render"
+                "${CMAKE_CURRENT_SOURCE_DIR}/src/runtime"
+                "${CMAKE_CURRENT_SOURCE_DIR}/src/formats"
+                "${CMAKE_CURRENT_SOURCE_DIR}/src/model"
+                "${CMAKE_CURRENT_SOURCE_DIR}/tests"
+                "${CMAKE_CURRENT_SOURCE_DIR}/tests/support"
+                "${AVEMOTION_RLOTTIE_INCLUDE_DIR}"
+                "${AVEMOTION_RLOTTIE_INTERNAL_LOTTIE_DIR}"
+                "${AVEMOTION_RLOTTIE_INTERNAL_VECTOR_DIR}"
+                "${AVEMOTION_RLOTTIE_INTERNAL_PIXMAN_DIR}"
+                "${AVEMOTION_RLOTTIE_GENERATED_INCLUDE_DIR}")
+            target_link_libraries(avemotion_own_native_ellipse_stream_capture_tests PRIVATE
+                AveMotion::Direct2D AveMotion::Rendering rlottie::rlottie
+                Threads::Threads d3d11)
+            target_compile_definitions(avemotion_own_native_ellipse_stream_capture_tests PRIVATE
+                AVEMOTION_FIXTURE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures"
+                AVEMOTION_OWN_CAPTURE_ARTIFACT_DIR="${CMAKE_CURRENT_BINARY_DIR}/own-native-ellipse-capture-artifacts")
+            avemotion_set_warnings(avemotion_own_native_ellipse_stream_capture_tests)
+            add_test(NAME avemotion.own_native_ellipse_stream_capture
+                COMMAND avemotion_own_native_ellipse_stream_capture_tests)
+            set_tests_properties(avemotion.own_native_ellipse_stream_capture PROPERTIES
+                TIMEOUT 300)
         endif()
     endif()
     if(TARGET avemotion_win32_preview)
