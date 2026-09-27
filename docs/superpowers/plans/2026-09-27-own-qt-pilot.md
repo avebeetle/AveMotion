@@ -119,7 +119,9 @@ several short RED/GREEN cycles, not a helper checkpoint presented as visible UI.
   resize/aspect, stale load/publication, blocked shutdown and diagnostics bounds.
   Own-render error test can use a valid admitted asset whose finite inputs emit
   nonrepresentable geometry (record reason) rather than adding test-only product
-  fail switches. An explicit subsequent valid load must recover.
+  fail switches. If admission makes that unreachable, use the spec's bounded
+  private test-access friend and real Viewport refusal at renderBoundary; do not
+  claim native HRESULT injection. An explicit subsequent valid load must recover.
 
 - [ ] Step 7: Build own static smoke that runs real prepare/playback/render
   against basic JSON and checks nonempty pixels; no QtTest in static app.

@@ -142,3 +142,17 @@ Single visible vertical slice; no new primitive, scheduler or public loader.
 Readback is intentionally an experimental output boundary. The accepted UI
 package and reference mode remain intact. Full sticker coverage and direct
 native presentation require separate measured follow-on decisions.
+
+## Testability addendum — render-fault scheduling
+
+Controller-approved under delegated authority during Task1: admission clamps
+finite geometry and preparation rejects invalid assets early, so a naturally
+admitted asset that fails only on render is not assumed to exist. If the bounded
+probe finds none, permit one private MotionWorkerTestAccess friendship (no
+runtime code or product failure switch). The test definition alone can inject an
+invalid physical viewport at the existing renderBoundary after the first image
+of a multi-instance batch. The real renderer then returns its real Viewport
+error; assert no partial publication, one error, stable counters/no automatic
+retry, and explicit valid-load recovery. This verifies worker fault handling,
+not simulated native device loss; HRESULT/device-loss recovery remains a named
+manual/uninjected limitation. No factory, fake renderer or new host API.
