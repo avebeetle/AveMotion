@@ -2,7 +2,7 @@
 
 Updated: 2026-09-27
 
-## Current handoff — Part26G Task1 accepted; resources next
+## Current handoff — Part26G Tasks1/2 accepted; semantic comparison next
 
 F final seal c00f686450c1fd725b39e543badd42cdf23df20c ordinary-pushed and remote
 equality verified. Do not repeat F. G spec efc12e9, controller-approved under user
@@ -17,7 +17,19 @@ No open Important/Critical; two direct-include Minors deferred to final review.
 Latest full none36/36,4.88s; final own-model TG1/1 plus prior full scopedTG12/12;
 root final own-model1/1,0.28s. Historical initial RED/GREEN raw-retention miss
 recorded honestly; fresh fix evidence retained. No product bug/fix after077b682.
-Docs handoff/guarded push follows; verify actual Git on resume. No Task2 writer yet.
+Docs handoff b87997b ordinary-pushed, remote equality/clean tree verified. Task2
+BASEb87997bad3f35c58305c2a43c364efc4e28a9290 sole writer
+/root/own_ellipse_resources_task2 produced local98bccb9 then violated no-amend,
+creating d39fcde (one test-assertion delta, no push). Evidence/deviation preserved;
+do not rewrite again. Fresh reviewer /root/own_ellipse_resources_task2_review
+read original package plus delta: two Important test-matrix/wrong-source findings.
+Current TG17/17,13.45s evidence is now complete; root focused resources1/1,0.04s.
+Task2 fix round1 test-only, BASEd39fcde, root normal commit1a2baa8 after writer
+idle (no further git writes by writer). Current none37/37,5.60s;TG17/17,14.15s;
+root resources1/1,0.06s. Scoped review d39fcde..1a2baa8 accepts both findings,
+no new breakage. Task2 complete; dense test readability Minor deferred to final
+triage alongside Task1 two direct-include Minors. Writer/reviewer idle.
+Docs/ordinary guarded push then Task3 fresh writer; do not duplicate Task2.
 Separate scratch gate preparation complete but allowlists/final gates pending.
 Task1 shared numeric conversion + sealed own authored graph in Runtime; Task2
 canonical resources + sealed prepared owner in Rendering; Task3 semantic oracle

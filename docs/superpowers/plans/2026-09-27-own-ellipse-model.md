@@ -202,14 +202,14 @@ change old scan call sites. Path helper extracts the old function including hash
 and control bounds unchanged, no transform-order/fingerprint changes. Fresh-empty
 destination is the private call precondition and all call sites must satisfy it.
 
-- [ ] **Step 1: Prepared-resource stub functional RED.** Add Rendering sources
+- [x] **Step 1: Prepared-resource stub functional RED.** Add Rendering sources
   unconditionally; Rendering private include runtime/formats/model for factory,
   no Runtime->Rendering edge. Test target avemotion_own_native_ellipse_resources_tests /
   avemotion.render.own_native_ellipse_resources links Rendering+Threads, fixture/TGS
   directories and private headers. Build successful own authored model then stub
   preparation; observe `own resources prepared` failing before resource construction.
 
-- [ ] **Step 2: Extract helpers and construct resources.** Share Model hashes/
+- [x] **Step 2: Extract helpers and construct resources.** Share Model hashes/
   summary and stream path materializer mechanically. Build the exact two-layer/
   one-node/geometry/paint/default-loop-clip convention from spec; model initially
   private copy of authored, revision remains1, invalid AssetHandle. Literal root
@@ -226,7 +226,7 @@ destination is the private call precondition and all call sites must satisfy it.
   summary. Binder verifies final model, then freeze and publish with retained owner.
   Never call reference preparation, NativeEllipseCertificate or a full timeline scan.
 
-- [ ] **Step 3: Literal resources and fail-atomic lifetime tests.** Unit static
+- [x] **Step 3: Literal resources and fail-atomic lifetime tests.** Unit static
   position0/0,size2/2: verbs MoveTo,4 CubicTo,Close,13 points
   (0,-1),(k,-1),(1,-k),(1,0),(1,k),(k,1),(0,1),(-k,1),(-1,k),(-1,0),
   (-1,-k),(-k,-1),(0,-1), k=0.5522847498F, bounds[-1,-1,1,1]. Independent
@@ -261,7 +261,7 @@ destination is the private call precondition and all call sites must satisfy it.
   no cross-sharing of mutable models, and actual immutable static pointers remain
   stable across repeated application. No TSan or zero-allocation claim.
 
-- [ ] **Step 4: GREEN and old stream regression.** Full none once; Telegram new
+- [x] **Step 4: GREEN and old stream regression.** Full none once; Telegram new
   resources/numeric/model/F tests and unchanged old stream/lifecycle/binding/certificate
   plus model/canonical/plan tests. Preserve all old golden files. Inspect helper
   diff identical arithmetic, CMake dependency direction/private export. Scoped commit

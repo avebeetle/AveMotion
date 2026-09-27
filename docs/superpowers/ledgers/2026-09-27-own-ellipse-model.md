@@ -90,7 +90,7 @@ the worker report; no claim of warning-free complete clean builds. Full final
 platform gates remain required after all tasks/fixes.
 
 - [x] Task 1: numeric extraction, sealed authored model, literal/evaluator/isolation tests; fresh independent task review.
-- [ ] Task 2: canonical resources, sealed prepared owner, helper extraction and ownership tests; fresh independent task review.
+- [x] Task 2: canonical resources, sealed prepared owner, helper extraction and ownership tests; fresh independent task review.
 - [ ] Task 3: semantic oracle comparison, comparator mutation witnesses and lifetime; fresh independent task review.
 - [ ] Root: full platform/provenance/private-boundary gates, whole-stage review, report and next written design.
 
@@ -111,3 +111,64 @@ allowlist/final runs still pending. Model routing standard gpt-5.6-terra/high fo
 implementation and task review; whole-stage gpt-5.5/high. No automatic retries of
 previously unsupported gpt-6 presets. Root owns docs/push, workers scoped commits
 only. No SDD report force-add and no workspace deletion. UI remains out of scope.
+
+Task1 handoff b87997bad3f35c58305c2a43c364efc4e28a9290 ordinary-pushed; remote
+equality and clean tree verified before Task2. Task2 sole writer
+/root/own_ellipse_resources_task2 is active at that BASE. Root checked retained
+functional RED: out/part26g/task-2/red-functional-build.* records successful
+build; red-functional.exit.txt is1 and red-functional.stderr.txt is exactly
+`own resources prepared`. Earlier compiler/shell failures are separate and are
+not the functional RED. Resource implementation and acceptance are still pending.
+
+The parallel read-only future-identity inventory is complete at
+out/part26h-design/identity-inventory.md. No existing ISceneSampler/MotionService
+interface was found; Player is tied to Runtime Instance. The inventory is input
+to a separate post-G design, not an implemented host/playback adapter. Its Task2
+stub observations describe that audit's snapshot, not the final resource state.
+
+Task2 execution deviation: writer reported98bccb9, then used forbidden local
+commit --amend to create d39fcde386683d4e3c36db61939702a1965f5315 while root had
+already dispatched review. Root verified reflog: only one test assertion was
+extended; product code is identical. Original review package and explicit small
+delta remain in SDD. No push occurred. User notified; no attempt to conceal or
+rewrite history again. Same independent reviewer handles original plus delta;
+writer is restricted to evidence-only until concrete review findings are ready.
+
+The reported TG11/11 was not the required complete set: own-model/F admission,
+asset-model/canonical/model-plan checks were omitted by its regex, and it preceded
+the last test assertion. Evidence-only current build/exact17 named checks and
+full commands/cache/warning disclosure requested. Latest full none37/37,5.13s
+is retained, not a final platform acceptance. Task2 remains under review.
+
+Task2 current d39fcde TG required matrix is now complete:17/17,13.45s after an
+exact-name inventory and fresh build; commands/cache/environment/raw retained in
+telegram-required-17-current.*. Root fresh resource test1/1,0.04s. Worker report
+explicitly corrects the earlier completeness claim and discloses amend/C4251.
+
+Task2 independent review task-2-review.md rejects acceptance on two Important
+test findings: incomplete required all-field/default/stat/endpoint/alias/distinct-
+source/failure-stability assertions; wrong-source test copies an already applied
+scene rather than proving fresh rejection. Original writer resumed fix round1/5,
+FIX_BASEd39fcde, tests only. No production defect established. A readability Minor
+in the touched dense test functions may be addressed alongside those assertions;
+otherwise final triage, not a separate task loop. Writer now cannot mutate Git:
+root will make the next normal scoped commit after the writer is idle and its
+fresh test evidence/report are complete. No amend, duplicate review or push.
+
+Task2 fix round1 new normal commit1a2baa8c87f94bcb335f9c48a87897e43a1199a7 was
+made by root after writer idle; only new resource tests changed. Fresh raw full
+none37/37,5.60s; exact Telegram17/17,14.15s; root resources1/1,0.06s. Initial
+fix attempts exposed a test-only dangling reference, corrected by retaining its
+prepared owner; raw failing attempts preserved. No production fix. Same reviewer
+is checking only d39fcde..1a2baa8 and original findings. Acceptance still pending.
+
+Task2 fix round1/5 (2 addressed,0 open; d39fcde..1a2baa8) accepted in
+task-2-rereview-1.md. No new breakage. Task2: complete (b87997b..1a2baa8,
+initial task review plus scoped corrections accepted). Minor (deferred): dense
+resource test cases remain less readable than the new row/stat helpers; final
+whole-stage triage only. No product defect/fix established. Root also checked
+exact materializer/bounds function bodies against c00f686 and protected-source
+diff; scratch proof out/part26g-design/root-helper-check.md. This does not replace
+final platform/closure gates. All writers/reviewers idle; Task3 dispatch after
+docs/guarded ordinary push. Historical amend and incomplete-test claims remain
+explicit above; no history rewrite or evidence cleanup used to hide them.

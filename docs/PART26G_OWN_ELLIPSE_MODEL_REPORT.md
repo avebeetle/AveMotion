@@ -19,7 +19,7 @@ acceptance are subsequent work. This stage is not full Lottie/SVG or Telegram pa
 ## Verification status
 
 - Task1 numeric/model: product077b682, test fixesb2cbff3/ab377ae/75eb1c5; task review plus three scoped fix rounds accepted, no open Important/Critical. Two direct-include Minors await final triage.
-- Task2 resource preparation and review: pending.
+- Task2 resource preparation: productd39fcde, tests-only fix1a2baa8; independent task review plus one scoped fix accepted. Dense-test readability Minor deferred to final triage.
 - Task3 independent semantic comparison and review: pending.
 - Root full MSVC none/Telegram/Win32-preview: pending.
 - Samsung configure/listing, vendor/TGS16 integrity: pending (no Samsung build/test claim).
@@ -38,6 +38,23 @@ retained raw despite instruction; this evidence-preservation deviation is explic
 Fresh fix and complete regression outputs are file-backed. Test-only fixture/
 canonical-descriptor failures were corrected, not hidden; no product bug found
 after initial implementation. Existing vendor compiler warnings are reported.
+
+Task2 raw compiling-stub RED is retained (build0, assertion exit1 `own resources
+prepared`). Final full none37/37,5.60s; exact named TG17/17,14.15s; root focused
+resources1/1,0.06s. The model retains exact authored data, independently checked
+resource hashes/defaults and immutable aliases after caller-owner destruction.
+Invalid/collapsed static geometry and fresh wrong-source application are checked.
+The old materializer/bounds bodies are unchanged apart from extraction.
+
+Process deviations: writer first claimed an incomplete TG11/11 set was complete,
+then used a forbidden local amend98bccb9→d39fcde after review dispatch. No push
+had occurred. Root disclosed this, retained original package and one-assertion
+delta, restricted writer Git access by instruction, obtained the actual current
+17-test set, and made the subsequent normal fix commit itself while writer idle.
+The same independent reviewer covered original plus delta and then the fix. No
+additional history rewrite or hidden evidence regeneration. First fix test failures
+were a dangling test reference, fixed by retaining its owner; raw outputs remain.
+These task checks are not the pending whole-stage/full-platform acceptance.
 
 ## Evidence and decisions
 
