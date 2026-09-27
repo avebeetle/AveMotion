@@ -244,12 +244,43 @@ void completionAndResources(const std::string& json) {
     }
     require(scene && scene->assetModel && plan.sourceScene && plan.sourceScene->assetModel,
         "retained own scene and plan survive Player owner destruction");
+    auto other = makePlayback(json);
+    other->setControlledProgress(0.25);
+    auto otherFirstScene = other->evaluateAt(at(2), 512, 512);
+    require(bool(otherFirstScene) && otherFirstScene.scene->instanceId != scene->instanceId
+        && !otherFirstScene.scene->instanceHandle.valid()
+        && !scene->instanceHandle.valid(),
+        "second real own playback has distinct own scene identity");
+    auto otherFirst = planner.build(*otherFirstScene.scene);
+    require(bool(otherFirst) && otherFirst.plan.firstPlan
+        && otherFirst.plan.stamp.planSequence == 1,
+        "second own identity starts independent planner sequence");
+    auto otherSecondScene = other->evaluateAt(at(2), 512, 512);
+    require(bool(otherSecondScene)
+        && otherSecondScene.scene->evaluationSequence == 2,
+        "second own playback advances its real scene sequence");
+    auto otherSecond = planner.build(*otherSecondScene.scene);
+    require(bool(otherSecond) && !otherSecond.plan.firstPlan
+        && otherSecond.plan.stamp.planSequence == 2,
+        "second own planner state continues before retirement");
     const auto id = scene->instanceId;
     planner.forgetInstance(id);
     auto rebuilt = planner.build(scene);
     require(bool(rebuilt) && rebuilt.plan.firstPlan
         && rebuilt.plan.stamp.planSequence == 1,
-        "planner forget rebuilds only retired own resource state");
+        "planner forget restarts retired own resource state");
+    auto otherThirdScene = other->evaluateAt(at(2), 512, 512);
+    require(bool(otherThirdScene)
+        && otherThirdScene.scene->evaluationSequence == 3,
+        "untouched own playback produces next real scene");
+    auto otherThird = planner.build(*otherThirdScene.scene);
+    require(bool(otherThird) && !otherThird.plan.firstPlan
+        && otherThird.plan.stamp.planSequence == 3
+        && otherThird.plan.stamp.instanceId == otherFirst.plan.stamp.instanceId
+        && otherThird.plan.fingerprints.plan == otherSecond.plan.fingerprints.plan
+        && !otherThird.plan.visualChanged
+        && otherThird.plan.statistics.geometryUpdateCount == 0,
+        "forgetting one own ID preserves other ID sequence and resources");
     require(host.requests > 0 && host.schedules > 0 && host.cancels > 0,
         "registered owner routes host wakeup and cancellation callbacks");
 }
