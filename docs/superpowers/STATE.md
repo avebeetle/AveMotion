@@ -2,7 +2,22 @@
 
 Updated: 2026-09-27
 
-## Current handoff — Part26G accepted; own scene-stream design next
+## Current handoff — Part26H own scene stream approved; implementation next
+
+G complete at2606632; do not repeat. H spec2d739f5 at
+docs/superpowers/specs/2026-09-27-own-ellipse-stream-design.md; controller-approved
+plan docs/superpowers/plans/2026-09-27-own-ellipse-stream.md and durable ledger
+docs/superpowers/ledgers/2026-09-27-own-ellipse-stream.md. Delegated SDD: Task1 own
+stream/lifecycle, Task2 ordinary scene/plan parity, Task3 WARP/CPU pixels; then
+independent whole-stage review and fresh full platform/private closure gates.
+Root owns ALL Git writes; one product writer. H own-only planner/backend domains,
+unique nonrecycled IDs, invalid Runtime handles. No public loader or UI changes.
+Raw/SDD retained; no automation resumed. Task1 not yet dispatched at this checkpoint.
+Baseline none37/37 under VsDevCmd; prior plain-shell compiler discovery failure
+retained, not product regression/functional RED. Current SDD is
+.superpowers/sdd/2026-09-27-own-ellipse-stream/progress.md.
+
+## Previous handoff — Part26G accepted
 
 G product Tasks1–3 and all task/scoped reviews accepted. Whole-stage review
 c00f686..0fab926 found no Critical/Important; single final cleanup
