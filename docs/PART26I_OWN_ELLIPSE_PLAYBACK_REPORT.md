@@ -1,7 +1,9 @@
 # Part26I — own ellipse playback
 
-Status: in progress. Both task reviews accepted; whole-stage/frozen final gates
-are not yet complete. Do not interpret this checkpoint as final acceptance.
+Status: complete. Final tested source/test HEAD:
+`cd55356d9cb24668baaf486f39506d8d88d547de`. Both tasks independently accepted,
+one whole-stage review, one tests-only final fix and one scoped re-review done.
+Fresh frozen platform and dependency gates below passed before this docs seal.
 
 ## Scope
 
@@ -38,12 +40,87 @@ Further architectural decisions will likewise inspect their relevant source.
   Initial missing test include and wrong expected trace count retained, without
   product-policy changes. Initial Telegram vendor C4251 warning also retained.
 
-## Pending final proof
+## Final review and frozen proof
 
-Whole-stage review and frozen-HEAD full none/Telegram/Win32
-preview gates, Samsung targeted old/new playback, actual include traces and
-manual link/install/host checks remain required. Raw evidence belongs to
-out/part26i, task reviews and recovery ledger to this plan's ignored SDD directory.
+Whole-stage review345f1b6..10f29ba: no Critical/Important finding. One Minor proof
+gap was accepted: Instance used a first-party mapping calculation, so it was not
+the requested direct Telegram mapping oracle. Commitcd55356 changes only that
+test: independent cache-disabled ordinary `rlottie::Animation` supplies duration,
+rate and `frameAtPos`; its frames now select the fresh ordinary scenes. Nonfinite
+input is independently normalized to0 at our boundary. Shared snapshots remain
+wiring evidence. Root fresh focused2/2,3.15s; exactly one scoped re-review approved
+the fix with no new finding. No new production bug/RED claim is made for this
+proof correction. Two vendor C4251 diagnostics remain disclosed, not suppressed.
+
+Sequential final MSVC configure/incremental-build/CTest at frozen cd55356:
+
+| Preset | Scope | Passed | CTest time |
+| --- | --- | --- | --- |
+| windows-msvc-direct2d | full no-reference | 40/40 | 4.90s |
+| windows-msvc-telegram-debug | full Telegram | 89/89 | 104.76s |
+| windows-msvc-win32-preview | full, including capture/WARP/device recreation | 84/84 | 109.20s |
+| windows-msvc-samsung-debug | shared/old/own playback, mapping, Player only | 5/5 | 0.42s |
+
+All exit0, zero skips/failures; every final attempt001. These are not clean rebuild
+or speed measurements. None/TG/Samsung incremental builds had no work; preview
+rebuilt61steps and printed the inherited Telegram C4251. Known unrelated full
+Samsung scene/plan Polystar failures are not relabeled green by this targeted run.
+Both vendors and committed corpus integrity PASS; TGS corpus check16assets PASS.
+New matrix840 direct ordinary scene/plan comparisons passed. Unchanged H gates
+also passed:7920semantic comparisons/12mutation witnesses and180WARP/CPU cases
+(160visible/20empty), including cache/lifetime behavior. Existing D2D capture75
+cases and Win32 preview selftest passed; these are not hardware GPU proof.
+
+Exact reproducible commands from the repo root (scripts initialize VsDevCmd in
+the same process; raw command arguments/exit codes are retained per attempt):
+
+```powershell
+$evidenceTag = 'cd55356d9cb24668baaf486f39506d8d88d547de'
+pwsh -NoProfile -File out/part26i/gate-evidence.ps1 -Mode Gate -Preset windows-msvc-direct2d -EvidenceTag $evidenceTag
+pwsh -NoProfile -File out/part26i/gate-evidence.ps1 -Mode Gate -Preset windows-msvc-telegram-debug -EvidenceTag $evidenceTag
+pwsh -NoProfile -File out/part26i/gate-evidence.ps1 -Mode Gate -Preset windows-msvc-win32-preview -EvidenceTag $evidenceTag
+pwsh -NoProfile -File out/part26i/gate-evidence.ps1 -Mode Samsung -EvidenceTag $evidenceTag
+pwsh -NoProfile -File out/part26i/trace-includes.ps1 -EvidenceTag $evidenceTag
+```
+
+Scripts require the supplied HEAD to be checked out, so later docs-only seals
+must use a new HEAD tag for a new run, never reuse the old evidence identity.
+Actual nested commands: `cmake --preset PRESET`, `cmake --build --preset PRESET
+--parallel 4`, `ctest --preset PRESET --output-on-failure --no-tests=error
+--output-junit ABSOLUTE_PATH`; Samsung uses the five specified targets/CTest
+names. Integrity: `python scripts/verify_vendor.py --variant all` and
+`python scripts/generate_tgs_compatibility_corpus.py --check`.
+
+Evidence: `out/part26i/cd55356d9cb24668baaf486f39506d8d88d547de-PRESET-gate-001`
+and `...-include-trace-001`, raw stdout/stderr/JUnit/graphs/identities/manifests;
+task/final reviews in `.superpowers/sdd/2026-09-27-own-ellipse-playback`.
+Manual disposition: `out/part26i/root-boundary-review.md`. Successful-test JUnit
+output can be truncated; full CTest LastTest logs are retained separately in
+`out/part26i/cd55356d9cb24668baaf486f39506d8d88d547de-full-ctest-logs-001`.
+
+## Dependency and host boundary
+
+Actual new-source MSVC include traces in none and Telegram: PlaybackControl77
+headers (3first-party/44MSVC/30SDK), own wrapper115 (16/67/32);0unknown and no
+included vendor/reference/rapidjson header. Telegram Runtime still inherits
+vendor search paths, but the new control unit does not include those headers.
+Original objects/graphs and926source/config+5instrument hashes stayed unchanged
+through every final run. Root inspected regenerated no-ref archive/test links,
+exported interfaces, header installation and reference install prohibition: no
+new public header/interface or vendor dependency in no-ref playback closure.
+No actual install/installed-consumer test or /MT host acceptance is claimed.
+
+Avelabs stayed clean at712d454a7c5c175ad59a3ca547c6b22ce8392da1, UI/out absent.
+Accepted Release EXE SHA256 remained
+C92F26EE8FEB4FF03F6DC7F4AFFF4B11FB48142743D1EDCCB4E213AAA81F82C2.
+No host edits/build/GUI, public Runtime loader, Player, backend, vendor, fixture
+or golden changes. No schedule resumed; raw/SDD evidence retained.
+
+Every final reviewer limitation was explicitly dispositioned: fresh in-scope
+tests/closure/integrity/host checks above; legacy timing quirks deliberately
+preserved; scheduler/host/mixed-namespace/concurrency/cache-eviction guarantees
+deferred. Allocation exceptions/counter exhaustion injection remain untested
+limits; forwarding existing typed H errors adds no new recovery promise.
 
 ## Decisions and remaining boundary
 

@@ -53,3 +53,34 @@ a source-inspection checkpoint at architecture decisions, not a new automation.
 Local pinned Telegram source already establishes duration/mapping. Avelabs host
 inventory confirms existing clock/QTimer/worker/mailbox boundary; scheduling and
 host adaptation remain next design, not extra scope in this control block.
+
+## Final acceptance
+
+Whole-stage345f1b6..10f29ba reviewed:0Critical/Important; one Minor direct ordinary
+mapping proof gap. Single tests-only fixcd55356d9cb24668baaf486f39506d8d88d547de
+now uses cache-disabled Telegram Animation duration/rate/frameAtPos and ordinary
+scene selection, while snapshots stay wiring proof. Worker2/2,840comparisons;
+root2/2,3.15s; exactly one scoped re-review Approved with no new finding. No
+production bug or new RED claim for this evidence correction. Two vendor C4251
+warnings retained/deferred; no new Ruling needed because spec already required
+direct vendor proof. All three preflight rulings and their costs remain current.
+
+Frozen final cd55356 sequential configure/incremental build/full CTest:
+none40/40,4.90s;TG89/89,104.76s;Win32-preview84/84,109.20s;Samsung targeted5/5,
+0.42s.0skips/failures, allattempt001. Vendor/corpus and16TGS integrity PASS.
+Actual two-source traces none/TG77/115headers,0unknown/vendor/reference includes,
+926source/config+5instrument hashes stable; original generated graphs/objects
+unchanged. Root manual links/exports/install/Runtime-guard diff accepted. These
+are DebugMDd gates, not clean rebuild, installed-consumer or /MT host proof.
+
+Final-review declined items resolved via named in-scope evidence or explicitly
+excluded guarantees in report/root-boundary-review.md. No silent assumption of
+allocation recovery, exhausted-counter injection, same-object concurrency,
+automatic cache retirement, hardware GPU, TSan, performance or full Lottie/SVG.
+H7920semantic/12mutation and180pixel cases pass unchanged; own playback840cases.
+Host read-only checkpoint again clean712d454, UI/out absent, same accepted EXE.
+No host edits, goldens/vendor changes, new dependency or automation action.
+
+StageI complete; final report contains commands, exact frozen SHA, raw evidence
+paths, limitations and next minimal scheduler/host design. Root docs seal/push
+uses source/instrument identity check; final published SHA in retained SDD.

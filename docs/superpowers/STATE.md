@@ -2,7 +2,7 @@
 
 Updated: 2026-09-27
 
-## Current work — Part26I own ellipse playback
+## Current handoff — Part26I own ellipse playback complete
 
 H complete at345f1b6; do not repeat. I design3725291 and plan/durable ledger dated
 2026-09-27-own-ellipse-playback are controller-approved under user delegation.
@@ -15,9 +15,31 @@ Samsung scoped4/4;root focusedTG4/4. Initial no-VS nested configure failure and
 setup RED registration miss retained/disclosed. Vendor C4251 Minor, no open
 Critical/Important. Task2 complete9f56f29, independent spec/quality Approved;
 none40/40,4.89s;TG89/89,102.33s;Samsung own1/1;root fresh2/2,840 comparisons.
-Two test setup/bookkeeping failures retained, no product workaround. Next one
-whole-stage review and frozen full platform/include/link/install/host gates.
-No automation resumed. SDD workspace for this plan records live execution.
+Two test setup/bookkeeping failures retained, no product workaround. Final tested
+HEADcd55356d9cb24668baaf486f39506d8d88d547de. Whole-stage review had no Critical/
+Important; one Minor direct-Telegram mapping proof gap fixed in tests only by
+cd55356 and exactly one scoped re-review approved. Root focused2/2,3.15s.
+
+Fresh frozen final gates: none40/40,4.90s;Telegram89/89,104.76s;explicit Win32-
+preview84/84,109.20s;Samsung targeted5/5,0.42s, all zero skips/failures. Every
+attempt001; configure/incremental build, not clean rebuild. Both vendors/corpus
+and16TGS integrity PASS. Existing H7920comparisons/12witnesses and180WARP/CPU
+cases pass unchanged; new direct ordinary playback differential840comparisons.
+Telegram C4251 repeated in preview; historical Samsung warning retained.
+
+Actual new-source includes: control77headers,wrapper115 on none/TG,0unknown or
+vendor/reference includes;926source/config+5instrument hashes stable. Root actual
+link/export/install closure accepted, no actual installed-consumer or /MT host
+test claimed. Every reviewer limitation dispositioned in ignored root boundary
+report. Avelabs remains clean712d454/out absent/accepted Release hash unchanged.
+Report docs/PART26I_OWN_ELLIPSE_PLAYBACK_REPORT.md; spec/plan/ledger and retained
+SDD/out evidence dated2026-09-27-own-ellipse-playback. No automation resumed.
+
+Next separately design minimal scheduling/host adaptation using existing Player
+and Avelabs event loop, then isolated static host acceptance. No second scheduler,
+full Lottie/SVG, public no-ref loader, UI switch or speedup is claimed by I. Do not
+repeat completed G/H/I or start extra scope solely to fill time. Docs-only seal
+must preserve tested source/instrument identity; SDD records final published SHA.
 
 ## Previous handoff — Part26H complete
 

@@ -139,19 +139,19 @@ nonfinite->0 and clamp[0,1]. No new validity policy on sealed G input.
 
 ## Final review and gates (root)
 
-- [ ] One whole-stage review from345f1b6 on most capable model, deferred findings
+- [x] One whole-stage review from345f1b6 on most capable model, deferred findings
   visible. One combined final fix wave and scoped re-review if needed; do not
   silently drop reviewer limitations.
-- [ ] Freeze tested product HEAD; sequential configure/incremental build/full
+- [x] Freeze tested product HEAD; sequential configure/incremental build/full
   CTest none, Telegram and explicit windows-msvc-win32-preview with unique raw
   logs/JUnit. Samsung targeted shared/old/own playback, mapping and scheduler.
   Existing H differential/WARP/lifecycle gates stay unchanged. Verify both
   vendors and TGS integrity through existing verification.
-- [ ] Actual include trace of new PlaybackControl.cpp and OwnNativeEllipsePlayback.cpp
+- [x] Actual include trace of new PlaybackControl.cpp and OwnNativeEllipsePlayback.cpp
   in none/Telegram; generated link/interface/install checks; Runtime.cpp source
   diff preserves guards and no public header/install changes. Retain input hashes,
   exact commands/results. Check host status/out/accepted EXE read-only again.
-- [ ] Write Part26I report and update STATE/plan/durable ledger; ordinary guarded
+- [x] Write Part26I report and update STATE/plan/durable ledger; ordinary guarded
   push, report honest scope and next minimal scheduler/host design. Preserve raw
   and SDD evidence. Do not resume automation or start extra feature work merely
   because this intermediate block completed.
