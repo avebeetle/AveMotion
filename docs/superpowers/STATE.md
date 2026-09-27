@@ -2,7 +2,18 @@
 
 Updated: 2026-09-27
 
-## Current handoff — Part26H complete
+## Current work — Part26I own ellipse playback
+
+H complete at345f1b6; do not repeat. I design3725291 and plan/durable ledger dated
+2026-09-27-own-ellipse-playback are controller-approved under user delegation.
+Scope: extract shared first-party playback control, preserve Runtime behavior,
+thin private own time->stream wrapper. No second scheduler, Player/UI change,
+new primitive or public loader. User requests no unnecessary work and Telegram
+source checkpoints at architecture decisions. One product writer; root-only Git.
+Preflight none38/38, host unchanged. Next Task1, then Task2, reviews/final gates.
+No automation resumed. SDD workspace for this plan records live execution.
+
+## Previous handoff — Part26H complete
 
 Final tested product3e655f10fc08e73b8670f6b9e1fabbe05201300e. All3tasks and task
 reviews accepted; whole-stage2606632..8ecb384 found no Critical/Important. Sole
