@@ -287,13 +287,44 @@ void testVisibilityLifetimeAndCallbacks() {
         require(weak.lock()->playback.status == runtime::PlaybackStatus::Paused
                 && scheduler.diagnostics().automaticResumes == 0U,
             "manual pause was resumed automatically");
+        static_cast<void>(scheduler.tick(later));
+        const auto requestsBeforeRemoval = oldHost.requests;
         require(scheduler.removeInstance(added.handle, later), "remove failed");
+        require(oldHost.requests == requestsBeforeRemoval + 1U,
+            "remove did not request a clear-presentation repaint");
         require(weak.expired(), "remove retained source owner");
         require(scheduler.diagnostics().registeredInstances == 0U,
             "remove left current registration count");
         scheduler.setHostCallbacks(newHost.callbacks(), later);
         require(newHost.requests == 1U,
             "callback replacement lost pending clear-presentation repaint");
+    }
+
+    HostRecorder removalHost;
+    HostRecorder replacementHost;
+    std::weak_ptr<Source> removedWeak;
+    {
+        player::Player scheduler{removalHost.callbacks()};
+        auto object = std::make_shared<Source>();
+        removedWeak = object;
+        const auto added = player::detail::PlayerSourceAccess::add(
+            scheduler, makeSource(object), zero);
+        require(static_cast<bool>(added), "active removal setup failed");
+        require(scheduler.play(added.handle, zero), "active removal play failed");
+        static_cast<void>(scheduler.tick(zero));
+        require(removalHost.deadline == MotionTime::fromNanoseconds(1'000'000'000LL),
+            "active removal lacked final wakeup");
+        const auto requestsBeforeRemoval = removalHost.requests;
+        object.reset();
+        require(scheduler.removeInstance(added.handle, zero),
+            "active removal failed");
+        require(removedWeak.expired() && !scheduler.nextDeadline()
+                && removalHost.cancels == 1U
+                && removalHost.requests == requestsBeforeRemoval + 1U,
+            "active removal retained owner, wakeup or lost repaint");
+        scheduler.setHostCallbacks(replacementHost.callbacks(), zero);
+        require(replacementHost.requests == 1U,
+            "callback replacement lost active removal repaint");
     }
 
     HostRecorder keepHost;
