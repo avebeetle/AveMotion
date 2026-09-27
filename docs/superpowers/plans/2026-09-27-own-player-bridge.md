@@ -129,18 +129,18 @@ Player; Player still depends only on Runtime. Private src/player include path.
 
 ## Final gates and handoff (root)
 
-- [ ] Whole-stage review084d760..HEAD on most capable model; deferred findings
+- [x] Whole-stage review084d760..HEAD on most capable model; deferred findings
   visible, at most one combined final fix and one scoped re-review. Root explicitly
   disposes every declined-to-judge item rather than treating it as approval.
-- [ ] Freeze HEAD and run sequential MSVC configure/incremental-build/full CTest
+- [x] Freeze HEAD and run sequential MSVC configure/incremental-build/full CTest
   windows-msvc-direct2d, windows-msvc-telegram-debug, windows-msvc-win32-preview;
   Samsung targeted source/own/old scheduler plus playback/frame_mapping. Both
   vendors/TGS verification; retain successful full CTest logs as well as JUnit.
-- [ ] Actual MSVC includes Player.cpp/new own adapter in none/TG, no-ref actual
+- [x] Actual MSVC includes Player.cpp/new own adapter in none/TG, no-ref actual
   links and install/export closure: friend alone installed, private headers not;
   Rendering->Player no cycle. Preserve exact input/instrument hashes. Read-only
   host clean/current EXE checkpoint; no UI/out recreation or host build.
-- [ ] Final report/STATE/ledger, docs-only identity check, guarded ordinary push.
+- [x] Final report/STATE/ledger, docs-only identity check, guarded ordinary push.
   Describe completed scheduler bridge and next own scene/plan+offscreen Qt pilot,
   not completed visual integration/fullengine/performance. Do not revive schedule.
 

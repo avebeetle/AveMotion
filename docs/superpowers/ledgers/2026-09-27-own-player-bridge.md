@@ -63,3 +63,21 @@ restore live handle projection with regressionRED; also close Minor emptytick
 snapshot coverage. No second broad review/fix wave; one scoped re-review next.
 
 Ruling: Runtime identity is projected live on frame emission, not frozen at registration — preserves public Instance move-assignment behavior — cost is the same per-emission handle read used before J and documenting registration metadata distinctly.
+
+Finalfix20d9a8f has reproduced functionalRED then GREEN; one scoped final review
+accepts Important and emptytick Minor, no newbreakage. Historical vendorwarnings
+retained, not suppressed. No remaining productfinding, all declined-to-judge
+items explicitly resolved in ignored root-boundary-review.md.
+
+Final frozen gates20d9a8f: none42/42,4.86s (002);TG92/92,107.53s (001);
+preview87/87,112.36s (001);Samsungtargeted7/7,0.55s (001),0skips/failures.
+Firstnone001 CTestpassed42/42 but instrument wrongly compared localandUTCticks;
+actualpredicate regression/fix6/6, rawfailure/LastTestretained, no productchange.
+Final bothvendors/TGS16PASS; traces154/115headers none/TG,0unknown/reference;
+932source/config+8instrument stable, originalobjects/graphsunchanged. Root
+rehashverified allfive finalmanifest evidencefiles. Productlinks/export/install
+closure accepted with21audit snapshot hashes matched; staleinstallmanifest and
+separate offlineReferencewrapper explicitly excluded from productproof.
+Hostclean712d454/outabsent/acceptedEXEhashunchanged. No /MT host/installedconsumer,
+performance/TSan/hardware/DPI/fullSamsung claim. Reportprepared; docs-only seal
+and guarded ordinarypush finish this bounded stage, not full ownengine/visualUI.

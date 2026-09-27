@@ -2,7 +2,7 @@
 
 Updated: 2026-09-27
 
-## Current work — Part26J own Player bridge
+## Current handoff — Part26J own Player bridge complete
 
 Base084d760; spec5489760 and plan/ledger dated2026-09-27-own-player-bridge,
 controller-approved under delegated authority. Existing Player retains one
@@ -15,13 +15,31 @@ Fullnone41/41,TG90/90, Samsungtargeted2/2; final test-onlyfix none41/41 and
 TG/Samsung2/2, rootTG2/2. Setup RED mistakes and vendor warnings retained.
 Task2 complete6aaeb36 + testfix253cc25, task review/fix1 accepted. Fullnone42/42,
 TG92/92,Samsungtargeted5/5; test-onlyfix eachvariantown1/1,rootown/mixed2/2.
-Deferred Minor: mixed empty-tick snapshot coverage. Whole-stage review and
-frozen final gates next. One writer/root-only Git, directmain; SDD checkpoint.
+Whole-stage084d760..70ca815 found one Important liveRuntimeidentity regression
+after Instance moveassignment. Single finalfix20d9a8f66314a07da417a39e81dd5d6d33dbfe0e
+has functionalRED/GREEN and fixes emptytick snapshotMinor; exactly one scoped
+finalre-review accepted both, no open productfinding. No extra productfixwave.
+Fresh frozen final gates: none42/42,4.86s;TG92/92,107.53s;preview87/87,112.36s;
+Samsungtargeted7/7,0.55s. Zero skips/failures; incremental, not clean rebuilds.
+None001 passed42/42 but reportinstrument mixedUTC/local timestamps; raw retained,
+UTCpredicate fix6/6 and acceptednone002. Other finalattempts001. No weakenedtest.
+Bothvendors/TGS16 verified. Actualnew-source includes154/115headers none/TG,
+0unknown/vendor/reference;932source/config+8instrument hashes and originalgraphs/
+objects stable. Actual productno-ref link/export/install closure accepted; separate
+offline test links Referencewrapper, not product; stale installmanifest notproof.
+All reviewer limitations explicitly dispositioned in out/part26j/root-boundary-review.md.
+Report docs/PART26J_OWN_PLAYER_BRIDGE_REPORT.md, datedspec/plan/ledger and ignored
+SDD/raw retained. Docs-only seal must preserve frozenproductidentity; SDDrecordsSHA.
+One writer/root-only Git, directmain; all writers/reviewers quiescent at handoff.
 No Avelabs changes/build/GUI in J: actual QImage output currently reference CPU,
 own scene output requires the next narrow preparation/render host bridge.
 No automation resumed; preserve raw/SDD, dependencies/vendor/goldens/Release.
+Host remainsclean712d454/outabsent/EXE C92F26EE...82C2 unchanged. Next separately
+design minimal own preparation/output bridge and isolated static Avelabs pilot;
+oneexistingworker/timer, no acceptedRelease replacement. Do not repeat J or claim
+completeownLottie/SVG/UI/performance/MTintegration from these enginegates.
 
-## Current handoff — Part26I own ellipse playback complete
+## Previous handoff — Part26I own ellipse playback complete
 
 H complete at345f1b6; do not repeat. I design3725291 and plan/durable ledger dated
 2026-09-27-own-ellipse-playback are controller-approved under user delegation.
