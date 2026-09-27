@@ -42,6 +42,12 @@ CMake/CTest. E raw out/part26m; H raw build/checks/part26m, never H/out.
 
 ### Task 1: Bounded own primitive admission and numeric payload
 
+Execution outcome: Steps1..5 complete in ab8800a + fix520297f, independently
+reviewed and accepted. Full none43/TG93 before localized fix; final focused
+none9/TG9/root8. Remaining Minor items and raw failures are retained in ledger.
+Checkboxes below preserve the original prospective steps; this outcome and SDD
+completion line are the execution checkpoint.
+
 **Files (E):**
 - Create src/runtime/OwnPrimitiveInput.hpp, OwnPrimitiveNumeric.hpp/.cpp.
 - Modify src/runtime/NativeEllipseAdmissionCore.hpp/.cpp and OwnNativeEllipseAdmission.hpp/.cpp for shared value-table auditing/projection and new entry point.

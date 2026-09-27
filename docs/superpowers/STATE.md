@@ -6,9 +6,13 @@ Updated: 2026-09-27
 
 L complete and installed (details below). M spec0cbe264 and plan/durable ledger
 dated2026-09-27-own-primitives-profile controller-approved under delegated
-authority. Bases engine1f2f601 / host0d56e83. Next Task1 typed own admission and
-numeric payload, then atomic model/resources/stream migration, same-host UI
-acceptance, final gates/promotion. No M product change yet. Keep canonical L
+authority. Bases engine1f2f601 / host0d56e83. Task1 complete ab8800a + fix520297f,
+independent task review/fix1 accepted. Full none43/43 and TG93/93 before localized
+exact typed-bound fix; final focused none9/TG9 and root8 pass. Numeric assertion
+breadth and inherited vendor C4251 are deferred Minor items in ledger. Harness
+launch/VS failures and expected-fixture corrections retained, no test weakened.
+Next Task2 atomic model/resources/stream migration, then same-host UI acceptance
+and final gates/promotion. Own factory still singleton until Task2. Keep canonical L
 EXE93B10E5C...1645/PDB014ACD8C...3DFFF until final verified candidate/backup.
 Chosen unchanged first-party primitive_geometry has seven shapes, not a real
 downloaded Telegram sticker. Bounded1..16 direct groups, strict legacy APIs
