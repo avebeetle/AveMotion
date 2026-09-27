@@ -124,7 +124,8 @@ target_compile_definitions(avemotion_reference
 set(AVEMOTION_RUNTIME_SOURCES
     src/runtime/Runtime.cpp
     src/runtime/Playback.cpp
-    src/runtime/RecordingBackend.cpp)
+    src/runtime/RecordingBackend.cpp
+    src/runtime/NativeEllipseAdmissionCore.cpp)
 if(AVEMOTION_RLOTTIE_AVAILABLE)
     list(APPEND AVEMOTION_RUNTIME_SOURCES
         src/runtime/RlottieSceneBridge.cpp)
@@ -477,6 +478,20 @@ if(BUILD_TESTING)
     avemotion_set_warnings(avemotion_own_json_reader_tests)
     add_test(NAME avemotion.formats.own_json_reader
         COMMAND avemotion_own_json_reader_tests)
+
+    add_executable(avemotion_native_ellipse_admission_core_tests
+        tests/native_ellipse_admission_core_tests.cpp)
+    target_include_directories(avemotion_native_ellipse_admission_core_tests PRIVATE
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/runtime"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/formats"
+        "${CMAKE_CURRENT_SOURCE_DIR}/tests/support")
+    target_link_libraries(avemotion_native_ellipse_admission_core_tests PRIVATE
+        AveMotion::Runtime)
+    target_compile_definitions(avemotion_native_ellipse_admission_core_tests PRIVATE
+        AVEMOTION_FIXTURE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures")
+    avemotion_set_warnings(avemotion_native_ellipse_admission_core_tests)
+    add_test(NAME avemotion.runtime.native_ellipse_admission_core
+        COMMAND avemotion_native_ellipse_admission_core_tests)
 
     if(AVEMOTION_RLOTTIE_AVAILABLE
        AND AVEMOTION_RLOTTIE_VARIANT STREQUAL "telegram")
@@ -863,6 +878,20 @@ if(BUILD_TESTING)
             avemotion_set_warnings(avemotion_native_ellipse_input_tests)
             add_test(NAME avemotion.runtime.native_ellipse_input
                 COMMAND avemotion_native_ellipse_input_tests)
+
+            add_executable(avemotion_native_ellipse_admission_compat_tests
+                tests/native_ellipse_admission_compat_tests.cpp)
+            target_include_directories(avemotion_native_ellipse_admission_compat_tests PRIVATE
+                "${CMAKE_CURRENT_SOURCE_DIR}/src/runtime"
+                "${CMAKE_CURRENT_SOURCE_DIR}/src/formats"
+                "${CMAKE_CURRENT_SOURCE_DIR}/tests/support")
+            target_link_libraries(avemotion_native_ellipse_admission_compat_tests PRIVATE
+                AveMotion::Runtime)
+            target_compile_definitions(avemotion_native_ellipse_admission_compat_tests PRIVATE
+                AVEMOTION_FIXTURE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures")
+            avemotion_set_warnings(avemotion_native_ellipse_admission_compat_tests)
+            add_test(NAME avemotion.runtime.native_ellipse_admission_compat
+                COMMAND avemotion_native_ellipse_admission_compat_tests)
 
             add_executable(avemotion_native_ellipse_binding_tests
                 tests/native_ellipse_binding_tests.cpp)
