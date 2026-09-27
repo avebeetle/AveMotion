@@ -13,8 +13,10 @@ identity remains genuine; own ScheduledFrame Runtime fields null/invalid.
 Task1 complete6e9c769 + testfixa881b68, independent task review/fix1 accepted.
 Fullnone41/41,TG90/90, Samsungtargeted2/2; final test-onlyfix none41/41 and
 TG/Samsung2/2, rootTG2/2. Setup RED mistakes and vendor warnings retained.
-Task2 next, then independent final review/frozen gates. One writer/root-only
-Git, directmain; SDD records checkpoint and agents.
+Task2 complete6aaeb36 + testfix253cc25, task review/fix1 accepted. Fullnone42/42,
+TG92/92,Samsungtargeted5/5; test-onlyfix eachvariantown1/1,rootown/mixed2/2.
+Deferred Minor: mixed empty-tick snapshot coverage. Whole-stage review and
+frozen final gates next. One writer/root-only Git, directmain; SDD checkpoint.
 No Avelabs changes/build/GUI in J: actual QImage output currently reference CPU,
 own scene output requires the next narrow preparation/render host bridge.
 No automation resumed; preserve raw/SDD, dependencies/vendor/goldens/Release.

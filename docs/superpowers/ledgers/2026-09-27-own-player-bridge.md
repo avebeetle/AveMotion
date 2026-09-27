@@ -43,3 +43,15 @@ are setup failures, not functional RED; actual compiling-stub RED retained.
 Cross-task reviewer limits resolved for Task1: it has no own scene producer;
 H/I allocator/cache/domain contracts untouched by the six-file change. Task2
 and final checks must prove real own wiring and retain those contracts.
+
+Task2 complete28e0c6e..253cc25, product6aaeb36 + test-onlyfix253cc25.
+Independent review found Important single-ID plannerforget proof gap; fix1/5
+adds second real own ID and proves continuing sequence/resource invariance.
+Scoped re-review accepts, no new breakage. Fullnone42/42,TG92/92,Samsung5/5;
+test-onlyfix focusedown1/1 eachvariant, rootown/mixed2/2,0.08s. Functionalstub
+RED retained; earlier optional/shared-owner test compile correction disclosed.
+Minor deferred: mixed zero-frame ticks do not compare snapshots directly.
+Task2 reviewer limitations: root read raw functionalRED and GREEN, ran fresh
+focusedtests; final presets/install/host gates explicitly remain next. Existing
+own domain/serial/allocator/cache contract documented in new privateheader and
+real two-owner resource test; no shared Runtime planner namespace used.

@@ -91,17 +91,17 @@ ownNativeEllipsePlayback(const player::Player&,player::PlayerHandle)
 Static own table, no extra owner allocation/registry. Rendering PRIVATE links
 Player; Player still depends only on Runtime. Private src/player include path.
 
-- [ ] Write own-only tests against compiling add/lookup stubs; valid prepared
+- [x] Write own-only tests against compiling add/lookup stubs; valid prepared
   JSON->own playback registration must initially fail to yield a scheduled own
   frame, observe functional RED. Reuse existing fixtures and preparation helpers.
   Register avemotion.own_native_ellipse_player unconditionally; TG-only
   avemotion.own_native_ellipse_player_differential.
-- [ ] Implement thin typed add and lookup. Lookup checks exact own table pointer
+- [x] Implement thin typed add and lookup. Lookup checks exact own table pointer
   before casting; null/wrong-type/stale returns null. Document borrowed tick
   spans, invalid Runtime fields, scheduling vs scene/cache IDs, caller forget/
   reset, own-only graphics domain, serial calls and allocator lifetime. Do not
   implement evaluation, rasterization or Qt in this adapter.
-- [ ] No-ref real N61/fr60 own literal proof: first frame0; play/tick250ms ->15;
+- [x] No-ref real N61/fr60 own literal proof: first frame0; play/tick250ms ->15;
   pause freezes15; resume/seek/reverse/loop and rate changes use existing controls.
   Freeze hide250ms/show1250ms preserves.25, next250ms ->.5; user-paused stays
   paused; KeepUp continues logical time without hidden frames. Early tick emits
@@ -109,21 +109,21 @@ Player; Player still depends only on Runtime. Private src/player include path.
   callbacks/counts/diagnostics, direct own mutations detected by revision, one
   source registered twice rejected, independent two-source controls/owners,
   stale handle/re-registration, all own frame Runtime fields invalid/null.
-- [ ] Once at2s: scheduled completion snapshot does not commit own revision;
+- [x] Once at2s: scheduled completion snapshot does not commit own revision;
   invalid viewport evaluateAt fails without commit; explicitly invalidate for
   host retry (no implicit new Player retry policy), valid evaluation commits
   exactly once. Retained scene/plan survive remove and owner destruction;
   planner forget rebuilds isolated own resource state. Player itself never
   claims cache eviction. Clear/replacement/destruction cancel wakeups and release
   registered owners. No new lifecycle hooks used only by tests.
-- [ ] Telegram mixed-player trace uses actual Runtime and own instances over
+- [x] Telegram mixed-player trace uses actual Runtime and own instances over
   existing admitted fixtures, same options/controls/time. Assert typed lookup
   rejects Runtime entry; Runtime instance() rejects own entry; legacy frame
   pointer/handle preserved, own fields empty, distinct Player handles, snapshots/
   reasons/deadlines/counts align where semantics align. This is shared-scheduler
   wiring proof; literal tests independently fix expectations. Own scene emission
   and planner used only in own domain; never compare IDs by casting.
-- [ ] GREEN focused then full none/TG, Samsung new own/source/old scheduler tests.
+- [x] GREEN focused then full none/TG, Samsung new own/source/old scheduler tests.
   Root focused check/commit, independent task review, update STATE/ledger and
   guarded ordinary push. Report exact outputs/warnings in task-2-report.md.
 
