@@ -2,7 +2,7 @@
 
 Updated: 2026-09-27
 
-## Current handoff — Part26G Tasks1/2 accepted; semantic comparison next
+## Current handoff — Part26G Tasks1–3 accepted; whole-stage review/gates next
 
 F final seal c00f686450c1fd725b39e543badd42cdf23df20c ordinary-pushed and remote
 equality verified. Do not repeat F. G spec efc12e9, controller-approved under user
@@ -30,6 +30,20 @@ root resources1/1,0.06s. Scoped review d39fcde..1a2baa8 accepts both findings,
 no new breakage. Task2 complete; dense test readability Minor deferred to final
 triage alongside Task1 two direct-include Minors. Writer/reviewer idle.
 Docs/ordinary guarded push then Task3 fresh writer; do not duplicate Task2.
+Task2 docs8e0866f5d37c8fe0997d639ba13b89c2a6432b0b ordinary-pushed, exact
+remote equality/clean tree verified. Task3 sole writer
+/root/own_ellipse_model_differential_task3 (gpt-5.5/high) finished test/CMake only;
+root normal commitbcffbd6, no push. Raw exact18/18,14.07s;12cases/244samples/
+2123assertions/7witnesses/3policy rows;root fresh comparator1/1,0.29s. Earlier
+oracle refusal was test mutation removing/emptying version v with names, corrected
+without product changes. Fresh /root/own_ellipse_model_differential_task3_review
+reviewed8e0866f..bcffbd6: one Important incomplete source-node default comparison.
+Fix round1 test-only3d8ca05, root normal commit after writer idle; scoped reviewer
+accepted all findings, no new breakage/observations. Latest exact18/18,13.83s;
+12cases/255samples/2554assertions/17witnesses/3policyrows;root fresh1/1,0.31s.
+Task3 complete. Transform/reference roles/absence remain semantic, not raw ID/hash
+equality. Writers/reviewers idle; docs/guarded push then one whole-stage review
+fromc00f686 and at most one combined final fix wave before fresh full gates.
 Separate scratch gate preparation complete but allowlists/final gates pending.
 Task1 shared numeric conversion + sealed own authored graph in Runtime; Task2
 canonical resources + sealed prepared owner in Rendering; Task3 semantic oracle

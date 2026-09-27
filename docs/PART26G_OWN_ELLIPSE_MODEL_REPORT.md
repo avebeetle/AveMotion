@@ -20,7 +20,7 @@ acceptance are subsequent work. This stage is not full Lottie/SVG or Telegram pa
 
 - Task1 numeric/model: product077b682, test fixesb2cbff3/ab377ae/75eb1c5; task review plus three scoped fix rounds accepted, no open Important/Critical. Two direct-include Minors await final triage.
 - Task2 resource preparation: productd39fcde, tests-only fix1a2baa8; independent task review plus one scoped fix accepted. Dense-test readability Minor deferred to final triage.
-- Task3 independent semantic comparison and review: pending.
+- Task3 semantic comparison: testbcffbd6, source-default fix3d8ca05; task review and one scoped fix accepted, no open findings.
 - Root full MSVC none/Telegram/Win32-preview: pending.
 - Samsung configure/listing, vendor/TGS16 integrity: pending (no Samsung build/test claim).
 - Actual compiler include/link/private-install closure and whole-stage review: pending.
@@ -55,6 +55,18 @@ The same independent reviewer covered original plus delta and then the fix. No
 additional history rewrite or hidden evidence regeneration. First fix test failures
 were a dangling test reference, fixed by retaining its owner; raw outputs remain.
 These task checks are not the pending whole-stage/full-platform acceptance.
+
+Task3 compares12 common-domain cases, including10-frame repeated/reversed sample
+order, with independent own/reference preparations and workspaces. Latest direct
+counters:255 samples,2554 assertions,17 comparator mutation witnesses,3 explicit
+policy rows. Current exact Telegram subset18/18,13.83s; root comparator1/1,0.31s.
+Both initial compiling comparator RED and added default-field witness RED are
+retained. A name-case test initially also blanked/removed version v and triggered
+legacy ReferenceError; corrected to actual name fields only, with no product or
+policy change. Temporary direct vendor debugging/wiring was removed. Review's
+missing source-default fields were added with role/absence normalization, not
+raw identity equality. Full schema exclusions and actual low-surrogate legacy
+certification outcome are in the task report. This is not pixel/playback parity.
 
 ## Evidence and decisions
 

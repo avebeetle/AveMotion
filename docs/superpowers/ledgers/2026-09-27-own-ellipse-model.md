@@ -91,7 +91,7 @@ platform gates remain required after all tasks/fixes.
 
 - [x] Task 1: numeric extraction, sealed authored model, literal/evaluator/isolation tests; fresh independent task review.
 - [x] Task 2: canonical resources, sealed prepared owner, helper extraction and ownership tests; fresh independent task review.
-- [ ] Task 3: semantic oracle comparison, comparator mutation witnesses and lifetime; fresh independent task review.
+- [x] Task 3: semantic oracle comparison, comparator mutation witnesses and lifetime; fresh independent task review.
 - [ ] Root: full platform/provenance/private-boundary gates, whole-stage review, report and next written design.
 
 Task 1: fix round 3/5 (last exact-whitespace assertion addressed, 0 open Important/
@@ -172,3 +172,35 @@ diff; scratch proof out/part26g-design/root-helper-check.md. This does not repla
 final platform/closure gates. All writers/reviewers idle; Task3 dispatch after
 docs/guarded ordinary push. Historical amend and incomplete-test claims remain
 explicit above; no history rewrite or evidence cleanup used to hide them.
+
+Task2 docs8e0866f ordinary-pushed with exact remote equality/clean tree verified.
+Task3 fresh writer /root/own_ellipse_model_differential_task3 (gpt-5.5/high) finished
+test/CMake-only semantic comparison; root owns all Git writes after earlier
+deviation and made normal commitbcffbd69125ccd249aaf8c868454abd81fb9d407.
+Independent task review8e0866f..bcffbd6 dispatched, not yet accepted/pushed.
+Raw compiling comparator RED retained (build0, CTest8, exact equal-snapshot
+assertion); current raw12cases/244samples/2123assertions/7mutationwitnesses/3policy
+rows, exact anchored18/18,14.07s. Root fresh comparator1/1,0.29s. ReferenceError
+in initial name cases was a test mutation also removing/blanking version v;
+actual name-only cases preserve v as the plan intends. Temporary vendor debug
+probe/wiring removed before final verification. No production defect or policy
+change. Full matrix/exclusions/failure history in task-3-report.md.
+
+Task3 scoped review task-3-review.md found one Important source-node default
+schema omission (transform/reference defaults, autoOrient, authoredParentLayerId,
+startFrame, maskInverted, repeater limit, layer dimensions, sourceAssetRefHash).
+Other scoped checks accepted; no Minor or production finding. Original writer
+resumed fix round1/5 at bcffbd6, tests only/no Git writes. Compare reference role/
+absence and explicit absent-asset default without contradicting planned raw ID/
+model-hash identity exclusions. Add witness coverage and retain current exact18
+checks/report before root normal commit and scoped rereview. No spec change.
+
+Task3 fix round1/5 (1 addressed,0 open; bcffbd6..3d8ca05), independently accepted
+in task-3-rereview-1.md, no new breakage/observations. Root made normal test-only
+commit3d8ca0514d811bc81ff6bdae609bddc562e14b29 after writer idle; compiling RED
+on new autoOrient witness retained, then current raw12cases/255samples/
+2554assertions/17witnesses/3policyrows and exact18/18,13.83s. Root fresh comparator
+1/1,0.31s. Task3: complete (8e0866f..3d8ca05, task+scoped review accepted).
+No product fix or new policy/ruling. Writers/reviewers idle; docs/guarded ordinary
+push then one whole-stage review fromc00f686, triaging three deferred Minors;
+one combined final fix wave/scoped review maximum, then fresh platform/closure.

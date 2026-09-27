@@ -281,7 +281,7 @@ avemotion.runtime.own_native_ellipse_model_differential, target
 avemotion_own_native_ellipse_model_differential_tests, links Rendering, private
 render/runtime/formats/model/testsupport, existing fixture directory.
 
-- [ ] **Step 1: Functional comparator RED.** Implement test-only semantic snapshot
+- [x] **Step 1: Functional comparator RED.** Implement test-only semantic snapshot
   DTO and initially false/placeholder comparator; equal independent literal
   snapshots must fail a successful-build `equal semantic snapshots compare` assertion.
   Complete comparator before oracle matrix. Compare semantic roles/edges/defaults,
@@ -294,7 +294,7 @@ render/runtime/formats/model/testsupport, existing fixture directory.
   control, path point, paint byte and resource class; each must compare different.
   Report what this matrix proves; no pixel or general grammar claim.
 
-- [ ] **Step 2: Common-domain matrix with literal anchors.** Cases baseline,
+- [x] **Step 2: Common-domain matrix with literal anchors.** Cases baseline,
   static boundary, static origin unit, linear controls, active10..20, translated
   layer, fractional59.94/equivalentrate, changed size/color, all names absent/empty,
   UTF8 snowman. Assert each builder/old certificate succeeded before comparing.
@@ -306,7 +306,7 @@ render/runtime/formats/model/testsupport, existing fixture directory.
   The independent literals in Tasks1/2 remain the own path's non-oracle correctness
   proof. Do not require raw model-row/hash equality with reference extraction.
 
-- [ ] **Step 3: Deliberate policy and isolation rows.** Raw ip=0e999999999999999999999999
+- [x] **Step 3: Deliberate policy and isolation rows.** Raw ip=0e999999999999999999999999
   accepted/prepared own baseline but old AdmissionRejected; escaped low-surrogate
   is reader InvalidJson (no own model call), legacy input may accept but record old
   certificate actual bounded outcome, not assumed. Tinyfr1e-9999 own model returns
@@ -317,7 +317,7 @@ render/runtime/formats/model/testsupport, existing fixture directory.
   sources must keep distinct bytes/model pointers without requiring unique FNV as
   security. No reference participation in construction or none tests.
 
-- [ ] **Step 4: Focused GREEN, report, scoped commit.** Telegram comparator and all
+- [x] **Step 4: Focused GREEN, report, scoped commit.** Telegram comparator and all
   new G tests plus C/D stream/binding/certificate regression; no duplicated full
   platform runs. Record executed cases/samples/assertions from real counters, first
   failures and full comparison exclusions. git diff --check, commit test/CMake only
@@ -325,7 +325,7 @@ render/runtime/formats/model/testsupport, existing fixture directory.
 
 ## Root final gates, preflight and handoff
 
-- [ ] Task1 review/fixes/STATE/ledger/ordinary guarded main push; then Task2, then Task3. SDD workspace reports retained, no duplicate live writer.
+- [x] Task1 review/fixes/STATE/ledger/ordinary guarded main push; then Task2, then Task3. SDD workspace reports retained, no duplicate live writer.
 - [ ] Final full MSVC configure/build/CTest none, Telegram, Win32-preview; explicit capture/header/contract/smoke/preflight/preview-selftest; no skipped required tests.
 - [ ] Samsung configure/listing only; both vendor trees/corpus/TGS16; no license or golden updates.
 - [ ] Actual include/link/source ownership and no Runtime->Rendering cycle; private headers uninstalled, unchanged production route/old certificate; UI hash/out absence.
