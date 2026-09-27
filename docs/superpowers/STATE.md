@@ -2,7 +2,22 @@
 
 Updated: 2026-09-27
 
-## Current handoff — Part26K own Qt visual pilot complete
+## Current work — Part26L own working Release
+
+User explicitly requested own integration in the canonical host build/Release,
+ordinary commits/push and controller selection of the next example. L spec
+1bc19f7 and plan dddc56f dated2026-09-27-own-working-release are approved under
+delegated authority. Host base f452922; engine product remains K. Task1 pending:
+one host writer, functional TDD, independent review, root-only Git. Task2 root
+promotion only after full backup, verified candidate/notices/imports/PDB and
+whole-stage review. No reference-linked install exception or license decision.
+Current canonical EXE C92F26EE...82C2 stays unchanged until verified promotion.
+Spec/plan/durable ledger are in docs/superpowers; ignored SDD uses matching slug.
+After L separately design full unchanged first-party primitive_geometry fixture
+coverage (seven shapes); it is not a real downloaded Telegram sticker. No new
+automation, worker/scheduler, dependency install or unrelated UI changes.
+
+## Previous handoff — Part26K own Qt visual pilot complete
 
 J is complete; user now requested the own visual path in Avelabs. Bases
 AveMotion1bab64b / Avelabs712d454, both clean/equal remotes at preflight.
