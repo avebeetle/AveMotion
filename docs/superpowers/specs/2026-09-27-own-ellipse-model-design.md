@@ -129,7 +129,8 @@ invented handle, reference certificate, scan counts or Runtime registration.
 Render rows: root Layer0/no parent,shape Layer1/parent0, childLayerIds[1],
 layerNodeIds[0], root children0/1,nodes0/0; shape children0/0,nodes0/1; no masks/
 matte/layer dependencies. Node0/draw0 links layer1/geometry0/paint0,drawOrder0,
-dependency StaticDependencyTransform; drawOrder[0]. Default Clip0 named default,
+dependency StaticDependencyTransform plus StaticDependencyGeometry for animated
+position (Transform alone for static position); drawOrder[0]. Default Clip0 named default,
 [0,endFrame),Loop. Declared/observed counts2/1/1/1,mask0,clip1.
 
 Own render names/key paths are literal display labels: root __; shape is the
@@ -145,8 +146,11 @@ with identical verb/point/bounds/hash operations extracted from NativeEllipseStr
 Layer translation and viewport must not be baked into this local geometry.
 Animated geometry0 is InstanceEvaluated,hash0,no static value; this preparation
 does not promise every animated float position has a nondegenerate emitted path.
-Invalid/nonfinite static primitive materialization returns ResourceConstructionFailed
+Invalid/nonfinite or empty/collapsed static geometry returns ResourceConstructionFailed
 and publishes nothing. Neither admission nor numeric policy is weakened to hide it.
+The existing path helper returns success for an empty valid PrimitivePath; preserve
+that old behavior. The new own preparation performs its own nonempty geometry
+check before publication, rather than changing the old stream's empty-path policy.
 
 Paint0 is always AssetStatic, sourceKey1, Solid, RGB byte truncation uint8(255*float)
 and alpha255, disabled default stroke/no dashes and default inactive gradient/image.
@@ -205,3 +209,13 @@ loader, hidden scan or claimed full-frame guarantee is introduced. Numeric polic
 name labels, hash/provenance distinction and temporary duplicate graph storage are
 explicit decisions. Controller approves this written spec under delegation;
 next writing-plans/self-review/SDD preflight are mandatory before product changes.
+
+### Execution clarification — render-node dependencies
+
+Before Task2 dispatch, root rechecked AssetModelBuilder.cpp::dependencyBits:
+non-static local geometry sets StaticDependencyGeometry in addition to Transform.
+The scratch proposal and first spec revision omitted this animated bit. Own
+resource preparation must advertise its actual InstanceEvaluated geometry rather
+than understate dependencies; add literal static/animated assertions in Task2 and
+semantic dependency comparison in Task3. This corrects the written contract before
+its implementation; no legacy code/certificate change or mismatch whitelist.

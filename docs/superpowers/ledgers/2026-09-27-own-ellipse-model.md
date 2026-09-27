@@ -44,14 +44,70 @@ Ruling: expose private wrappers around existing Model hashes/statistics and mech
 
 Ruling: work directly on main and retain ignored raw/SDD artifacts under explicit user instructions — preserves user's chosen workflow and recovery evidence — less isolation and retained disk use; scoped staging/guarded pushes remain mandatory.
 
+Ruling: correct Task2 animated render-node dependency to Transform|Geometry, static remains Transform — AssetModelBuilder.cpp:174-179 derives Geometry from non-static local geometry, while the scratch proposal/initial spec omitted it — changes own topology fingerprint relative to the incorrect draft and needs explicit literal/differential checks; no product or legacy policy change. Written spec addendum precedes Task2 implementation.
+
 ## Execution queue
 
-- [ ] Task 1: numeric extraction, sealed authored model, literal/evaluator/isolation tests; fresh independent task review.
+Task 1: fix round 2/5 (independent descriptor/source/optional-name/path subfindings
+addressed; 1 open — whitespace case still only checks difference, not exact literal
+bytes/hash; commits b2cbff3..ab377ae). Latest raw fix2b none36/36,4.96s;
+Telegram12/12,12.02s; root fresh focused2/2,0.31s. Early fix2 RED was incorrect
+test descriptor for canonical6000e-2, not a product bug; preserved. Original writer
+resumed round3 at FIX_BASEab377ae for the single literal-whitespace assertion.
+
+Task2 collapse witness clarification before dispatch: generateEllipsePath returns
+a valid empty primitive when TelegramRectF collapses; old materializePath accepts
+empty valid output. Preserve both existing behaviors, while new own preparation
+checks nonempty static geometry before publication as already required by the
+collapse test. Spec/plan make the check's owner explicit; no old fallback/pixel
+policy change and no new shared helper rejection.
+
+Task1 initial product077b682 is local, not pushed. Fresh independent task review
+rejects acceptance: Important missing mandatory all-field/case/evaluator/order/
+mutation/reindex/workspace/thread matrix and positive signed-zero check. Root's
+focused named-test inspection confirms representative cases only. Original writer
+resumed fix round1/5, FIX_BASE077b682, no dependent Task2 writer dispatched.
+Task1: minor (deferred): OwnNativeEllipseModel.cpp uses std::array without its own
+<array> include; final whole-stage review must triage.
+
+Task 1: fix round 1/5 (1 addressed, 1 open — signed-zero addressed, literal-input/
+source oracle still partly product-derived and name/path checks incomplete;
+commits077b682..b2cbff3). Fresh raw none36/36,4.91s; Telegram12/12,11.83s;
+root committed-code focused2/2,0.29s. Expanded tests exposed only an ambiguous
+fixture mutation, corrected before passing; product unchanged. Scoped re-review
+rejected remaining independence gap; original writer resumed round2, FIX_BASEb2cbff3.
+Task1: minor (deferred): new numeric_limits use in model tests needs direct
+<limits>; final whole-stage review must triage (new Minor in round1 diff).
+
+Worker first full none36/36 and functional numeric/model RED/GREEN are
+transcript-derived, not retained raw logs despite initial instruction to preserve
+raw evidence. Do not retroactively relabel fresh runs as original RED. Initial
+Telegram subset4/4 omitted mandated regression; worker evidence-only append now
+retains full focused12/12,12.65s (commands/stdout/stderr/exit under task-1/evidence),
+including F and old stream/lifecycle. Root freshly reran committed-code numeric/
+model none2/2,0.05s. Existing vendor compiler warnings are explicitly listed in
+the worker report; no claim of warning-free complete clean builds. Full final
+platform gates remain required after all tasks/fixes.
+
+- [x] Task 1: numeric extraction, sealed authored model, literal/evaluator/isolation tests; fresh independent task review.
 - [ ] Task 2: canonical resources, sealed prepared owner, helper extraction and ownership tests; fresh independent task review.
 - [ ] Task 3: semantic oracle comparison, comparator mutation witnesses and lifetime; fresh independent task review.
 - [ ] Root: full platform/provenance/private-boundary gates, whole-stage review, report and next written design.
 
-Task 1: pending dispatch. Model routing standard gpt-5.6-terra/high for multi-file
+Task 1: fix round 3/5 (last exact-whitespace assertion addressed, 0 open Important/
+Critical; commits ab377ae..75eb1c5). Fresh final none36/36,4.88s plus none/TG
+own-model1/1 each; root final own-model1/1,0.28s. Scoped independent report
+task-1-rereview-3.md accepts fix, no new breakage. Two Minors remain listed for
+final triage, not silently dropped. No source changes after initial077b682.
+Task 1: complete (commits5ccafef..75eb1c5, task review and scoped fixes accepted;
+2 deferred Minors). Shared assertOwnAuthoredModel test helper now requires exact
+test-owned source as its fourth argument, independent input/values; Task2 must
+preserve that contract. Final stage gates still pending.
+
+Docs5ccafef ordinary-pushed/equality verified; Task1 docs handoff/push next. Root
+host check remains clean712d454, no UI/out, exact accepted EXE hash. Independent
+scratch-only /root/own_model_gate_preparation prepared final gate instruments;
+allowlist/final runs still pending. Model routing standard gpt-5.6-terra/high for multi-file
 implementation and task review; whole-stage gpt-5.5/high. No automatic retries of
 previously unsupported gpt-6 presets. Root owns docs/push, workers scoped commits
 only. No SDD report force-add and no workspace deletion. UI remains out of scope.

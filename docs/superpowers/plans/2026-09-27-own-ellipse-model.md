@@ -89,7 +89,7 @@ Forward-declare OwnJsonDocument in model header. Factory constructor takes owned
 values by value/move; no public constructor accepting rows, const_cast mutation,
 source-hash argument or Runtime call. Document-only API, not a byte loader.
 
-- [ ] **Step 1: Numeric stub functional RED.** Add numeric source to Runtime and
+- [x] **Step 1: Numeric stub functional RED.** Add numeric source to Runtime and
   all-variant avemotion_native_ellipse_numeric_tests / CTest
   avemotion.runtime.native_ellipse_numeric, private runtime/formats/testsupport
   includes, Runtime link. Tests use expectedEllipseBaseline() literal descriptor.
@@ -98,7 +98,7 @@ source-hash argument or Runtime call. Document-only API, not a byte loader.
   size120/120,start-76/0,end76/0,controls0.333/0 and0.667/1,color0.08/0.72/0.95/1,
   animated=true,frames0/60. Expected float casts from literals, not normalizer.
 
-- [ ] **Step 2: Extract numeric implementation and preserve binder.** Move only
+- [x] **Step 2: Extract numeric implementation and preserve binder.** Move only
   canonical/convert/interpret code into numeric cpp; one compiled implementation,
   same check ordering and failure behavior, optional returned only on full success.
   Replace binder ExpectedValues/interpret call with this API and move its source
@@ -110,13 +110,13 @@ source-hash argument or Runtime call. Document-only API, not a byte loader.
   fr59.94 == float(59.94), signedzero normalized, static position boundary32768.
   Run numeric GREEN plus unchanged Telegram binding/certificate tests.
 
-- [ ] **Step 3: Own-model stub functional RED.** Add own source and all-variant
+- [x] **Step 3: Own-model stub functional RED.** Add own source and all-variant
   avemotion_own_native_ellipse_model_tests / avemotion.runtime.own_native_ellipse_model,
   Runtime+Threads links, private runtime/formats/testsupport, fixture directory.
   Stub returns ModelConstructionFailed; compile and observe `own authored model
   prepared` failure for readOwnJson(ellipseFixture()) before constructing rows.
 
-- [ ] **Step 4: Construct model and sealed publication.** Factory F-admits document,
+- [x] **Step 4: Construct model and sealed publication.** Factory F-admits document,
   interprets values, builds exact spec table conventions and statistics. sourceAssetHash
   is core::fnv1a64(as_bytes(span(exactJson))); parsed fingerprint uses two length-
   prefixed appendString calls with exact domain AveMotion.OwnEllipse.Authored.v1
@@ -127,7 +127,7 @@ source-hash argument or Runtime call. Document-only API, not a byte loader.
   during construction. F owns admission diagnostics; numeric failure keeps Accepted
   admission but separate model code. Allocation exceptions retain existing semantics.
 
-- [ ] **Step 5: Independent all-field graph/evaluation tests.** Shared test helper
+- [x] **Step 5: Independent all-field graph/evaluation tests.** Shared test helper
   assertOwnAuthoredModel(prepared, literalInput, literalNumericValues) asserts every
   field listed in spec: metadata, all five complete node records/defaults/names/hashes,
   all property/edge/typed-value references, all track/segment fields, counts, empty
@@ -158,7 +158,7 @@ source-hash argument or Runtime call. Document-only API, not a byte loader.
   33/44; compare literal values and retained serial results. No shared mutable
   workspace or assertion counter; this is functional isolation, not TSan.
 
-- [ ] **Step 6: Verify, report and commit.** None numeric/model focused then full
+- [x] **Step 6: Verify, report and commit.** None numeric/model focused then full
   none once. Telegram numeric/model plus unchanged binding/certificate/stream/lifecycle
   and all F tests, quoted regex. Full Telegram/preview belong to root after Task3.
   Inspect binder diff only extraction; source ownership/private headers; git diff
@@ -214,8 +214,13 @@ destination is the private call precondition and all call sites must satisfy it.
   one-node/geometry/paint/default-loop-clip convention from spec; model initially
   private copy of authored, revision remains1, invalid AssetHandle. Literal root
   label __, shape label effective authored layer name, no selector semantics.
+  Node dependencyBits is Transform alone for static position, Transform|Geometry
+  for animated position, matching actual InstanceEvaluated local geometry.
   For static local path, generateEllipsePath and materialize with null transform;
-  error aborts publication. Animated geometry no canonical data/hash0. Paint bytes
+  error or empty/collapsed output aborts own publication. Existing generator returns
+  valid empty primitive for a collapsed rectangle and old materializer accepts it;
+  put the nonempty check in the own factory, never alter the shared old helper's
+  behavior. Animated geometry no canonical data/hash0. Paint bytes
   truncate255*component, alpha255; all unused/default stroke/gradient/image fields
   initialized. Source keys1; shared hashes; exact declared stats then refresh derived
   summary. Binder verifies final model, then freeze and publish with retained owner.
@@ -229,6 +234,7 @@ destination is the private call precondition and all call sites must satisfy it.
   0x501de312ce7d322a, Winding geometry0x6862cc6516f16586. Pin these literals.
   RGB0.5/0.1/0.999/1 ->127/25/254/255, paint hash0x8485243b1edad747; also0/1
   channel endpoints. No production helper builds expected geometry/hash/paint.
+  Explicitly pin the different static/animated node dependency bits.
   Assert all render row/default fields, exact summary counts and independently
   encoded topology/resource/full hashes, not only counts/hash equality. Authored
   source/property rows and parsed fingerprint remain identical to Task1 owner.
@@ -280,8 +286,9 @@ render/runtime/formats/model/testsupport, existing fixture directory.
   snapshots must fail a successful-build `equal semantic snapshots compare` assertion.
   Complete comparator before oracle matrix. Compare semantic roles/edges/defaults,
   resolved property types/flags/values and track/segment/timing, evaluated local/world
-  transforms/opacities, geometry/paint contents/resource classes. Exclude raw IDs,
-  revision/source/parsed/full hash identities, Asset handles and arbitrary-name render
+  transforms/opacities, geometry/paint contents/resource classes and render-node
+  dependency semantics (static Transform, animated Transform|Geometry). Exclude raw
+  IDs, revision/source/parsed/full hash identities, Asset handles and arbitrary-name render
   labels by explicit schema, not a field-skipping whitelist at first mismatch.
   Comparator self-tests change one value, semantic role, node enabled bit, keyframe
   control, path point, paint byte and resource class; each must compare different.

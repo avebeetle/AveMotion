@@ -2,22 +2,30 @@
 
 Updated: 2026-09-27
 
-## Current handoff — Part26G own model/resources preflight complete
+## Current handoff — Part26G Task1 accepted; resources next
 
 F final seal c00f686450c1fd725b39e543badd42cdf23df20c ordinary-pushed and remote
 equality verified. Do not repeat F. G spec efc12e9, controller-approved under user
 delegation: docs/superpowers/specs/2026-09-27-own-ellipse-model-design.md.
 Plan docs/superpowers/plans/2026-09-27-own-ellipse-model.md; durable ledger
 docs/superpowers/ledgers/2026-09-27-own-ellipse-model.md; SDD workspace
-.superpowers/sdd/2026-09-27-own-ellipse-model/progress.md. Preflight table and seven
-rulings/costs recorded. Task1 pending dispatch after scoped docs commit/push.
+.superpowers/sdd/2026-09-27-own-ellipse-model/progress.md. Preflight table and eight
+rulings/costs recorded. Docs5ccafef ordinary-pushed/equality verified. Task1
+BASE5ccafef68b335cf953059209a323dc86af6cbb8f, product077b682, tests-only fixes
+b2cbff3/ab377ae/75eb1c5 accepted after independent task review and3 scoped rounds.
+No open Important/Critical; two direct-include Minors deferred to final review.
+Latest full none36/36,4.88s; final own-model TG1/1 plus prior full scopedTG12/12;
+root final own-model1/1,0.28s. Historical initial RED/GREEN raw-retention miss
+recorded honestly; fresh fix evidence retained. No product bug/fix after077b682.
+Docs handoff/guarded push follows; verify actual Git on resume. No Task2 writer yet.
+Separate scratch gate preparation complete but allowlists/final gates pending.
 Task1 shared numeric conversion + sealed own authored graph in Runtime; Task2
 canonical resources + sealed prepared owner in Rendering; Task3 semantic oracle
 comparison. Root final full none/Telegram/preview and private-boundary gates.
 No fake Runtime handles, certificate weakening, full loader switch or UI action.
 Own stream/frame/pixel proof and static Avelabs acceptance remain later stages.
-One product writer, TDD and fresh task reviews. No automation resumed. No active
-writer/build at preflight; reconcile actual agents/Git rather than stale running.
+One product writer, TDD and fresh task reviews. No automation resumed. All Task1
+writers/reviewers quiescent; reconcile actual agents/Git rather than stale running.
 
 ## Previous handoff — Part26F accepted; own prepared model design next
 
