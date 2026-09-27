@@ -1,4 +1,5 @@
 #include "NativeEllipseAdmissionTestData.hpp"
+#include "NativeEllipseEvaluationHelpers.hpp"
 #include "OwnNativeEllipseModelTestData.hpp"
 #include "OwnNativeEllipseStream.hpp"
 #include "OwnNativeEllipseStreamCounters.hpp"
@@ -58,6 +59,35 @@ runtime::EvaluatedScene emit(OwnNativeEllipseStream& stream, std::size_t frame,
     auto result = stream.emit(frame, width, height);
     require(static_cast<bool>(result), "own stream emitted a scene");
     return std::move(*result.scene);
+}
+
+void sharedEvaluationHelpers() {
+    const auto owner = prepared(staticSource());
+    evaluation::PropertyEvaluator evaluator{owner->model};
+    require(evaluator.valid(), "static own evaluator valid");
+    evaluation::PropertyEvaluationWorkspace workspace;
+    evaluator.prepare(workspace);
+    const auto view = evaluator.evaluate(0.0, workspace);
+    require(view, "static own evaluation view valid");
+    model::MotionVec2Value position{-1, -1}, size{-1, -1};
+    const auto& binding = owner->authored->binding;
+    require(render::detail::resolveNativeEllipseVec2(
+        *owner->model, view, binding.position, position)
+        && position == model::MotionVec2Value{0, 0},
+        "shared resolver reads static asset-reference position");
+    require(render::detail::resolveNativeEllipseVec2(
+        *owner->model, view, binding.size, size)
+        && size == model::MotionVec2Value{2, 2},
+        "shared resolver reads static asset-reference size");
+    require(!render::detail::resolveNativeEllipseVec2(
+        *owner->model, view, binding.color, position),
+        "shared resolver rejects a non-Vec2 property");
+    const model::MotionMatrix3x2Value world{1, 0, 0, 1, 256, 256};
+    const auto transform = render::detail::nativeEllipseViewportTransform(
+        world, 512, 512, 384, 256);
+    require(transform && transform->m11 == 0.5F && transform->m22 == 0.5F
+        && transform->dx == 192.0F && transform->dy == 128.0F,
+        "shared aspect-fit transform uses exact nonsquare offset");
 }
 
 void creationAndSchema() {
@@ -137,7 +167,25 @@ void creationAndSchema() {
         && scene.fingerprints.geometry == fingerprints.geometry
         && scene.fingerprints.paint == fingerprints.paint
         && scene.fingerprints.scene != 0 && scene.fingerprints.geometry != 0,
-        "complete independently recomputed scene fingerprints");
+        "emitted fingerprints agree with the recorder");
+}
+
+void literalStaticFingerprints() {
+    // These four literals come from the separately retained byte-layout/FNV
+    // calculation in out/part26h/task-1/fix-round1/fingerprint_witness.py.
+    // Inputs are authored/static scalar, path, paint and layer fields; no
+    // expected value is computed from this scene or the product hash helper.
+    auto created = create(staticSource());
+    require(created, "static fingerprint witness stream ready");
+    const auto scene = emit(*created.stream, 0);
+    require(scene.fingerprints.topology == 0x25f9329c86cc4fa8ULL,
+        "literal static scene topology fingerprint");
+    require(scene.fingerprints.geometry == 0x116550a6f159e6cbULL,
+        "literal static scene geometry fingerprint");
+    require(scene.fingerprints.paint == 0xbe69be34787a3f86ULL,
+        "literal static scene paint fingerprint");
+    require(scene.fingerprints.scene == 0xc030aaf03448ddddULL,
+        "literal static full scene fingerprint");
 }
 
 void sequenceAndSeeking() {
@@ -409,12 +457,19 @@ void collisionCharacterization() {
 
 int main(int argc, char** argv) {
     try {
+        if (argc == 2 && std::string_view{argv[1]} == "--helpers") {
+            sharedEvaluationHelpers();
+            std::cout << "native ellipse evaluation helpers: all checks passed\n";
+            return 0;
+        }
         if (argc == 2 && std::string_view{argv[1]} == "--counters") {
             counterBoundaries();
             std::cout << "own stream counter boundaries: all checks passed\n";
             return 0;
         }
         creationAndSchema();
+        sharedEvaluationHelpers();
+        literalStaticFingerprints();
         sequenceAndSeeking();
         viewportsAndVisibility();
         staticAndTgs();
