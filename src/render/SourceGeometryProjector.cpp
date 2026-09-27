@@ -1,6 +1,7 @@
 #include "avemotion/render/SourceGeometryProjector.hpp"
 
 #include "PrimitivePathGenerator.hpp"
+#include "SourcePathMaterializer.hpp"
 #include "RepeaterTransform.hpp"
 #include "TrimPathGenerator.hpp"
 #include "avemotion/core/Hash.hpp"
@@ -349,55 +350,8 @@ struct CandidatePathRecord final {
     return true;
 }
 
-struct ShapeSample final {
-    std::span<const model::MotionVec2Value> points;
-    bool closed = false;
-    bool animated = false;
-};
-
-[[nodiscard]] bool resolveShape(
-    const model::MotionAssetModel& modelValue,
-    const model::MotionPropertyRecord& property,
-    const evaluation::PropertyEvaluationView& view,
-    ShapeSample& result) noexcept {
-    if (property.valueType != model::PropertyValueType::Shape
-        || property.id.index() >= view.properties.size()) {
-        return false;
-    }
-    const auto& evaluated = view.properties[property.id.index()];
-    if (evaluated.id != property.id || !evaluated.value.supported()) return false;
-
-    if (evaluated.value.storage == evaluation::PropertyStorageKind::AssetReference) {
-        const auto reference = evaluated.value.assetReference;
-        if (reference.type != model::PropertyValueType::Shape
-            || reference.index >= modelValue.shapeValues.size()) {
-            return false;
-        }
-        const auto& shape = modelValue.shapeValues[reference.index];
-        if (shape.points.end() > modelValue.shapePoints.size()) return false;
-        result.points = std::span<const model::MotionVec2Value>{
-            modelValue.shapePoints.data() + shape.points.first,
-            shape.points.count};
-        result.closed = shape.closed;
-        result.animated = false;
-        return true;
-    }
-
-    if (evaluated.value.storage != evaluation::PropertyStorageKind::Materialized
-        || evaluated.value.shapeSlot >= view.shapes.size()) {
-        return false;
-    }
-    const auto& shape = view.shapes[evaluated.value.shapeSlot];
-    if (shape.property != property.id
-        || static_cast<std::size_t>(shape.firstPoint) + shape.pointCount
-            > view.shapePoints.size()) {
-        return false;
-    }
-    result.points = view.shapePoints.subspan(shape.firstPoint, shape.pointCount);
-    result.closed = shape.closed;
-    result.animated = true;
-    return true;
-}
+using detail::ShapeSample;
+using detail::resolveShape;
 
 [[nodiscard]] const model::MotionPropertyRecord* property(
     const model::MotionAssetModel& modelValue,
@@ -738,25 +692,7 @@ void materializeTransformed(
     finalizePathHash(output);
 }
 
-[[nodiscard]] bool shapePathStream(
-    const ShapeSample& shape,
-    std::vector<runtime::PathVerb>& verbs,
-    std::vector<model::MotionVec2Value>& points) {
-    if (!shape.points.empty() && (shape.points.size() - 1U) % 3U != 0U) {
-        return false;
-    }
-    points.assign(shape.points.begin(), shape.points.end());
-    verbs.clear();
-    if (shape.points.empty()) return true;
-    const auto segmentCount = (shape.points.size() - 1U) / 3U;
-    verbs.reserve(1U + segmentCount + (shape.closed ? 1U : 0U));
-    verbs.push_back(runtime::PathVerb::MoveTo);
-    for (std::size_t index = 0U; index < segmentCount; ++index) {
-        verbs.push_back(runtime::PathVerb::CubicTo);
-    }
-    if (shape.closed) verbs.push_back(runtime::PathVerb::Close);
-    return true;
-}
+using detail::shapePathStream;
 
 [[nodiscard]] bool primitivePathStream(
     const detail::PrimitivePath& path,

@@ -63,10 +63,10 @@ std::size_t OwnNativeEllipsePlayback::frameAtPosition(double position) const noe
 }
 double OwnNativeEllipsePlayback::durationSeconds() const noexcept {
     return static_cast<double>(static_cast<float>(prepared_->model->totalFrames - 1U)
-        / prepared_->authored->values.frameRate);
+        / static_cast<float>(prepared_->model->frameRate));
 }
 double OwnNativeEllipsePlayback::frameRate() const noexcept {
-    return static_cast<double>(prepared_->authored->values.frameRate);
+    return static_cast<double>(static_cast<float>(prepared_->model->frameRate));
 }
 OwnNativeEllipseFrameResult OwnNativeEllipsePlayback::evaluateAt(
     runtime::MotionTime now, std::size_t width, std::size_t height) {

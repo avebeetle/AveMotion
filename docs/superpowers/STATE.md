@@ -20,8 +20,19 @@ TG98/98 (112.08s), root focused3/3 (2.62s) plus real original TGS compile and
 186property samples pass, max error3.05176e-05. Inventory37layers including
 container,36draws,33tracks,304segments. Spec documents bounded temporal handles
 and exact inactive-miter exception; no arbitrary field/tolerance weakening.
-Next Task3 common scene preparation/emission and real scene/WARP parity, then
-Task4 same UI/static working Release. Compiler success is not scene/UI success.
+Task3 complete: initial review plus independent fix1 review accepted, no open
+Critical/Important. One common scene program/emitter; I1 nonredundant precomp
+clipping now fails atomically unless conservative equivalence is proven. Final
+none47/47 (9.20s), TG100/100 (124.25s), preview96/96 (141.05s); first-party90
+captures, original Duck384 scenes and27 square WARP cases pass (exact pixels).
+Root fresh082 focused4/4 (3.46s),083 lifecycle,084 scenes and085 real27 captures
+pass. Raw local cancellation max0.0001220703125/3075 fields remains disclosed
+under ruling13, not claimed zero. Inherited vendor C4251 remains. Real Duck
+portrait direct emission is conservatively rejected, not silently rendered.
+Ruling16 routes Task4 vector presentation through composition-aspect targets
+and the existing canvas, preserving primitive sizes, with actual-raster metrics.
+Next Task4 same UI/static working Release. Native canonical UI proof remains
+pending; current L package is still untouched. No second renderer/worker/bitmap.
 M separate synthetic host/promotion work is superseded,
 not completed. No new automation. Installed L EXE/PDB remains protected and its
 hash freshly matches the existing report. Real artwork stays local.

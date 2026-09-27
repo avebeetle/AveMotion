@@ -53,7 +53,8 @@ case. Existing primitive and strict legacy admission contracts remain intact.
 - Shape and null layers, plus at most one root precomp instance referring to
   one asset, with no nested precomps. Precomp must have identity transform,
   full opacity, matching canvas dimensions, `st=0`, `sr=1`, no remap. Its clip
-  is the final canvas. All child layers also have `st=0`, `sr=1`.
+  is the composition canvas mapped into the viewport (not necessarily the whole
+  target when letterboxed). All child layers also have `st=0`, `sr=1`.
 - Unique layer IDs, valid in-composition parent IDs, no self/cyclic parents.
   Resolve IDs, not array positions. Keep authored order and source provenance.
   Layer visibility is half-open and intersected with containing precomp; a
@@ -147,11 +148,60 @@ single-writer identity/sequence, ownership/retirement and independent-stream
 contracts remain. Static resources only when all local dependencies are static.
 Changes of layer/group matrices remain separated where the planner supports it.
 
+Task3 resource-space clarification: the existing ordinary stroke route renders
+final-space paths/width/alpha, unlike separated local fills. Its model geometry
+and paint records must therefore be InstanceEvaluated; local-static source
+metadata may remain in the same program but must not be exposed as AssetStatic
+render records to the unchanged backend. Local path constancy alone does not
+make final-space, viewport-dependent render resources asset-static. This is a
+classification fix, not an expansion of backend semantics or a second emitter.
+
+Task3 clipping clarification (review I1): preserve correctness for rectangular
+host viewports without adding a clipping backend. The same program records which
+render layers descend from the expanded precomp. Before publishing a successful
+frame, prove its mapped canvas clip is redundant: the conservative raster
+footprint intersected with the render target must lie within the mapped clip.
+Use exact per-side target equivalence: a side already clipped at the same target
+boundary needs no further footprint containment; every other side must contain
+the conservative bounds, including stroke cap/join/miter extent and raster-edge
+margin. Do not approximate a nearly coincident boundary as equal.
+Non-finite/unsupported bounds or required clipping return an explicit atomic
+unsupported-clipping result; no partial scene or successful-history replacement.
+Unrelated root-layer drawings do not inherit the precomp clip. This is a bounded
+fail-closed capability, not general precomp clipping support. Existing primitives
+retain their previous viewport behavior. Regression fixtures must cross a clip
+edge in wide and tall viewports (including a stroke-only overflow), prove failure
+atomicity and recovery, and prove contained precomp content remains supported.
+Keep the original square real-Duck matrix. First-party contained wide/tall scenes
+and pixels must succeed, with crossing scenes explicitly rejected. Real Duck
+wide/tall engine probes must retain their actual outcome: the conservative pen
+envelope can reject this otherwise renderable input. Do not build a new general
+stroked-bound subsystem merely to admit those direct viewports. The test oracle
+must assert the actual mapped identity canvas clip; it must no longer incorrectly
+equate every such clip with the whole viewport. Host acceptance below supplies
+the real wide/tall presentation tests without claiming direct-engine success.
+
 Playback reads metadata from the common prepared model, preserving existing
 float-rounded `(N-1)/fr` and frame mapping. No new scheduler/worker/timer/public
 Runtime handle, no public fallback-policy change, no backend ownership change.
-Host preparation alone switches to explicit vector reader/new preparation;
-existing Player, worker, canvas and WARP readback remain. WARP is software
+Host preparation switches to explicit vector reader/new preparation. For vector
+assets, the requested physical size is a bounding box: render once at a bounded
+integer composition-aspect-fit target and return that owned QImage. The existing
+canvas already aspect-fits/centers images within each cell; do not add another
+letterbox bitmap, scaling copy, worker, timer, or canvas implementation. Every
+evaluation, target, staging/readback allocation and returned image must agree on
+the actual target size. Preserve the old requested-size behavior for primitive
+assets and reference mode. A minimal read-only private playback metadata accessor
+may expose the existing immutable prepared owner for profile/canvas selection.
+Use checked positive integer size calculations within the requested bounds; if
+an aspect-fit dimension cannot be represented, report a clear error. Rounded
+non-square fits still pass the unchanged engine clipping proof; no epsilon
+waiver, retry at another size or reference fallback. Vector host presentation is
+of the intrinsic composition canvas, including cropping root artwork outside it;
+this is an explicit host presentation contract, not a change to primitive output
+or engine root-layer clip inheritance. Diagnostics must distinguish requested
+bounding size from actual raster size, with no pixel-count/performance overclaim.
+Existing Player, worker scheduling and WARP readback remain. WARP is software
 rendering; no hardware GPU performance claim.
 
 ## Reconcile the frozen work
@@ -193,6 +243,25 @@ choice. Keep raw failures and successful evidence; no test/golden weakening.
    required. Shared first-party oracle fixtures explicitly state `ddd:0` before
    `ks` because this pinned parser otherwise defaults3D; own omitted-neutral
    defaults retain separate hand-derived tests. Original Duck bytes never change.
+   Task3 local-representation amendment: for structurally proven same-group,
+   single-path, finite invertible affine roles, pinned reference export applies
+   float `M * inverse(M)` before publishing local geometry. Own canonical local
+   geometry must not acquire that frame-dependent cancellation error. A test-only
+   forward comparison may map a temporary own-local copy through the unchanged
+   pinned reference matrix arithmetic, using only reference world matrix and
+   source structure, never observed point differences or per-asset/frame fixes.
+   Require demonstrated float/type equivalence and <=1e-4 prediction residual on
+   every point and recomputed bound, exact verbs/counts/closure, independently
+   checked original bounds, and unchanged final-path/world-matrix/paint gates.
+   Always report raw local maxima and over-limit counts separately; this is not
+   a claim that raw local fields meet1e-4. Test cancellation/type-boundary cases,
+   local-only point and stored-bound mutations and an intentionally wrong
+   prediction; failure or unsupported applicability cannot silently skip a field.
+   Use pinned matrix implementation in tests only, no vendor code copy or edit.
+   Unmodified scenes still drive all pixel tests; no comparison-adjusted geometry
+   enters any renderer or product. Source audit and raw012/014/021 evidence are
+   retained; detailed conditions are in local-metadata-audit.md under ignored
+   out/part26n-design. The existing numeric tolerance is not increased.
 4. Same-backend WARP comparison at frames0,10,15,20,45,90,110,135,179 and
    viewports128/256/512; exact pixels where equivalent input arithmetic permits.
    Record any nonzero image diff and investigate; CPU-vs-WARP uses only the

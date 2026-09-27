@@ -208,6 +208,8 @@ add_library(avemotion_rendering STATIC
     src/render/OwnNativeEllipsePlayback.cpp
     src/render/OwnNativeEllipsePlayer.cpp
     src/render/OwnNativeEllipseStream.cpp
+    src/render/OwnSceneProgram.cpp
+    src/render/SourcePathMaterializer.cpp
     src/render/RepeaterTransform.cpp
     src/render/TrimPathGenerator.cpp
     src/render/SourceGeometryProjector.cpp
@@ -226,7 +228,7 @@ target_include_directories(avemotion_rendering
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>)
 target_link_libraries(avemotion_rendering PUBLIC AveMotion::Core AveMotion::Runtime PRIVATE AveMotion::Player)
-target_include_directories(avemotion_rendering PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src/player")
+target_include_directories(avemotion_rendering PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src/player" "${CMAKE_CURRENT_SOURCE_DIR}/src/formats")
 avemotion_set_warnings(avemotion_rendering)
 
 if(WIN32 AND AVEMOTION_BUILD_DIRECT2D_BACKEND)
@@ -492,6 +494,12 @@ if(BUILD_TESTING)
     add_test(NAME avemotion.formats.tgs COMMAND avemotion_tgs_tests)
 
     add_executable(avemotion_own_vector_model_tests tests/own_vector_model_tests.cpp)
+    add_executable(avemotion_own_vector_stream_tests tests/own_vector_stream_tests.cpp)
+    target_include_directories(avemotion_own_vector_stream_tests PRIVATE src/runtime src/formats src/render tests)
+    target_link_libraries(avemotion_own_vector_stream_tests PRIVATE AveMotion::Rendering)
+    target_compile_definitions(avemotion_own_vector_stream_tests PRIVATE AVEMOTION_FIXTURE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures")
+    avemotion_set_warnings(avemotion_own_vector_stream_tests)
+    add_test(NAME avemotion.own_vector_stream COMMAND avemotion_own_vector_stream_tests)
     target_include_directories(avemotion_own_vector_model_tests PRIVATE
         "${CMAKE_CURRENT_SOURCE_DIR}/src/runtime"
         "${CMAKE_CURRENT_SOURCE_DIR}/src/formats"
@@ -934,6 +942,19 @@ if(BUILD_TESTING)
 
             add_executable(avemotion_own_native_ellipse_stream_capture_tests
                 tests/own_native_ellipse_stream_capture_tests.cpp)
+            add_executable(avemotion_own_vector_capture_tests tests/own_vector_capture_tests.cpp)
+            target_include_directories(avemotion_own_vector_capture_tests PRIVATE
+                src/render src/runtime src/formats src/model tests tests/support
+                "${AVEMOTION_RLOTTIE_INCLUDE_DIR}" "${AVEMOTION_RLOTTIE_INTERNAL_LOTTIE_DIR}"
+                "${AVEMOTION_RLOTTIE_INTERNAL_VECTOR_DIR}" "${AVEMOTION_RLOTTIE_INTERNAL_PIXMAN_DIR}"
+                "${AVEMOTION_RLOTTIE_GENERATED_INCLUDE_DIR}")
+            target_link_libraries(avemotion_own_vector_capture_tests PRIVATE AveMotion::Direct2D AveMotion::Rendering rlottie::rlottie Threads::Threads d3d11)
+            target_compile_definitions(avemotion_own_vector_capture_tests PRIVATE
+                AVEMOTION_FIXTURE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures"
+                AVEMOTION_VECTOR_CAPTURE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/out/part26n/task3/captures")
+            avemotion_set_warnings(avemotion_own_vector_capture_tests)
+            add_test(NAME avemotion.own_vector_capture COMMAND avemotion_own_vector_capture_tests)
+            set_tests_properties(avemotion.own_vector_capture PROPERTIES TIMEOUT 300)
             target_include_directories(avemotion_own_native_ellipse_stream_capture_tests PRIVATE
                 "${CMAKE_CURRENT_SOURCE_DIR}/src/render"
                 "${CMAKE_CURRENT_SOURCE_DIR}/src/runtime"
@@ -1122,6 +1143,18 @@ if(BUILD_TESTING)
 
         add_executable(avemotion_own_vector_model_differential_tests
             tests/own_vector_model_differential_tests.cpp)
+        add_executable(avemotion_own_vector_stream_differential_tests
+            tests/own_vector_stream_differential_tests.cpp)
+        target_include_directories(avemotion_own_vector_stream_differential_tests PRIVATE
+            src/render src/runtime src/formats src/model tests tests/support
+            "${AVEMOTION_RLOTTIE_INCLUDE_DIR}" "${AVEMOTION_RLOTTIE_INTERNAL_LOTTIE_DIR}"
+            "${AVEMOTION_RLOTTIE_INTERNAL_VECTOR_DIR}" "${AVEMOTION_RLOTTIE_INTERNAL_PIXMAN_DIR}"
+            "${AVEMOTION_RLOTTIE_GENERATED_INCLUDE_DIR}")
+        target_link_libraries(avemotion_own_vector_stream_differential_tests PRIVATE AveMotion::Rendering rlottie::rlottie Threads::Threads)
+        target_compile_definitions(avemotion_own_vector_stream_differential_tests PRIVATE AVEMOTION_FIXTURE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures")
+        avemotion_set_warnings(avemotion_own_vector_stream_differential_tests)
+        add_test(NAME avemotion.own_vector_stream_differential COMMAND avemotion_own_vector_stream_differential_tests)
+        # Existing property-only oracle remains independent of scene emission.
         target_include_directories(avemotion_own_vector_model_differential_tests PRIVATE
             "${CMAKE_CURRENT_SOURCE_DIR}/src/runtime"
             "${CMAKE_CURRENT_SOURCE_DIR}/src/formats"

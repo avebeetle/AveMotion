@@ -18,7 +18,7 @@ enum class OwnNativeEllipseCreateCode {
 
 enum class OwnNativeEllipseFrameCode {
     Emitted, SequenceExhausted, InvalidViewport, EvaluationFailed,
-    UnsupportedNumericOutput, ModelApplicationFailed
+    UnsupportedNumericOutput, ModelApplicationFailed, UnsupportedClipping
 };
 
 class OwnNativeEllipseStream;

@@ -66,6 +66,81 @@ Raw/SDD evidence retained. Date2026-09-28.
     if wrong: a future overshooting sticker is rejected until separately tested
     coverage, never clamped or silently approximated. Add explicit rejection
     witness; no new interpolation/product edit is required by this clarification.
+12. Ruling: classify final-space stroke render resources as InstanceEvaluated,
+    retaining any pure local-static dependency metadata separately in the existing
+    program — root inspected the failing WARP images/log016 and confirmed that
+    Direct2DBackend reads AssetStatic records even without attached aliases;
+    the unchanged planner's final-space stroke route needs already transformed
+    paths, scaled width and effective alpha, not local static records — cost if
+    wrong: conservative stroke cache classification may need later optimization.
+    No planner/backend edit or second emitter. Add a first-party transformed
+    stroke regression before the fix, preserve the real27-case RED and rerun it.
+    Numeric local-metadata round-trip issue from012/014 is separate and remains
+    unresolved; this ruling does not authorize comparison normalization.
+13. Ruling: allow a structurally gated, test-only forward representation check
+    for same-group exported local geometry — pinned reference transforms local
+    points by float M*inverse(M), unlike the own canonical local representation.
+    Raw014 proves the old direct-field assertion fails; independent source audit
+    local-metadata-audit.md supports this cause, and corrected unchanged-scene
+    WARP021 is exact27/27 with36draws/0skips (root inspected frames0/90/179).
+    Compare every predicted point/bound at unchanged1e-4, retain raw maxima and
+    over-limit counts, independently verify raw bounds/final paths/matrices, and
+    require local-only point/bounds/wrong-prediction mutation witnesses. Use the
+    existing pinned matrix implementation in tests, not copied vendor code or
+    a fitted per-frame correction. No adapted path may reach a renderer or the
+    product. Applicability, float/type behavior and prediction residual must be
+    demonstrated before acceptance; otherwise this gate stays unresolved.
+    Cost if wrong: a faulty representation adapter could mask a local geometry
+    defect, mitigated by explicit mutations and independent final/pixel gates.
+    Raw local error must never be described as <=1e-4 or as zero. Full task
+    review, suites and UI acceptance remain required; this is not task approval.
+14. Ruling: address Task3 review I1 with a bounded clip-equivalence gate, not a
+    new backend clipping implementation or blanket non-square rejection — root
+    confirmed viewport letterboxing and that the real host requests arbitrary
+    widget width/height. An identity precomp's mapped canvas clip may be omitted
+    only if target clipping is equivalent or every affected draw's conservative
+    raster footprint lies wholly inside it. Include stroke cap/join/miter extent
+    and a conservative raster-edge margin, using finite checked bounds. Otherwise
+    return an explicit atomic unsupported-clipping result without history change.
+    Track structural precomp descendants in the existing program; root shapes
+    outside a precomp must not accidentally inherit that clip. Rectangular Duck
+    success and wide/tall boundary rejection need RED/GREEN, ordinary comparison,
+    unchanged-scene WARP/CPU checks and scoped review. No worker/canvas/backend
+    changes, no public fallback change. Cost if wrong: conservative bounds reject
+    a future otherwise renderable sticker; exact clipping remains a separate
+    measured extension. A failed proof must never render a known wrong frame.
+15. Ruling: refine ruling14 to per-side target equivalence — real Duck witness050,
+    frame0 at512x256, is X-contained but conservative stroke bottom257.51 exceeds
+    clip bottom256, which is exactly the target bottom. Target clipping already
+    removes that region. Prove footprint intersect target is inside mapped clip;
+    waive containment only for exactly coincident target sides, never approximate
+    equality. This keeps the fail-closed noncoincident-edge checks and avoids a
+    spurious rejection, without tighter-curve machinery or new clipping backend.
+    Cost if wrong: an incorrectly classified target side could admit overflow;
+    wide/tall boundary witnesses and real unchanged-scene pixel gates are required.
+    Evidence correction after053/055: the initial050 calculation inferred ml4,
+    but this real stroke explicitly has ml10. The same full-width*miter bound
+    also over-rejects X. Per-side equivalence remains valid, but alone does not
+    resolve that witness. Use the actual emitted miter value; Direct2D documents
+    its ratio against half-width. Include clipped-miter corner extent as well
+    as caps, and prove the conservative refinement before acceptance. Neither
+    the earlier diagnostic nor a square pixel pass proves rectangular support.
+16. Ruling: finish the engine's conservative clip guard and use composition-aspect
+    vector targets in the existing host adapter — diagnostics058/062/066 show a
+    loose miter envelope, not measured Duck letterbox spill. Avoid adding a new
+    tangent/stroker subsystem for this milestone. Existing MotionCanvas already
+    centers/aspect-fits returned images; square Duck renders min(width,height)^2
+    once with target clipping. Preserve primitive/reference sizing; expose only
+    minimal immutable playback metadata, distinguish actual raster/bounding size,
+    and keep rounded non-square targets subject to the engine's fail-closed proof.
+    Cost: vector host presentation crops to intrinsic canvas, unlike arbitrary
+    direct-engine letterbox output, and some future non-square/edge cases remain
+    explicitly unsupported. No new bitmap padding/copy, scheduler, clipping
+    backend, renderer retry or fallback. Task3 must disclose real rectangular
+    rejections and retain real27 square parity; Task4 must prove actual wide/tall
+    Duck presentation in the same UI, including1/4/16 and odd integer bounds.
+    This supersedes ruling14's expectation of direct rectangular Duck admission,
+    not I1 correctness, primitive behavior or the native canonical acceptance gate.
 
 Pinned parser inspection resolves303/304: layer16's final rotation key at180
 has h=1 and is retained as a zero-length hold; ordinary terminal keys only update
@@ -123,4 +198,20 @@ corrected to existing `tst_own_motion_renderer.cpp` before dispatch.
   warning-free does not erase historical warnings. Scene/link/UI proof remains
   Tasks3/4; review cannot-verify items are explicitly assigned there. Raw/report
   chronology retained and final corrected code received full gates.
-- Tasks3/4 pending. Canonical Part26L EXE/PDB untouched; no automation change.
+- Task3 complete: independent initial review and fix1 re-review accepted;
+  no open Critical/Important. Initial I1 clipping/history RED044 retained,
+  fix1 conservative guard plus structural descendant flags and mapped-clip
+  oracle protect wide/tall positive/negative cases. Final none47/47 (9.20s),
+  TG100/100 (124.25s), preview96/96 (141.05s); firstparty90 exact captures/CPU
+  passes, real384 scenes and27 exact WARP/CPU passes,36draws/0skips. Root082
+  focused4/4 (3.46s),083 lifecycle,084 real384 and085 real27 pass unchanged.
+  All17 source/test hashes matched reviewed snapshot/fix package. Raw local
+  cancellation remains0.0001220703125/3075 over-limit fields; prediction0 is
+  not raw equality. Direct real portrait rejection retained under ruling16;
+  no tangent/stroker machinery was shipped. Transient miter misdiagnosis and
+  zero-spill sharp fixture failures remain in raw/report chronology. Inherited
+  C4251 deferred. Root inspected final Duck and contained-rectangle PNGs.
+  Prior-task numeric/no-reference checks remain covered by current suites;
+  native controls/linkage/promotion are assigned explicitly to Task4, not
+  credited as engine success. Fix report/reviews in matching SDD workspace.
+- Task4 pending. Canonical Part26L EXE/PDB untouched; no automation change.

@@ -151,6 +151,11 @@ source IDs and optional trim. No render resource IDs until Task3.
 
 ### Task 3: Emit own vector scenes through the existing stream
 
+Execution amendment: spec rulings14–16 add a fail-closed precomp clip-equivalence
+guard. Preserve the real27 square gate and disclose direct rectangular Duck
+rejections; the real rectangular UI gate is satisfied through Task4's explicit
+composition-aspect target contract, not a new geometric stroker approximation.
+
 **Files:** create `src/render/OwnSceneProgram.hpp/.cpp`,
 `src/render/SourcePathMaterializer.hpp/.cpp`, `tests/own_vector_stream_tests.cpp`,
 `tests/own_vector_stream_differential_tests.cpp`,
@@ -200,8 +205,11 @@ renderer or silently drop features. Stream/playback/Player API stays unchanged.
 
 ### Task 4: Same UI, verified static candidate and canonical promotion
 
-**Files:** host `src/app/motionlab/OwnMotionRenderer.cpp`,
-`src/app/motionlab/MotionLabPage.cpp` only for the truthful badge,
+**Files:** host `src/app/motionlab/OwnMotionRenderer.cpp/.h`,
+`src/app/motionlab/MotionLabPage.cpp` only for the truthful badge/size diagnostics,
+`MotionTypes.h` and `MotionWorker.cpp` only for actual-raster diagnostics (no
+scheduling/control changes); engine private `OwnNativeEllipsePlayback.hpp/.cpp`
+and its existing test only for minimal immutable prepared-owner access;
 `tests/motionlab/tst_own_motion_renderer.cpp` and actual corresponding own page/
 worker test files discovered from `tests/motionlab/CMakeLists.txt`, focused test
 support if needed; host current-release/own Motion Lab docs and engine report/
@@ -213,6 +221,17 @@ overwriting earlier evidence; host artifacts use build only.
 `prepareOwnMotionAsset(document)`. Same prepared pointer and worker/playback
 types, owned premultiplied QImage output, existing metadata/viewport limits and
 error handling. No new panel, public loader, worker or timer.
+
+Ruling16: vector-only composition-aspect-fit targets within the already bounded
+request; unchanged MotionCanvas centers the returned QImage. Preserve primitive
+and reference sizes. Checked integer fit, explicit unrepresentable-size errors,
+no retry/fallback/extra padding bitmap or second scale pass. Evaluation, texture,
+readback and image dimensions agree. Distinguish request, bounded box and actual
+successful raster in diagnostics; do not report stale old-asset sizes after
+replacement/failure. Read viewport-decision.md for named integration pitfalls.
+Cover wide/tall/odd sizes, non-square logical dimensions and tiny bounds in
+first-party tests, and real Duck wide/tall1/4/16 UI. Do not claim bit-identical
+widget resampling or direct rectangular-engine support from this adapter.
 
 - [ ] Read ROADMAP, maintenance and system-tray contracts. Functional RED through
   actual host own load of explicit original TGS; verify old preparation rejects
