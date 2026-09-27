@@ -115,14 +115,19 @@ struct SourceRoleSnapshot final {
     SourceNodeKind kind = SourceNodeKind::Unknown;
     SourceLayerKind layerKind = SourceLayerKind::None;
     std::string parentRole;
+    std::string transformParentRole;
+    bool referencesComposition = false;
     std::vector<std::string> childRoles;
     std::string debugName;
     bool hidden = false;
     bool enabled = false;
     bool authoredStatic = false;
+    bool autoOrient = false;
     std::int32_t authoredLayerId = -1;
+    std::int32_t authoredParentLayerId = -1;
     double inFrame = 0.0;
     double outFrame = 0.0;
+    double startFrame = 0.0;
     float timeStretch = 1.0F;
     std::uint32_t dependencyBits = StaticDependencyNone;
     SourceFillRule fillRule = SourceFillRule::Winding;
@@ -136,8 +141,13 @@ struct SourceRoleSnapshot final {
     SourcePolystarType polystarType = SourcePolystarType::None;
     SourceTrimMode trimMode = SourceTrimMode::None;
     float miterLimit = 0.0F;
+    float repeaterMaximumCopies = 0.0F;
     std::int32_t gradientColorPointCount = 0;
+    std::int32_t layerWidth = 0;
+    std::int32_t layerHeight = 0;
     MotionColorValue solidColor;
+    bool hasSourceAssetReference = false;
+    bool maskInverted = false;
 
     [[nodiscard]] friend bool operator==(const SourceRoleSnapshot&, const SourceRoleSnapshot&) noexcept = default;
 };
@@ -326,13 +336,18 @@ SourceRoleSnapshot sourceRole(const MotionAssetModel& model, SourceNodeId id, co
     role.kind = source.kind;
     role.layerKind = source.layerKind;
     role.parentRole = roleFor(source.parent, ids);
+    role.transformParentRole = roleFor(source.transformParent, ids);
+    role.referencesComposition = source.referencedComposition.valid();
     role.debugName = source.debugName;
     role.hidden = source.hidden;
     role.enabled = source.enabled;
     role.authoredStatic = source.authoredStatic;
+    role.autoOrient = source.autoOrient;
     role.authoredLayerId = source.authoredLayerId;
+    role.authoredParentLayerId = source.authoredParentLayerId;
     role.inFrame = source.inFrame;
     role.outFrame = source.outFrame;
+    role.startFrame = source.startFrame;
     role.timeStretch = source.timeStretch;
     role.dependencyBits = source.dependencyBits;
     role.fillRule = source.fillRule;
@@ -346,8 +361,13 @@ SourceRoleSnapshot sourceRole(const MotionAssetModel& model, SourceNodeId id, co
     role.polystarType = source.polystarType;
     role.trimMode = source.trimMode;
     role.miterLimit = source.miterLimit;
+    role.repeaterMaximumCopies = source.repeaterMaximumCopies;
     role.gradientColorPointCount = source.gradientColorPointCount;
+    role.layerWidth = source.layerWidth;
+    role.layerHeight = source.layerHeight;
     role.solidColor = source.solidColor;
+    role.hasSourceAssetReference = source.sourceAssetRefHash != 0;
+    role.maskInverted = source.maskInverted;
     for (std::uint32_t offset = 0; offset < source.children.count; ++offset) {
         const auto index = source.children.first + offset;
         require(index < model.sourceChildIds.size(), "source child edge in range");
@@ -472,6 +492,10 @@ bool semanticSnapshotsEqual(const SemanticSnapshot& left, const SemanticSnapshot
     return compareSnapshots(left, right).empty();
 }
 
+BoundIds ownIds(const render::detail::OwnNativeEllipsePreparedAsset& prepared);
+std::shared_ptr<const render::detail::OwnNativeEllipsePreparedAsset> ownPreparedFrom(
+    std::string_view source);
+
 void equalSemanticSnapshotsCompare() {
     const SemanticSnapshot left{512, 512, 61, 60.0,
         {{"root"}, {"layer"}, {"group"}, {"ellipse"}, {"fill"}},
@@ -482,11 +506,11 @@ void equalSemanticSnapshotsCompare() {
 
 void comparatorMutationWitnesses() {
     SemanticSnapshot base{512, 512, 61, 60.0,
-        {{"root", SourceNodeKind::Composition, SourceLayerKind::None, {}, {}, {}, false, true},
-            {"layer", SourceNodeKind::Layer, SourceLayerKind::Shape, "root", {}, {}, false, true},
-            {"group", SourceNodeKind::ShapeGroup, SourceLayerKind::None, "layer", {}, {}, false, true},
-            {"ellipse", SourceNodeKind::Ellipse, SourceLayerKind::None, "group", {}, {}, false, true},
-            {"fill", SourceNodeKind::Fill, SourceLayerKind::None, "group", {}, {}, false, true}},
+        {{"root", SourceNodeKind::Composition, SourceLayerKind::None, {}, {}, false, {}, {}, false, true},
+            {"layer", SourceNodeKind::Layer, SourceLayerKind::Shape, "root", {}, false, {}, {}, false, true},
+            {"group", SourceNodeKind::ShapeGroup, SourceLayerKind::None, "layer", {}, false, {}, {}, false, true},
+            {"ellipse", SourceNodeKind::Ellipse, SourceLayerKind::None, "group", {}, false, {}, {}, false, true},
+            {"fill", SourceNodeKind::Fill, SourceLayerKind::None, "group", {}, false, {}, {}, false, true}},
         {{"ellipse.position", "ellipse", PropertySemantic::EllipsePosition, 0,
             PropertyValueType::Vec2, PropertyFlagAnimated, false, {},
             {true, 0.0, 60.0, SegmentInterpolation::Linear, SpatialInterpolation::None,
@@ -519,6 +543,39 @@ void comparatorMutationWitnesses() {
         "comparator sees paint byte");
     witness([](auto& snapshot) { snapshot.resources.geometryClass = ResourceClass::InstanceEvaluated; },
         "comparator sees resource class");
+}
+
+void sourceDefaultComparatorWitnesses() {
+    const auto prepared = ownPreparedFrom(staticOriginUnitSource());
+    const auto ids = ownIds(*prepared);
+    const auto baseline = buildSnapshot(prepared->model, ids, {0.0});
+    const auto witness = [&](auto mutate, std::string_view label) {
+        auto changed = std::make_shared<MotionAssetModel>(*prepared->model);
+        mutate(*changed);
+        const auto changedSnapshot = buildSnapshot(changed, ids, {0.0});
+        require(!semanticSnapshotsEqual(baseline, changedSnapshot), label);
+        ++counters.comparatorWitnesses;
+    };
+    witness([&](auto& model) { model.sourceNodes[ids.layer.index()].transformParent = ids.root; },
+        "comparator sees source transform-parent default");
+    witness([&](auto& model) { model.sourceNodes[ids.layer.index()].referencedComposition = makeId<CompositionId>(0); },
+        "comparator sees source referenced-composition default");
+    witness([&](auto& model) { model.sourceNodes[ids.layer.index()].autoOrient = true; },
+        "comparator sees source auto-orient default");
+    witness([&](auto& model) { model.sourceNodes[ids.layer.index()].authoredParentLayerId = 7; },
+        "comparator sees source authored-parent default");
+    witness([&](auto& model) { model.sourceNodes[ids.layer.index()].startFrame = 1.0; },
+        "comparator sees source start-frame default");
+    witness([&](auto& model) { model.sourceNodes[ids.layer.index()].maskInverted = true; },
+        "comparator sees source mask-inverted default");
+    witness([&](auto& model) { model.sourceNodes[ids.layer.index()].repeaterMaximumCopies = 1.0F; },
+        "comparator sees source repeater default");
+    witness([&](auto& model) { model.sourceNodes[ids.layer.index()].layerWidth = 512; },
+        "comparator sees source layer-width default");
+    witness([&](auto& model) { model.sourceNodes[ids.layer.index()].layerHeight = 512; },
+        "comparator sees source layer-height default");
+    witness([&](auto& model) { model.sourceNodes[ids.layer.index()].sourceAssetRefHash = 1; },
+        "comparator sees source asset-reference absence default");
 }
 
 BoundIds ownIds(const render::detail::OwnNativeEllipsePreparedAsset& prepared) {
@@ -733,6 +790,7 @@ int main() {
     try {
         equalSemanticSnapshotsCompare();
         comparatorMutationWitnesses();
+        sourceDefaultComparatorWitnesses();
         commonDomainMatrix();
         policyRows();
         ownershipIsolationRows();
