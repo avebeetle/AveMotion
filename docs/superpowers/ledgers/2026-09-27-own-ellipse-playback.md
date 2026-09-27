@@ -28,8 +28,17 @@ Ruling: Continue direct main with root-only Git and retain raw/SDD evidence — 
 
 ## Progress
 
-Design3725291 committed; plan self-review complete. Next Task1 through TDD and
-independent task review. User's request to consult Telegram periodically becomes
+Design3725291 and plan98c2587 committed/pushed. Task1 complete at78e7c39:
+independent review spec compliant/Approved, no Critical/Important. Full none39/39,
+4.68s;Telegram87/87,99.19s;Samsung scoped4/4,0.46s. Root fresh focusedTelegram4/4,
+0.37s. Expected compiling-stub RED retained. Initial registration setup error and
+one missing-VS CTest invocation disclosed; rerun inside VS passed without code/test
+weakening. Samsung vendored C4251 Minor retained for final review, no vendor edits.
+Reviewer cross-task limitation resolved for Task1: exact scoped diff confirms
+reader/admission/model/stream/certificate/Player/public sources unchanged, full
+none/Telegram tests pass; final gates will cover assembled Task2. Next Task2.
+
+User's request to consult Telegram periodically becomes
 a source-inspection checkpoint at architecture decisions, not a new automation.
 Local pinned Telegram source already establishes duration/mapping. Avelabs host
 inventory confirms existing clock/QTimer/worker/mailbox boundary; scheduling and

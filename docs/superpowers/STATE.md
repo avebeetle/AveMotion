@@ -10,7 +10,10 @@ Scope: extract shared first-party playback control, preserve Runtime behavior,
 thin private own time->stream wrapper. No second scheduler, Player/UI change,
 new primitive or public loader. User requests no unnecessary work and Telegram
 source checkpoints at architecture decisions. One product writer; root-only Git.
-Preflight none38/38, host unchanged. Next Task1, then Task2, reviews/final gates.
+Task1 complete78e7c39, independent spec/quality Approved; none39/39,TG87/87,
+Samsung scoped4/4;root focusedTG4/4. Initial no-VS nested configure failure and
+setup RED registration miss retained/disclosed. Vendor C4251 Minor, no open
+Critical/Important. Next Task2 own wrapper, then whole-stage review/final gates.
 No automation resumed. SDD workspace for this plan records live execution.
 
 ## Previous handoff — Part26H complete

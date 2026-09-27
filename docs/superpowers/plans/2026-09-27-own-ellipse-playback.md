@@ -54,7 +54,7 @@ commitPlaybackCompletion(control,snapshot,now).
 All noexcept; snapshots leave frameIndex0 for caller mapping. Helper owns no
 Runtime/Asset pointer, rendering state, scheduler or reference dependency.
 
-- [ ] Write literal table/transition tests against compiling stubs, register
+- [x] Write literal table/transition tests against compiling stubs, register
   avemotion.runtime.playback_control in every variant. Show functional RED.
   With duration1s: play0->position.25 at250ms; pause250ms freezes at.25;
   resume500ms->.5 at750ms; direction change at750ms preserves.5;
@@ -65,22 +65,22 @@ Runtime/Asset pointer, rendering state, scheduler or reference dependency.
   play Holding restarts at direction endpoint, resume Holding does not restart.
   Seek Holding becomes Paused. Idempotent play/pause/resume/direction revisions
   and existing non-idempotent setter revisions are pinned.
-- [ ] Before writing edge tests name the break each catches. Cover negative,
+- [x] Before writing edge tests name the break each catches. Cover negative,
   zero, NaN and infinite rate rejection without mutation; nonfinite/clamped
   position; backward presentation time; INT64_MIN/MAX timestamps without integer
   subtraction overflow; existing invalid-duration/extreme-rate policy. Expected
   literals must not call shared helper code. Use meaningful public outcomes,
   not exact source text or implementation-layout change detectors.
-- [ ] Implement by moving existing first-party algorithms unchanged; delegate
+- [x] Implement by moving existing first-party algorithms unchanged; delegate
   Runtime reference-enabled verbs/snapshot/commit. Preserve all no-ref branches,
   frameAtPosition Samsung rounding/large-count fallback and diagnostics.
   No opportunistic policy fix or new thread. Deduplicate real control logic;
   unavoidable no-ref setter branches remain their existing simple semantics.
-- [ ] GREEN: fresh configure/build/full CTest windows-msvc-direct2d and
+- [x] GREEN: fresh configure/build/full CTest windows-msvc-direct2d and
   windows-msvc-telegram-debug. Configure/build Samsung and targeted regex
   `avemotion\.(runtime\.(playback_control|playback|frame_mapping)|player\.scheduler)$`.
   Record all warnings/failures by name, no full Samsung green claim.
-- [ ] Self-review against spec and unchanged Runtime behavior; detailed report
+- [x] Self-review against spec and unchanged Runtime behavior; detailed report
   with raw paths/commands/counts and RED/GREEN. Root verifies focused helper
   plus old playback/Player, commits, independent spec/quality review, then push.
 
