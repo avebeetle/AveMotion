@@ -63,21 +63,21 @@ several short RED/GREEN cycles, not a helper checkpoint presented as visible UI.
   badge unchanged. Common error wrapper may retain RuntimeErrorCode wording
   for reference only; own failures identify OwnMotionError and actual stage.
 
-- [ ] Step 1: Record clean host BASE712d454 and current engine SHA, protected
+- [x] Step 1: Record clean host BASE712d454 and current engine SHA, protected
   Release hash, no out directory; read current MotionWorker/control/page tests.
   Read spec plus out/part26k-design/{engine-inventory,host-tests}.md as context
   (recommendations there are not requirements; this plan/spec decide).
   Run baseline reference standalone Motion Lab CTest in a fresh
   build/cmake/part26k-reference-tests tree, raw under build/checks/part26k-task1.
 
-- [ ] Step 2: Add functional renderer RED tests with a compiling null/error
+- [x] Step 2: Add functional renderer RED tests with a compiling null/error
   stub and own no-reference test target. Use unchanged basic JSON. Assert at
   256x256: transparent corner, blue/cyan interior near (90,128) at position0,
   visible mass moves right near (166,128) at position1; alpha/premultiplication
   and exact QImage format/size. An independently hand-derived pixel checks
   actual output, not the renderer against itself. Save failing raw output.
 
-- [ ] Step 3: Implement preparation and WARP adapter. Compose existing parser
+- [x] Step 3: Implement preparation and WARP adapter. Compose existing parser
   pipeline; metadata width1..4096, frames1..18000, finite positive rate/duration.
   Reject empty/unknown input, malformed UTF8/JSON, unsupported structure and own
   reader limits with actual stage/path; use strict existing decodeTgs limits.
@@ -89,7 +89,7 @@ several short RED/GREEN cycles, not a helper checkpoint presented as visible UI.
   2 independent playbacks sharing prepared asset, transparent inactive output,
   reset, zero/oversize viewport refusal and image survival beyond renderer.
 
-- [ ] Step 4: Add compiling behavioral build-selection RED before changing
+- [x] Step 4: Add compiling behavioral build-selection RED before changing
   helper/root logic: own-warp has no rlottie target and no reference library in
   app/smoke build/link closure (the existing EXCLUDE_FROM_ALL Reference wrapper
   declaration may remain in the codemodel), D2D exists;
@@ -99,7 +99,7 @@ several short RED/GREEN cycles, not a helper checkpoint presented as visible UI.
   if it eliminates repeated PRIVATE source/include/link definitions. Link
   existing Formats/Rendering/Player/Direct2D plus d3d11. Do not add exported target.
 
-- [ ] Step 5: Add worker/page functional RED (own file currently cannot produce
+- [x] Step 5: Add worker/page functional RED (own file currently cannot produce
   first frame through reference-free Runtime). Wire own preparation, candidate
   registrations, typed snapshots and render at a single sampled tickTime.
   Use existing transport/visibility/generation/pixel-budget logic. Successful
@@ -108,7 +108,7 @@ several short RED/GREEN cycles, not a helper checkpoint presented as visible UI.
   report once without publishing incomplete batch; explicit controls can retry.
   Expose actual renderer counters in diagnostics and truthful page labels.
 
-- [ ] Step 6: Run all reusable existing worker/page cases in both modes.
+- [x] Step 6: Run all reusable existing worker/page cases in both modes.
   Reference pixel oracle stays reference-only; own counterpart uses literal
   visible/color/movement assertions. Generate temporary TGS from exact basic
   fixture bytes using test-only stored DEFLATE+CRC or existing Python stdlib,
@@ -123,13 +123,13 @@ several short RED/GREEN cycles, not a helper checkpoint presented as visible UI.
   private test-access friend and real Viewport refusal at renderBoundary; do not
   claim native HRESULT injection. An explicit subsequent valid load must recover.
 
-- [ ] Step 7: Build own static smoke that runs real prepare/playback/render
+- [x] Step 7: Build own static smoke that runs real prepare/playback/render
   against basic JSON and checks nonempty pixels; no QtTest in static app.
   Keep old reference smoke selected in reference mode. Update tests/CMake,
   build instructions and boundary script for both modes. Preserve supported
   source/CRT/no-install guards; real configure/link behavior, not source grep.
 
-- [ ] Step 8: Full tests for each standalone Motion Lab build, serial:
+- [x] Step 8: Full tests for each standalone Motion Lab build, serial:
   cmake --build <tree> --config Release --parallel 4;
   ctest --test-dir <tree> -C Release --output-on-failure --no-tests=error -j 1.
   Dynamic PATH C:/vcpkg/installed/x64-windows/bin; explicit Windows plugin path.
@@ -137,7 +137,7 @@ several short RED/GREEN cycles, not a helper checkpoint presented as visible UI.
   attempts and QtTest totals/warnings/skips in report. Run real boundary script
   with a new build/checks/part26k-boundary root; no GUI loops or timed workloads.
 
-- [ ] Step 9: Self-review and write task report with functional RED/GREEN,
+- [x] Step 9: Self-review and write task report with functional RED/GREEN,
   exact commands, complete result totals, file list, deviations and concerns.
   Root verifies scoped diff/tests and creates normal commit, then fresh task
   reviewer judges spec+quality. Workers never commit or spawn reviewers.

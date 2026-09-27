@@ -28,8 +28,17 @@ Ruling: Work on the two existing main checkouts with root-only Git and retain ra
 ## Progress
 
 Design written/self-reviewed/committed9170bc5. Plan self-review complete;
-Task1 pending sole writer, functional RED, GREEN, task review. Task2 pending.
+Task1 complete host7e0ec58 + testfixe701e3f, independent task review/fix1 accepted.
+Reference CTest3/3(QtTest42pass), own4/4(52pass) before review; renderer10/10
+after adding required translucent raw-byte assertion. Boundary31PASS; no skip.
+All failed attempts and mutation witnesses retained, not labeled historical RED.
+Root confirmed protected Release hash/out unchanged. Task2 now pending.
 No accepted package/dependency/Windows/automation change.
+
+Task1: minor (deferred): selected variant persists in cache and prevents an
+in-place renderer-mode switch; documented fresh-directory workflow avoids it.
+Whole-stage reviewer must triage. Reference67 warning lines and own4 derive from
+unchanged vendor/UI sources; no new Motion Lab warning in recorded builds.
 
 Ruling: Check own app/smoke actual build/link closure, not the mere declaration of avemotion_reference — current engine always declares an EXCLUDE_FROM_ALL wrapper and spec prohibits building/linking it, not its declaration — cost if wrong is a missing transitive dependency detection, addressed by final actual link inspection.
 
