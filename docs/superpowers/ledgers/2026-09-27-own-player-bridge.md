@@ -31,3 +31,15 @@ Ruling: Follow explicit main/root-Git workflow and retain raw/SDD evidence — p
 Design committed5489760; detailed plan self-reviewed, tests cover all five focus
 risks. Next Task1 writer, task review, Task2, whole-stage review and final gates.
 No automation, dependencies, Windows settings or Avelabs changes.
+
+Task1 complete3558643..a881b68, product6e9c769 and test-onlyfixa881b68.
+Independent spec/quality review found one Important remove-repaint test gap;
+fix round1/5 addressed it and scoped re-review accepted, no new breakage.
+Freshnone41/41,TG90/90,Samsungtargeted2/2; after final test-onlyfix none41/41,
+TG/Samsung2/2 and rootTG2/2,0.06s. Fullnone record Minor is now closed.
+Minor deferred:177 Samsung vendor/MSVC warning lines, preserved without
+suppression. Initial CMake target placement and explicit-bool compile errors
+are setup failures, not functional RED; actual compiling-stub RED retained.
+Cross-task reviewer limits resolved for Task1: it has no own scene producer;
+H/I allocator/cache/domain contracts untouched by the six-file change. Task2
+and final checks must prove real own wiring and retain those contracts.

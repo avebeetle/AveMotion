@@ -49,18 +49,18 @@ invalid). This is a private header, not installed/exported API. Public Player
 only gains detail forward declaration and friendship. Own adapter in Task2 uses
 these exact field names/signatures; source operations name snapshot internally.
 
-- [ ] Write no-ref behavioral tests around real Player using a test-only source
+- [x] Write no-ref behavioral tests around real Player using a test-only source
   backed by the existing PlaybackControl plus explicit rate1/duration1. Test
   table implements concrete controls, not a duplicate scheduler. Compiling stubs
   for private add/source must fail the assertion that a valid source can return
   its initial scheduled frame; capture functional RED before implementation.
-- [ ] Implement private table validation and registration. Public Runtime
+- [x] Implement private table validation and registration. Public Runtime
   addInstance builds its static table and source, retaining old null/error
   messages/options/duplicate validation semantics. Route only source operations
   through the table; keep arithmetic, storage, registry, handle generation,
   lifecycle and callback policies unchanged. Runtime instance lookup aliases its
   retained genuine owner; generic source frames keep null/invalid Runtime fields.
-- [ ] Literal tests: first stopped tick has one FirstFrame/PlaybackChanged frame,
+- [x] Literal tests: first stopped tick has one FirstFrame/PlaybackChanged frame,
   next unchanged tick empty; play at0 with rate1/source1 gives deadline1s;
   tick3.5s yields one TimelineAdvanced frame, skipped2, next4s. Invalid source,
   missing callback, invalid maximum rate and duplicate owner mutate no registry
@@ -69,10 +69,10 @@ these exact field names/signatures; source operations name snapshot internally.
   Callback replacement preserves that pending repaint; destructor/move retires
   old callbacks. Hidden Freeze with manual pause does not resume; KeepUp avoids
   automatic pause. Exercise diagnostics/reset storage and current counts.
-- [ ] GREEN focused new test avemotion.player.source (unconditional), then fresh
+- [x] GREEN focused new test avemotion.player.source (unconditional), then fresh
   full none and Telegram suites; Samsung targeted avemotion.player.scheduler
   and avemotion.player.source. Keep known vendor warnings visible.
-- [ ] Self-review/report task-1-report.md with commands/raw RED/GREEN/actual
+- [x] Self-review/report task-1-report.md with commands/raw RED/GREEN/actual
   results and concerns; root focused check, scoped commit, independent task
   spec+quality review, STATE/ledger update and guarded ordinary push.
 

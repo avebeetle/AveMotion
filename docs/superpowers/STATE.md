@@ -10,8 +10,11 @@ scheduler; internal owning source table and two typed own registration/lookup
 functions, no second facade registry/timer/worker. Private friend declaration is
 the only installed header change. Rendering->Player, neverreverse. Runtime
 identity remains genuine; own ScheduledFrame Runtime fields null/invalid.
-Tasks1/2 then independent final review/frozen gates. Fresh no-ref baseline40/40,
-5.17s. One writer/root-only Git, directmain; SDD records checkpoint and agents.
+Task1 complete6e9c769 + testfixa881b68, independent task review/fix1 accepted.
+Fullnone41/41,TG90/90, Samsungtargeted2/2; final test-onlyfix none41/41 and
+TG/Samsung2/2, rootTG2/2. Setup RED mistakes and vendor warnings retained.
+Task2 next, then independent final review/frozen gates. One writer/root-only
+Git, directmain; SDD records checkpoint and agents.
 No Avelabs changes/build/GUI in J: actual QImage output currently reference CPU,
 own scene output requires the next narrow preparation/render host bridge.
 No automation resumed; preserve raw/SDD, dependencies/vendor/goldens/Release.
