@@ -8,6 +8,8 @@
 #include "avemotion/render/RenderPlanner.hpp"
 #include "avemotion/runtime/Runtime.hpp"
 
+#include <rlottie.h>
+
 #include <array>
 #include <cmath>
 #include <fstream>
@@ -27,6 +29,9 @@ void require(bool condition, const std::string& message) {
     if (!condition) throw std::runtime_error(message);
 }
 MotionTime at(double seconds) { return MotionTime::fromSeconds(seconds); }
+double ordinaryTelegramPosition(double position) {
+    return std::isfinite(position) ? position : 0.0;
+}
 
 void equalSnapshot(const runtime::PlaybackSnapshot& a,
                    const runtime::PlaybackSnapshot& b, const std::string& label) {
@@ -50,9 +55,12 @@ void matrixCase(const test::NativeEllipseTestAsset& testAsset,
     auto created = runtime.createInstance(loaded.asset);
     require(bool(created), label + " ordinary instance created");
     auto& old = *created.instance;
-    require(own.playback->durationSeconds() == loaded.asset->metadata().durationSeconds
-        && own.playback->frameRate() == loaded.asset->metadata().frameRate,
-        label + " duration and rate match directly loaded Telegram");
+    auto ordinaryTelegram = rlottie::Animation::loadFromData(
+        testAsset.json, label + "-direct-telegram", {}, false);
+    require(bool(ordinaryTelegram), label + " direct cache-disabled Telegram loaded");
+    require(own.playback->durationSeconds() == ordinaryTelegram->duration()
+        && own.playback->frameRate() == ordinaryTelegram->frameRate(),
+        label + " duration and rate match ordinary Telegram");
     const auto decoded = runtime::detail::decodeNativeEllipseInput(testAsset.json);
     require(bool(decoded), label + " input decoded");
     test::NativeEllipseOracle oracle(testAsset.json);
@@ -68,8 +76,9 @@ void matrixCase(const test::NativeEllipseTestAsset& testAsset,
         const auto beforeOwn = own.playback->playbackSnapshot(now);
         const auto beforeOld = old.playbackSnapshot(now);
         equalSnapshot(beforeOwn, beforeOld, name + " before");
-        const auto frame = old.frameAtPosition(beforeOld.normalizedPosition);
-        require(beforeOwn.frameIndex == frame, name + " old mapped frame");
+        const auto frame = ordinaryTelegram->frameAtPos(
+            ordinaryTelegramPosition(beforeOld.normalizedPosition));
+        require(beforeOwn.frameIndex == frame, name + " ordinary Telegram mapped frame");
         auto emitted = own.playback->evaluateAt(now, width, height);
         auto ordinaryEmission = old.evaluateAt(now, width, height);
         require(bool(emitted) && bool(ordinaryEmission), name + " successful matched emissions");
@@ -101,8 +110,9 @@ void matrixCase(const test::NativeEllipseTestAsset& testAsset,
     for (const double position : {-1.0, 0.0, 0.249999, 0.25, 0.5, 1.0, 2.0,
              std::numeric_limits<double>::quiet_NaN(),
              std::numeric_limits<double>::infinity()}) {
-        require(own.playback->frameAtPosition(position) == old.frameAtPosition(position),
-            label + " clamped, nonfinite or fractional mapped frame");
+        require(own.playback->frameAtPosition(position)
+            == ordinaryTelegram->frameAtPos(ordinaryTelegramPosition(position)),
+            label + " clamped, nonfinite or fractional ordinary Telegram mapped frame");
     }
     sample("stopped", at(0));
     own.playback->play(at(0)); old.play(at(0));
