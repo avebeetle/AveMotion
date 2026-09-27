@@ -66,5 +66,13 @@ out/part26h-design/baseline-none-vsdev-2606632.log. Both attempts retained.
   after checking planner's asset0/raw-instance-ID rule; failed attempt retained.
   Review Minor: existing vendor C4251 warning retained, not suppressed or fixed
   by changing vendor code. Carry as final evidence limitation, not open defect.
-- Task3 pending: WARP/CPU pixels and cache/lifetime proof.
+- Task3 complete: productde1be3e, independent spec compliant/quality Approved;
+  no Critical/Important.180/180 original-scene WARP exact BGRA cases plus
+  ordinary CPU unchanged-policy PASS;160 visible/20 empty. Old capture extraction
+  1/1, focusedpreview15/15 and fullpreview81/81 before the final test-only
+  same-stream visible->inactive->retained-visible replay addition. Addition
+  focused1/1; root fresh old/newcapture2/2,5.01s. Actual cache/lifetime counters
+  retained; no backend edits, hardware/performance or paint-cache claim.
+  Existing C4251 warning retained as evidence limitation. Final frozen full
+  gates still required and will supersede the pre-follow-up full run.
 - Final review/full platform/private-boundary gates and report pending.

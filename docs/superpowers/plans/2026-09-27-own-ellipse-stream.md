@@ -156,24 +156,24 @@ in pixel oracle.
 As in Task2, declare the unchanged oracle header's legacy types in TEST includes
 and assign its raw scene a fixed nonzero TEST ID for its separate planner.
 
-- [ ] Extract the existing test-only WARP surface mechanically; build/run existing
+- [x] Extract the existing test-only WARP surface mechanically; build/run existing
   `avemotion.direct2d.capture` to prove unchanged behavior before new assertions.
-- [ ] New capture test observes functional RED via a compiling unset candidate
+- [x] New capture test observes functional RED via a compiling unset candidate
   draw step, then uses own plans to draw. Keep original ordinary reference
   scenes/plans in distinct planner/backend domains. Compare exact WARP BGRA bytes;
   independent ordinary CPU raster uses unchanged PixelComparisonPolicy.
-- [ ] Six assets: base animated, static-visible, activity10..20, nonlinear easing,
+- [x] Six assets: base animated, static-visible, activity10..20, nonlinear easing,
   nonsquare640x360, fractional-coordinates from existing15case matrix. Color
   boundaries remain covered by the full15case semantic matrix in Task2.
   Frames [0,10,19,20,30,60] x all five existing CaptureProfiles =180 cases.
   Own/reference scenes use logical viewport; CPU uses physical pixel dimensions.
   Empty-case assertions and nonempty control prevent vacuous success. Write raw
   metrics and mismatch images to a fresh test output location; no goldens.
-- [ ] Test own-only backend A/B/A with one own planner, static sharing, distinct
+- [x] Test own-only backend A/B/A with one own planner, static sharing, distinct
   animated slots, repeat cache hit, retained older plan after newer/inactive,
   source/stream destruction and forget; clear/recreate resource domain then draw
   retained plan. Assert actual cache diagnostics and equal retained pixels.
-- [ ] Register only when Direct2D capture and Telegram are enabled. Configure/build
+- [x] Register only when Direct2D capture and Telegram are enabled. Configure/build
   windows-msvc-win32-preview and run `ctest --test-dir
   out/build/windows-msvc-win32-preview --output-on-failure -R
   "(own_native_ellipse|direct2d|win32)"`; no product backend edits.

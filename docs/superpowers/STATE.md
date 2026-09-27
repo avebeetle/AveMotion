@@ -2,7 +2,7 @@
 
 Updated: 2026-09-27
 
-## Current handoff — Part26H own stream and semantic parity accepted; pixels next
+## Current handoff — Part26H three tasks accepted; final review/gates next
 
 G complete at2606632; do not repeat. H spec2d739f5 at
 docs/superpowers/specs/2026-09-27-own-ellipse-stream-design.md; controller-approved
@@ -22,8 +22,11 @@ disclosed, not claimed as retained evidence. Writers/reviewers quiescent.
 Task2 complete: product4e1fa45, independent spec/quality review Approved.
 7920 original own/ordinary scene+plan comparisons,12 mutation witnesses;
 full Telegram86/86,102.35s; root fresh differential1/1,10.55s. Vendor C4251
-warning retained as known evidence noise, not suppressed. Task3 WARP/CPU pixels
-and cache/lifetime next, then whole-stage review and full final gates.
+warning retained as known evidence noise, not suppressed. Task3 complete at
+de1be3e, independent spec/quality review Approved:180/180 WARP exact/CPU-policy
+cases; same-stream inactive retained replay, destruction, cache/domain tests.
+Fullpreview81/81 preceded isolated final replay assertion; root final pair2/2
+passes after it. Whole-stage review and frozen full gates next, not yet complete.
 Baseline none37/37 under VsDevCmd; prior plain-shell compiler discovery failure
 retained, not product regression/functional RED. Current SDD is
 .superpowers/sdd/2026-09-27-own-ellipse-stream/progress.md.
