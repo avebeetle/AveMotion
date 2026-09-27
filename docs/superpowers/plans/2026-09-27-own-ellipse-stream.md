@@ -182,15 +182,15 @@ and assign its raw scene a fixed nonzero TEST ID for its separate planner.
 
 ## Root final gate and handoff
 
-- [ ] One whole-stage reviewer of base2606632..completed product, deferred minors
+- [x] One whole-stage reviewer of base2606632..completed product, deferred minors
   included. At most one combined final fix wave and scoped re-review.
-- [ ] Fresh full configure/build/CTest none, Telegram, windows-msvc-win32-preview
+- [x] Fresh full configure/build/CTest none, Telegram, windows-msvc-win32-preview
   sequentially, exact HEAD/source hashes recorded with raw output. Existing
   out/part26g gate instruments may be adapted into out/part26h, never overwritten.
-- [ ] Samsung configure/listing only; existing all-vendor and TGS16 provenance;
+- [x] Samsung configure/listing only; existing all-vendor and TGS16 provenance;
   actual new stream MSVC include trace, link/install/private no-ref closure;
   no inherited G trace claim as proof of new source. No private headers installed.
-- [ ] Check unchanged host Git/EXE/UI-out. Report supported bounded semantics,
+- [x] Check unchanged host Git/EXE/UI-out. Report supported bounded semantics,
   counters/lifecycle/pixels and limitations; no benchmark or hardware claim.
   Update STATE, durable ledger, SDD and docs/PART26H_OWN_ELLIPSE_STREAM_REPORT.md;
   docs-only seal, guarded ordinary push. Preserve evidence; no automation action.

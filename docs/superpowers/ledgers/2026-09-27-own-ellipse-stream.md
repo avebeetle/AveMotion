@@ -75,4 +75,42 @@ out/part26h-design/baseline-none-vsdev-2606632.log. Both attempts retained.
   retained; no backend edits, hardware/performance or paint-cache claim.
   Existing C4251 warning retained as evidence limitation. Final frozen full
   gates still required and will supersede the pre-follow-up full run.
-- Final review/full platform/private-boundary gates and report pending.
+- Final review/full platform/private-boundary gates and report complete; final
+  details below supersede intermediate pending checkpoints.
+
+## Whole-stage review dispositions
+
+Review2606632..8ecb384 found no Critical/Important; one Minor private-header
+contract location gap. The comment belongs beside create/emit, as the approved
+plan already requires. Single final comment-only fix wave dispatched; no new
+runtime behavior, architecture or authority. Known vendor warning and retention
+gap stay disclosed. Root confirms each review-declined judgment below; these
+reaffirm existing approved boundaries, not additional implementation decisions.
+
+| Review item | Root disposition |
+| --- | --- |
+| Mixed producer/allocator domains | Explicitly unsupported; retain collision characterization and own-only precondition |
+| Reload with surviving scenes/plans/domains | Explicitly prohibited; all associated objects retire before allocator unload/reload |
+| Concurrent emit on one stream / TSan | Single-writer remains required; functional distinct-stream isolation is not race-freedom proof |
+| Automatic cache eviction / unbounded stream count | Caller owns forget/reset; no implicit bounded-memory claim |
+| Full Lottie/SVG, primitives, broad numeric parity, loader/fallback/scheduler/handles/UI | Outside admitted ellipse stage; existing public path and host unchanged |
+| Full graph equality inside H comparator | G owns graph proof; H validates original resource/alias/schema before stripping both comparison-copy pointers |
+| upstreamChangeBits equality | Inherited ordinary-history exclusion unchanged; independent own success history retained |
+| Hardware/performance/other backends/full Samsung | WARP software only; Samsung configure/provenance only, no speedup/hardware claims |
+| Fresh platform/provenance/private closure/host | IN scope and pending root gates; must complete before H seal |
+
+## Final acceptance
+
+Single comment-only final fix3e655f1 accepted in final-fix-review.md, no remaining
+finding. All9 review dispositions above accepted; the last row is now completed,
+not waived. Root final frozen3e655f10fc08e73b8670f6b9e1fabbe05201300e gates:
+none38/38,5.13s; Telegram86/86,99.07s; preview81/81,108.21s;0skips/0failures.
+Samsung configure/listing only; both vendor trees/corpus and16TGS verified.
+Actual new-source trace3/3 with119headers each,19first-party/68MSVC/32SDK and no
+unclassified/reference/vendor include. Script and root manual192-link-node /
+install / source / header / host closure accepted,919source/config and6instrument
+hashes stable. Raw attempts001 retained. See report for exact commands and metrics.
+
+Host clean712d454, accepted EXE hash unchanged, out absent. No host/automation
+write or cleanup. Final report docs/PART26H_OWN_ELLIPSE_STREAM_REPORT.md; final
+docs-only seal and normal guarded push follow, preserving tested product bytes.

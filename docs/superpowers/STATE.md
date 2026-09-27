@@ -2,7 +2,41 @@
 
 Updated: 2026-09-27
 
-## Current handoff — Part26H three tasks accepted; final review/gates next
+## Current handoff — Part26H complete
+
+Final tested product3e655f10fc08e73b8670f6b9e1fabbe05201300e. All3tasks and task
+reviews accepted; whole-stage2606632..8ecb384 found no Critical/Important. Sole
+Minor private-header contract fixed in3e655f1, exactly one scoped final re-review
+accepted, no open finding or extra review wave. Do not repeat H/G tasks.
+
+Root fresh sequential configure/incremental build/full CTest: none38/38,5.13s;
+Telegram86/86,99.07s; Win32-preview81/81,108.21s,0skips/0failures. Samsung only
+configure/listing; both vendors/corpus and16TGS integrity PASS. Actual new-source
+MSVC traces all3presets:119headers each,19first-party/68MSVC/32SDK,0unknown and
+no vendor/reference/rapidjson. Script + manual192-link-node/install/include/host
+closure accepted;919source/config and6instrument hashes stable. All attempts001.
+
+Semantic matrix7920comparisons/12mutations; pixel matrix180/180 exact WARP and
+unchanged CPU policy,160visible/20empty; actual cache/lifetime counters and same-
+stream inactive replay covered. This is constrained own ellipse scene/plan output,
+not full Lottie/SVG, a new public loader/scheduler, performance or hardware proof.
+Own-only domains/nonrecycled IDs/single-writer and caller forget/reset remain
+explicit contracts. Public Runtime is still reference-backed. No UI changes.
+
+Report docs/PART26H_OWN_ELLIPSE_STREAM_REPORT.md; spec/plan/durable ledger under
+docs/superpowers dated2026-09-27-own-ellipse-stream. Ignored SDD progress/reviews
+and out/part26h raw evidence retained. Known vendorC4251 and initial overwritten
+scratch-launcher log limitation disclosed; counter mutation RED not misrepresented
+as separate test-first evidence. No automation resumed or cleanup performed.
+
+Avelabs clean712d454a7c5c175ad59a3ca547c6b22ce8392da1, out absent, Release EXE hash
+C92F26EE8FEB4FF03F6DC7F4AFFF4B11FB48142743D1EDCCB4E213AAA81F82C2 unchanged.
+Next separately design own scheduling/host adaptation and producer/cache lifetime
+for the admitted subset, then isolated static Avelabs acceptance; no host switch
+or broader primitive coverage implied. Documentation-only seal must preserve
+tested source/instrument identity; final SDD checkpoint records published SHA.
+
+## Historical Part26H task checkpoints
 
 G complete at2606632; do not repeat. H spec2d739f5 at
 docs/superpowers/specs/2026-09-27-own-ellipse-stream-design.md; controller-approved
