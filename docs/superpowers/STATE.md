@@ -7,11 +7,16 @@ Updated: 2026-09-27
 User explicitly requested own integration in the canonical host build/Release,
 ordinary commits/push and controller selection of the next example. L spec
 1bc19f7 and plan dddc56f dated2026-09-27-own-working-release are approved under
-delegated authority. Host base f452922; engine product remains K. Task1 pending:
-one host writer, functional TDD, independent review, root-only Git. Task2 root
+delegated authority. Host base f452922; engine product remains K. Task1 complete
+host699fc0b: Python95/29, boundaryPASS, Qt reference3/3, own4/4 and working-entry
+4/4. Task review no product defect; mandatory-file-list deviation accepted in
+ledger (existing PDB routing/guard files needed no edits). Warnings/raw-log
+caveat preserved in report. One writer, functional TDD, root-only Git. Task2 root
 promotion only after full backup, verified candidate/notices/imports/PDB and
 whole-stage review. No reference-linked install exception or license decision.
 Current canonical EXE C92F26EE...82C2 stays unchanged until verified promotion.
+User closed working app; read-only process check confirmed none. Whole-stage
+review and real candidate build/import/PDB/package/promotion still pending.
 Spec/plan/durable ledger are in docs/superpowers; ignored SDD uses matching slug.
 After L separately design full unchanged first-party primitive_geometry fixture
 coverage (seven shapes); it is not a real downloaded Telegram sticker. No new

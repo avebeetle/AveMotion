@@ -25,5 +25,24 @@ that subsequent real installs still require the documented backup discipline;
 this is not a new atomic updater. Compilation itself remains intermediate.
 
 Spec self-reviewed/committed1bc19f7. Plan self-reviewed and controller-approved;
-SDD selected under delegated authority. Task1 pending; Task2 pending. Root owns
+SDD selected under delegated authority. Task1 implemented/reviewed; Task2 pending. Root owns
 Git/promotion, no writer may touch canonical Release/PDB before root backup.
+
+Task1 host699fc0b: functional RED/GREEN; deployment95/95, build29/29,
+boundaryPASS, referenceCTest3/3(Qt42), own4/4(Qt53), working-entry4/4(Qt53).
+Root fresh verifier19/19 and diffcheckpassed. Task review found no product
+defect; one mandatory-file-list deviation below and pre-existing warnings.
+
+Ruling: Accept unchanged DiagnosticSymbols.cmake/test_diagnostic_symbols.py/
+test_build_boundary.py instead of mandatory edits — existing lab PDB routing
+already keeps outputs intermediate, original guard suites pass unchanged and
+new own-package cases are in test_own_release_build.py — cost is coverage
+distributed between suites rather than the originally enumerated files. Root
+checked existing routing and guards; no dummy edits or duplicated tests.
+
+Task1 complete f452922..699fc0b with that explicit accepted brief deviation.
+Minor deferred: existing CMake unused-overlay warnings and UI/vendor compiler
+warnings remain, with provenance/counts in task report. Ancillary configure
+logs were reused; aggregate RED/final logs remain; no claim every intermediate
+per-case file is an immutable record. All actual static app/import/PDB/backup/
+promotion checks remain Task2, not inferred from mock/staged fixture checks.
