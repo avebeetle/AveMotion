@@ -296,6 +296,22 @@ void computeFingerprints(MotionAssetModel& model) noexcept {
 
 } // namespace
 
+std::uint64_t hashCanonicalGeometry(
+    runtime::FillRule fillRule, const runtime::EvaluatedPath& path) noexcept {
+    return hashGeometry(fillRule, path);
+}
+
+std::uint64_t hashCanonicalPaint(
+    const runtime::EvaluatedStroke& stroke,
+    const runtime::EvaluatedPaint& paint) noexcept {
+    return hashPaint(stroke, paint);
+}
+
+void refreshAssetModelDerivedData(MotionAssetModel& model) noexcept {
+    computeStatistics(model);
+    computeFingerprints(model);
+}
+
 AssetModelUpdateResult updateAssetModel(
     std::shared_ptr<const MotionAssetModel> previous,
     const runtime::EvaluatedScene& scene,

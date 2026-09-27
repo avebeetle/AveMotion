@@ -198,16 +198,18 @@ avemotion_set_warnings(avemotion_player)
 add_library(avemotion_rendering STATIC
     src/render/RenderPlanner.cpp
     src/render/PrimitivePathGenerator.cpp
+    src/render/NativeEllipsePathMaterializer.cpp
+    src/render/OwnNativeEllipsePreparedAsset.cpp
     src/render/RepeaterTransform.cpp
     src/render/TrimPathGenerator.cpp
     src/render/SourceGeometryProjector.cpp
     src/render/HeadlessBackend.cpp)
 add_library(AveMotion::Rendering ALIAS avemotion_rendering)
+target_include_directories(avemotion_rendering PRIVATE
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/runtime"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/model")
 if(AVEMOTION_RLOTTIE_VARIANT STREQUAL "telegram")
     target_sources(avemotion_rendering PRIVATE src/render/NativeEllipseStream.cpp)
-    target_include_directories(avemotion_rendering PRIVATE
-        "${CMAKE_CURRENT_SOURCE_DIR}/src/runtime"
-        "${CMAKE_CURRENT_SOURCE_DIR}/src/model")
 endif()
 set_target_properties(avemotion_rendering PROPERTIES EXPORT_NAME Rendering)
 target_compile_features(avemotion_rendering PUBLIC cxx_std_20)
@@ -524,6 +526,23 @@ if(BUILD_TESTING)
     avemotion_set_warnings(avemotion_own_native_ellipse_model_tests)
     add_test(NAME avemotion.runtime.own_native_ellipse_model
         COMMAND avemotion_own_native_ellipse_model_tests)
+
+    add_executable(avemotion_own_native_ellipse_resources_tests
+        tests/own_native_ellipse_resources_tests.cpp)
+    target_include_directories(avemotion_own_native_ellipse_resources_tests PRIVATE
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/render"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/runtime"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/formats"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/model"
+        "${CMAKE_CURRENT_SOURCE_DIR}/tests/support")
+    target_link_libraries(avemotion_own_native_ellipse_resources_tests PRIVATE
+        AveMotion::Rendering Threads::Threads)
+    target_compile_definitions(avemotion_own_native_ellipse_resources_tests PRIVATE
+        AVEMOTION_FIXTURE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures"
+        AVEMOTION_TGS_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests/compatibility/tgs")
+    avemotion_set_warnings(avemotion_own_native_ellipse_resources_tests)
+    add_test(NAME avemotion.render.own_native_ellipse_resources
+        COMMAND avemotion_own_native_ellipse_resources_tests)
 
     add_executable(avemotion_own_native_ellipse_admission_tests
         tests/own_native_ellipse_admission_tests.cpp)

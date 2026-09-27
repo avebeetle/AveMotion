@@ -1,0 +1,90 @@
+#include "AssetModelBuilder.hpp"
+#include "NativeEllipseAdmissionTestData.hpp"
+#include "NativeEllipsePathMaterializer.hpp"
+#include "OwnJsonReader.hpp"
+#include "OwnNativeEllipseModel.hpp"
+#include "OwnNativeEllipseModelTestData.hpp"
+#include "OwnNativeEllipsePreparedAsset.hpp"
+#include "PrimitivePathGenerator.hpp"
+#include "avemotion/formats/Tgs.hpp"
+
+#include <array>
+#include <bit>
+#include <cmath>
+#include <cstdint>
+#include <cstdlib>
+#include <filesystem>
+#include <iostream>
+#include <limits>
+#include <memory>
+#include <stdexcept>
+#include <string>
+#include <string_view>
+
+namespace {
+using namespace avemotion;
+using namespace avemotion::model;
+void require(bool value, std::string_view text) { if (!value) throw std::runtime_error(std::string{text}); }
+
+// Test-owned FNV-1a encoding: no product hashing helper constructs expectations.
+struct Fnv { std::uint64_t v = 14695981039346656037ULL; void b(std::uint8_t x) { v = (v ^ x) * 1099511628211ULL; }
+    void u32(std::uint32_t x) { for (unsigned i=0;i!=4;++i) b(static_cast<std::uint8_t>(x >> (8*i))); }
+    void u64(std::uint64_t x) { for (unsigned i=0;i!=8;++i) b(static_cast<std::uint8_t>(x >> (8*i))); }
+    void f64(double x) { if (x==0) x=0; u64(std::bit_cast<std::uint64_t>(x)); }
+    void text(std::string_view x) { u64(x.size()); for (char c:x) b(static_cast<std::uint8_t>(c)); } };
+std::uint64_t raw(std::string_view s) { Fnv h; for(char c:s) h.b(static_cast<std::uint8_t>(c)); return h.v; }
+std::uint64_t nameHash(std::string_view s) { Fnv h; h.text(s); return h.v; }
+std::uint64_t parsedHash(std::string_view s) { Fnv h; h.text("AveMotion.OwnEllipse.Authored.v1"); h.text(s); return h.v; }
+
+std::uint64_t topologyHash(std::string_view layer, bool animated) {
+    Fnv h; h.u32(2); h.u64(2); h.u64(1); h.u64(1); h.u64(1); h.u64(1);
+    h.b(1); h.u32(0); h.u32(kInvalidModelId); h.u32(0); h.u32(1); h.u32(0); h.u32(0); h.u32(0); h.u32(0); h.u64(nameHash("__")); h.u32(0); h.b(0);
+    h.b(1); h.u32(1); h.u32(0); h.u32(0); h.u32(0); h.u32(0); h.u32(1); h.u32(0); h.u32(0); h.u64(nameHash(layer)); h.u32(0); h.b(0);
+    h.u32(1); h.u32(0); h.b(1); h.u32(0); h.u32(0); h.u32(1); h.u32(0); h.u32(0); h.u32(0); h.u32(animated ? 3U : 1U); h.u32(0); h.b(1); h.u32(0); h.f64(0); h.f64(61); h.b(1); return h.v;
+}
+std::uint64_t resourceHash(std::uint64_t geometry, std::uint64_t paint, bool animated) { Fnv h; h.u64(1); h.b(1); h.u32(0); h.b(animated?1:2); h.u64(animated?0:geometry); h.u64(1); h.b(1); h.u32(0); h.b(2); h.u64(paint); return h.v; }
+std::uint64_t fullHash(std::string_view s, std::uint64_t topology, std::uint64_t resources) { Fnv h; h.u32(2); h.u64(raw(s)); h.u64(512); h.u64(512); h.f64(60); h.u64(61); h.u64(topology); h.u64(resources); h.u64(parsedHash(s)); return h.v; }
+
+std::string repl(std::string s, std::string_view a, std::string_view b) { return test::replaceEllipseOnce(std::move(s), a, b); }
+std::string staticSource() { auto s=test::staticEllipseFixture(test::ellipseFixture()); s=repl(std::move(s), "[-32768,32768]", "[0,0]"); s=repl(std::move(s), "[120, 120]", "[2, 2]"); return repl(std::move(s), "[0.08, 0.72, 0.95, 1]", "[0.5, 0.1, 0.999, 1]"); }
+runtime::detail::NativeEllipseInput literalInput() { using runtime::detail::NativeEllipseInput; using runtime::detail::NativeEllipseStaticPosition; auto d=[](bool n,const char* s,bool pn=false,const char* p="0"){return runtime::detail::NativeEllipseDecimal{n,s,{pn,p}};}; NativeEllipseInput x; x.width=512;x.height=512;x.endFrame=61;x.frameRate=d(false,"6",false,"1");x.layerId=1;x.layerInFrame=0;x.layerOutFrame=61;x.layerTranslation={d(false,"256"),d(false,"256")};x.size={d(false,"2"),d(false,"2")};x.position=NativeEllipseStaticPosition{{d(false,"0"),d(false,"0")}};x.fillColor={d(false,"5",true,"1"),d(false,"1",true,"1"),d(false,"999",true,"3"),d(false,"1")};x.version="5.7.4";x.name="AveMotion Telegram sticker profile fixture";x.layerName="Moving Circle";x.groupName="Circle Group";x.ellipseName="Animated Ellipse";x.fillName="Fill";x.transformName="Transform";return x; }
+runtime::detail::NativeEllipseNumericValues literalValues() { return {60,{256,256},{2,2},{0,0},{},{},{},{.5F,.1F,.999F,1},false,0,0}; }
+std::shared_ptr<const runtime::detail::OwnNativeEllipseModel> owner(std::string_view s) { auto j=formats::detail::readOwnJson(s); require(static_cast<bool>(j),"source parsed"); auto r=runtime::detail::buildOwnNativeEllipseModel(*j.document); require(static_cast<bool>(r),"authored model"); return r.prepared; }
+std::shared_ptr<const render::detail::OwnNativeEllipsePreparedAsset> prep(std::string_view s) { auto r=render::detail::prepareOwnNativeEllipseAsset(owner(s)); require(static_cast<bool>(r),"own resources prepared"); return r.prepared; }
+
+void literalStaticRowsAndHashes() {
+    const auto source=staticSource(); auto authored=owner(source); auto result=render::detail::prepareOwnNativeEllipseAsset(authored); require(result && result.code==render::detail::OwnNativeEllipsePrepareCode::Ready,"static ready"); const auto& m=*result.prepared->model;
+    test::assertOwnAuthoredModel(*result.prepared->authored, literalInput(), literalValues(), source);
+    require(result.prepared->authored==authored && m.revision==1 && !m.assetHandle.valid(),"retained sealed owner");
+    require(m.layers.size()==2 && m.nodes.size()==1 && m.geometries.size()==1 && m.paints.size()==1 && m.clips.size()==1 && m.childLayerIds==std::vector<LayerId>{makeId<LayerId>(1)} && m.layerNodeIds==std::vector<NodeId>{makeId<NodeId>(0)},"all render rows");
+    require(m.layers[0].present && !m.layers[0].parent.valid() && m.layers[0].children.first==0 && m.layers[0].children.count==1 && m.layers[0].nodes.count==0 && m.layers[0].masks.count==0 && m.layers[0].debugName=="__" && m.layers[0].nameHash==nameHash("__") && m.layers[0].dependencyBits==0 && m.layers[0].matte==runtime::MatteMode::None,"root fields");
+    require(m.layers[1].present && m.layers[1].parent==makeId<LayerId>(0) && m.layers[1].nodes.first==0 && m.layers[1].nodes.count==1 && m.layers[1].debugName=="Moving Circle" && m.layers[1].nameHash==nameHash("Moving Circle"),"shape fields");
+    require(m.nodes[0].present && m.nodes[0].drawItem==makeId<DrawItemId>(0) && m.nodes[0].layer==makeId<LayerId>(1) && m.nodes[0].geometry==makeId<GeometryId>(0) && m.nodes[0].paint==makeId<PaintId>(0) && m.nodes[0].dependencyBits==StaticDependencyTransform,"static dependency");
+    require(m.clips[0].present && m.clips[0].debugName=="default" && m.clips[0].firstFrame==0 && m.clips[0].endFrame==61 && m.clips[0].defaultLoop==ClipLoopHint::Loop,"clip fields");
+    const auto& g=*m.geometries[0].staticValue; constexpr float k=0.5522847498F; const std::array<runtime::PathVerb,6> verbs{runtime::PathVerb::MoveTo,runtime::PathVerb::CubicTo,runtime::PathVerb::CubicTo,runtime::PathVerb::CubicTo,runtime::PathVerb::CubicTo,runtime::PathVerb::Close}; const std::array<runtime::Vec2,13> pts{{{0,-1},{k,-1},{1,-k},{1,0},{1,k},{k,1},{0,1},{-k,1},{-1,k},{-1,0},{-1,-k},{-k,-1},{0,-1}}};
+    bool literalPoints=g.path.points.size()==pts.size(); for(std::size_t i=0;literalPoints && i<pts.size();++i) literalPoints=g.path.points[i].x==pts[i].x && g.path.points[i].y==pts[i].y;
+    require(g.sourceKey==1 && g.fillRule==runtime::FillRule::Winding && g.path.verbs==std::vector<runtime::PathVerb>(verbs.begin(),verbs.end()) && literalPoints && g.path.controlBounds.valid && g.path.controlBounds.left==-1 && g.path.controlBounds.top==-1 && g.path.controlBounds.right==1 && g.path.controlBounds.bottom==1 && g.path.hash==0x501de312ce7d322aULL && g.contentHash==0x6862cc6516f16586ULL,"literal path/hash");
+    const auto& p=*m.paints[0].staticValue; bool imageZero=true; for(float v:p.paint.image.matrix) imageZero=imageZero && v==0; require(p.sourceKey==1 && p.contentHash==0x8485243b1edad747ULL && !p.stroke.enabled && p.stroke.width==0 && p.stroke.miterLimit==0 && p.stroke.cap==runtime::LineCap::Flat && p.stroke.join==runtime::LineJoin::Miter && p.stroke.dashArray.empty() && p.paint.kind==runtime::PaintKind::Solid && p.paint.solid.r==127 && p.paint.solid.g==25 && p.paint.solid.b==254 && p.paint.solid.a==255 && p.paint.gradient.kind==runtime::GradientKind::Linear && p.paint.gradient.start.x==0 && p.paint.gradient.start.y==0 && p.paint.gradient.end.x==0 && p.paint.gradient.end.y==0 && p.paint.gradient.center.x==0 && p.paint.gradient.center.y==0 && p.paint.gradient.focal.x==0 && p.paint.gradient.focal.y==0 && p.paint.gradient.centerRadius==0 && p.paint.gradient.focalRadius==0 && p.paint.gradient.stops.empty() && !p.paint.image.present && p.paint.image.width==0 && p.paint.image.height==0 && imageZero,"paint/default/hash");
+    require(m.statistics.declaredLayerCount==2 && m.statistics.declaredNodeCount==1 && m.statistics.declaredGeometryCount==1 && m.statistics.declaredPaintCount==1 && m.statistics.observedLayerCount==2 && m.statistics.observedNodeCount==1 && m.statistics.observedGeometryCount==1 && m.statistics.observedPaintCount==1 && m.statistics.assetStaticGeometryCount==1 && m.statistics.assetStaticPaintCount==1 && m.statistics.maskCount==0 && m.statistics.clipCount==1,"summary fields");
+    const auto topology=topologyHash("Moving Circle",false); const auto resources=resourceHash(0x6862cc6516f16586ULL,0x8485243b1edad747ULL,false);
+    require(m.sourceAssetHash==raw(source) && m.parsedModelFingerprint==parsedHash(source) && m.topologyFingerprint==topology && m.resourceFingerprint==resources && m.fingerprint==fullHash(source,topology,resources),"independent source topology resource full fingerprints");
+}
+
+void animatedFailuresAndApplication() {
+    const auto source=test::ellipseFixture(); auto a=prep(source); const auto& m=*a->model; require(m.geometries[0].resourceClass==ResourceClass::InstanceEvaluated && !m.geometries[0].staticValue && m.geometries[0].contentHash==0 && m.nodes[0].dependencyBits==(StaticDependencyTransform|StaticDependencyGeometry) && m.paints[0].resourceClass==ResourceClass::AssetStatic,"animated canonical status/dependency");
+    const auto animatedTopology=topologyHash("Moving Circle",true); const auto animatedResources=resourceHash(0,m.paints[0].contentHash,true); require(m.topologyFingerprint==animatedTopology && m.resourceFingerprint==animatedResources && m.fingerprint==fullHash(source,animatedTopology,animatedResources),"animated encoded fingerprints");
+    auto active=repl(source,"      \"ip\": 0,","      \"ip\": 10,"); active=repl(std::move(active),"      \"op\": 61,","      \"op\": 20,"); require(prep(active)->model->clips[0].firstFrame==0 && prep(active)->model->clips[0].endFrame==61,"active10to20 preserves default clip");
+    auto boundary=test::staticEllipseFixture(source); auto boundaryPrepared=prep(boundary); const auto& boundaryPath=boundaryPrepared->model->geometries[0].staticValue->path; require(boundaryPath.controlBounds.left==-32828 && boundaryPath.controlBounds.right==-32708 && boundaryPath.controlBounds.top==32708 && boundaryPath.controlBounds.bottom==32828,"static local geometry ignores layer translation");
+    auto absent=source; absent=repl(std::move(absent),",\n  \"nm\": \"AveMotion Telegram sticker profile fixture\"",""); absent=repl(std::move(absent),",\n      \"nm\": \"Moving Circle\"",""); require(prep(absent)->model->layers[1].debugName=="layer:1","absent name label default");
+    auto emptyName=repl(source,"\"Moving Circle\"","\"\""); require(prep(emptyName)->model->layers[1].debugName=="layer:1","empty name label default");
+    auto literalName=repl(source,"\"Moving Circle\"","\"a.b/[x]~ \\u2603\""); require(prep(literalName)->model->layers[1].debugName=="a.b/[x]~ \xE2\x98\x83","UTF8 delimiter label remains literal");
+    auto collapsed=test::staticEllipseFixture(test::ellipseFixture()); collapsed=repl(std::move(collapsed),"[120, 120]","[1e-45, 120]"); auto o=owner(collapsed); auto collapsePrimitive=render::detail::generateEllipsePath(o->values.start,o->values.size,SourcePathDirection::Clockwise); runtime::EvaluatedPath collapsePath;
+    require(collapsePrimitive.valid && collapsePrimitive.verbCount==0 && render::detail::materializeNativeEllipsePath(collapsePrimitive,nullptr,collapsePath) && collapsePath.verbs.empty(),"exact [-32768,32768] skinny primitive is valid empty cause"); const auto bad=render::detail::prepareOwnNativeEllipseAsset(o); require(!bad && bad.code==render::detail::OwnNativeEllipsePrepareCode::ResourceConstructionFailed && !bad.prepared,"collapsed failure atomic");
+    runtime::EvaluatedPath out; auto normal=render::detail::generateEllipsePath({0,0},{2,2},SourcePathDirection::Clockwise); auto invalid=normal; invalid.valid=false; require(!render::detail::materializeNativeEllipsePath(invalid,nullptr,out),"invalid primitive"); runtime::AffineTransform inf{1,0,0,1,std::numeric_limits<float>::infinity(),0}; require(!render::detail::materializeNativeEllipsePath(normal,&inf,out),"nonfinite transform"); require(!render::detail::prepareOwnNativeEllipseAsset(nullptr),"null invalid");
+    auto s=prep(staticSource()); runtime::EvaluatedScene scene; scene.sourceAssetHash=raw(staticSource()); scene.drawItems.resize(1); auto& item=scene.drawItems[0]; item.modelNode=makeId<NodeId>(0); item.modelGeometry=makeId<GeometryId>(0); item.modelPaint=makeId<PaintId>(0); item.localGeometryAvailable=item.localPaintAvailable=true; require(detail::applyAssetModel(s->model,scene) && item.geometryOrigin==runtime::EvaluatedValueOrigin::AssetStatic && item.paintOrigin==runtime::EvaluatedValueOrigin::AssetStatic && item.canonicalGeometry.get()==std::addressof(*s->model->geometries[0].staticValue) && item.canonicalPaint.get()==std::addressof(*s->model->paints[0].staticValue),"alias application"); auto firstGeometry=item.canonicalGeometry.get(); require(detail::applyAssetModel(s->model,scene) && item.canonicalGeometry.get()==firstGeometry,"repeated application stable static pointer"); auto wrong=scene; wrong.sourceAssetHash^=1; require(!detail::applyAssetModel(s->model,wrong),"wrong source fails"); auto ga=item.canonicalGeometry; auto pa=item.canonicalPaint; s.reset(); scene.assetModel.reset(); require(ga->path.hash==0x501de312ce7d322aULL && pa->paint.solid.a==255,"source authored prepared owners may drop while aliases live");
+    runtime::EvaluatedScene animatedScene; animatedScene.sourceAssetHash=raw(source); animatedScene.drawItems.resize(1); auto& animatedItem=animatedScene.drawItems[0]; animatedItem.modelNode=makeId<NodeId>(0); animatedItem.modelGeometry=makeId<GeometryId>(0); animatedItem.modelPaint=makeId<PaintId>(0); animatedItem.localGeometryAvailable=animatedItem.localPaintAvailable=true; require(detail::applyAssetModel(a->model,animatedScene) && animatedItem.geometryOrigin==runtime::EvaluatedValueOrigin::InstanceEvaluated && !animatedItem.canonicalGeometry && animatedItem.paintOrigin==runtime::EvaluatedValueOrigin::AssetStatic,"animated application only paint aliases");
+    auto tgs=formats::decodeTgsFile(std::filesystem::path{AVEMOTION_TGS_DIR}/"telegram_sticker_basic.tgs"); require(static_cast<bool>(tgs) && prep(tgs.json),"TGS own pipeline none");
+    auto changed=repl(staticSource(),"[0.5, 0.1, 0.999, 1]","[1, 0, 1, 1]"); auto other=prep(changed); auto original=prep(staticSource()); require(other->model!=original->model && std::addressof(*other->model->paints[0].staticValue)!=std::addressof(*original->model->paints[0].staticValue) && other->model->paints[0].staticValue->paint.solid.r==255 && other->model->paints[0].staticValue->paint.solid.g==0 && other->model->paints[0].staticValue->paint.solid.b==255,"distinct assets paint and mutable table ownership");
+}
+}
+int main(){try{literalStaticRowsAndHashes();animatedFailuresAndApplication();}catch(const std::exception& e){std::cerr<<e.what()<<'\n';return 1;}}

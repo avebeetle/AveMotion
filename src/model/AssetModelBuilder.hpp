@@ -10,6 +10,13 @@
 
 namespace avemotion::model::detail {
 
+[[nodiscard]] std::uint64_t hashCanonicalGeometry(
+    runtime::FillRule fillRule, const runtime::EvaluatedPath& path) noexcept;
+[[nodiscard]] std::uint64_t hashCanonicalPaint(
+    const runtime::EvaluatedStroke& stroke,
+    const runtime::EvaluatedPaint& paint) noexcept;
+void refreshAssetModelDerivedData(MotionAssetModel& model) noexcept;
+
 struct AssetModelDescriptor final {
     runtime::AssetHandle assetHandle;
     std::uint64_t sourceAssetHash = 0;
