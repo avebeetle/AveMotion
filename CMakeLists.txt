@@ -201,6 +201,7 @@ add_library(avemotion_rendering STATIC
     src/render/PrimitivePathGenerator.cpp
     src/render/NativeEllipsePathMaterializer.cpp
     src/render/OwnNativeEllipsePreparedAsset.cpp
+    src/render/OwnNativeEllipsePlayback.cpp
     src/render/OwnNativeEllipseStream.cpp
     src/render/RepeaterTransform.cpp
     src/render/TrimPathGenerator.cpp
@@ -571,6 +572,22 @@ if(BUILD_TESTING)
     avemotion_set_warnings(avemotion_own_native_ellipse_stream_tests)
     add_test(NAME avemotion.own_native_ellipse_stream
         COMMAND avemotion_own_native_ellipse_stream_tests)
+
+    add_executable(avemotion_own_native_ellipse_playback_tests
+        tests/own_native_ellipse_playback_tests.cpp)
+    target_include_directories(avemotion_own_native_ellipse_playback_tests PRIVATE
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/render"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/runtime"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/formats"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/model"
+        "${CMAKE_CURRENT_SOURCE_DIR}/tests/support")
+    target_link_libraries(avemotion_own_native_ellipse_playback_tests PRIVATE AveMotion::Rendering)
+    target_compile_definitions(avemotion_own_native_ellipse_playback_tests PRIVATE
+        AVEMOTION_FIXTURE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures"
+        AVEMOTION_TGS_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests/compatibility/tgs")
+    avemotion_set_warnings(avemotion_own_native_ellipse_playback_tests)
+    add_test(NAME avemotion.own_native_ellipse_playback
+        COMMAND avemotion_own_native_ellipse_playback_tests)
 
     add_executable(avemotion_own_native_ellipse_admission_tests
         tests/own_native_ellipse_admission_tests.cpp)
@@ -966,6 +983,28 @@ if(BUILD_TESTING)
         endif()
 
         if(AVEMOTION_RLOTTIE_VARIANT STREQUAL "telegram")
+            add_executable(avemotion_own_native_ellipse_playback_differential_tests
+                tests/own_native_ellipse_playback_differential_tests.cpp)
+            target_include_directories(avemotion_own_native_ellipse_playback_differential_tests PRIVATE
+                "${CMAKE_CURRENT_SOURCE_DIR}/src/render"
+                "${CMAKE_CURRENT_SOURCE_DIR}/src/runtime"
+                "${CMAKE_CURRENT_SOURCE_DIR}/src/formats"
+                "${CMAKE_CURRENT_SOURCE_DIR}/src/model"
+                "${CMAKE_CURRENT_SOURCE_DIR}/tests"
+                "${CMAKE_CURRENT_SOURCE_DIR}/tests/support"
+                "${AVEMOTION_RLOTTIE_INCLUDE_DIR}"
+                "${AVEMOTION_RLOTTIE_INTERNAL_LOTTIE_DIR}"
+                "${AVEMOTION_RLOTTIE_INTERNAL_VECTOR_DIR}"
+                "${AVEMOTION_RLOTTIE_INTERNAL_PIXMAN_DIR}"
+                "${AVEMOTION_RLOTTIE_GENERATED_INCLUDE_DIR}")
+            target_link_libraries(avemotion_own_native_ellipse_playback_differential_tests PRIVATE
+                AveMotion::Rendering rlottie::rlottie Threads::Threads)
+            target_compile_definitions(avemotion_own_native_ellipse_playback_differential_tests PRIVATE
+                AVEMOTION_FIXTURE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures")
+            avemotion_set_warnings(avemotion_own_native_ellipse_playback_differential_tests)
+            add_test(NAME avemotion.own_native_ellipse_playback_differential
+                COMMAND avemotion_own_native_ellipse_playback_differential_tests)
+
             add_executable(avemotion_own_native_ellipse_stream_differential_tests
                 tests/own_native_ellipse_stream_differential_tests.cpp)
             target_include_directories(avemotion_own_native_ellipse_stream_differential_tests PRIVATE
