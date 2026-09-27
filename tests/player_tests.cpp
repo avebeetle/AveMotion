@@ -138,6 +138,25 @@ int main() {
         "player registration failed");
     require(host.frameRequests == 1U,
         "multiple registrations did not coalesce into one frame request");
+    require(player.instance(firstAdded.handle).get() == first.get(),
+        "public Runtime lookup did not retain the genuine instance");
+    const auto nullAdded = player.addInstance({}, zero);
+    require(nullAdded.error.code == player::PlayerErrorCode::InvalidArgument
+            && nullAdded.error.message == "Player instance must not be null",
+        "null Runtime registration changed its public error");
+    const auto invalidRateAdded = player.addInstance(first, zero, {
+        .maximumPresentationRate = 0.0});
+    require(invalidRateAdded.error.code == player::PlayerErrorCode::InvalidArgument
+            && invalidRateAdded.error.message
+                == "maximumPresentationRate must be finite and positive",
+        "Runtime option validation changed its public error or order");
+    const auto duplicateAdded = player.addInstance(first, zero);
+    require(duplicateAdded.error.code == player::PlayerErrorCode::DuplicateInstance
+            && duplicateAdded.error.message
+                == "The runtime instance is already registered with this player",
+        "duplicate Runtime registration changed its public error");
+    require(player.diagnostics().registrations == 3U && host.frameRequests == 1U,
+        "rejected Runtime registration changed state or host callbacks");
 
     auto tick = player.tick(zero);
     require(tick.frames.size() == 3U,

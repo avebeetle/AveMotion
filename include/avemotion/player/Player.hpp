@@ -175,6 +175,7 @@ struct PlayerDiagnostics final {
 
 namespace detail {
 struct PlayerState;
+struct PlayerSourceAccess;
 }
 
 // Application-independent centralized player/scheduler.
@@ -268,6 +269,7 @@ public:
     void resetDiagnostics() noexcept;
 
 private:
+    friend struct detail::PlayerSourceAccess;
     std::unique_ptr<detail::PlayerState> state_;
 };
 

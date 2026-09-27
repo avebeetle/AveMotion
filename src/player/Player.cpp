@@ -1,4 +1,5 @@
 #include "avemotion/player/Player.hpp"
+#include "PlayerSource.hpp"
 
 #include "avemotion/runtime/Runtime.hpp"
 
@@ -40,10 +41,10 @@ namespace {
 }
 
 [[nodiscard]] std::optional<std::int64_t> frameIntervalNanoseconds(
-    const runtime::Instance& instance,
+    const PlayerSource& source,
     const runtime::PlaybackSnapshot& snapshot,
     double maximumPresentationRate) noexcept {
-    const auto sourceRate = instance.assetMetadata().frameRate;
+    const auto sourceRate = source.ops->frameRate(source.owner.get());
     if (!std::isfinite(sourceRate) || sourceRate <= 0.0
         || !std::isfinite(snapshot.playbackRate) || snapshot.playbackRate <= 0.0
         || !std::isfinite(maximumPresentationRate)
@@ -73,7 +74,7 @@ namespace {
 struct PlayerEntry final {
     std::uint32_t generation = 0U;
     bool occupied = false;
-    std::shared_ptr<runtime::Instance> instance;
+    PlayerSource source;
     PlayerEntryOptions options;
     FrameReason pendingReasons = FrameReason::None;
     bool automaticPause = false;
@@ -187,10 +188,10 @@ struct PlayerState final {
         std::size_t visible = 0U;
         std::size_t playing = 0U;
         for (const auto& entry : entries) {
-            if (!entry.occupied || !entry.instance) continue;
+            if (!entry.occupied || !entry.source.owner) continue;
             ++registered;
             if (entry.options.visible) ++visible;
-            if (entry.instance->playbackSnapshot(now).status
+            if (entry.source.ops->snapshot(entry.source.owner.get(), now).status
                 == runtime::PlaybackStatus::Playing) {
                 ++playing;
             }
@@ -202,11 +203,11 @@ struct PlayerState final {
 
     void resetCadence(PlayerEntry& entry, runtime::MotionTime now) noexcept {
         entry.hasDeadline = false;
-        if (!entry.instance || !entry.options.visible) return;
-        const auto snapshot = entry.instance->playbackSnapshot(now);
+        if (!entry.source.owner || !entry.options.visible) return;
+        const auto snapshot = entry.source.ops->snapshot(entry.source.owner.get(), now);
         if (snapshot.status != runtime::PlaybackStatus::Playing) return;
         const auto interval = frameIntervalNanoseconds(
-            *entry.instance,
+            entry.source,
             snapshot,
             entry.options.maximumPresentationRate);
         if (!interval.has_value()) return;
@@ -241,9 +242,9 @@ void enforceHiddenFreeze(
         || entry.automaticPause) {
         return;
     }
-    if (entry.instance->playbackSnapshot(now).status
+    if (entry.source.ops->snapshot(entry.source.owner.get(), now).status
         == runtime::PlaybackStatus::Playing) {
-        entry.instance->pause(now);
+        entry.source.ops->pause(entry.source.owner.get(), now);
         entry.automaticPause = true;
         ++state.counters.automaticPauses;
     }
@@ -303,80 +304,59 @@ PlayerAddResult Player::addInstance(
     std::shared_ptr<runtime::Instance> instance,
     runtime::MotionTime now,
     PlayerEntryOptions options) {
-    PlayerAddResult result;
     if (!instance) {
-        result.error = {
-            PlayerErrorCode::InvalidArgument,
-            "Player instance must not be null"};
-        return result;
+        return {{}, {PlayerErrorCode::InvalidArgument,
+                     "Player instance must not be null"}};
     }
-    if (!std::isfinite(options.maximumPresentationRate)
-        || options.maximumPresentationRate <= 0.0) {
-        result.error = {
-            PlayerErrorCode::InvalidArgument,
-            "maximumPresentationRate must be finite and positive"};
-        return result;
-    }
-    for (const auto& entry : state_->entries) {
-        if (entry.occupied && entry.instance.get() == instance.get()) {
-            result.error = {
-                PlayerErrorCode::DuplicateInstance,
-                "The runtime instance is already registered with this player"};
-            return result;
-        }
-    }
-
-    const auto oldEntriesCapacity = state_->entries.capacity();
-    const auto oldFreeCapacity = state_->freeIndices.capacity();
-    const auto oldFramesCapacity = state_->scheduledFrames.capacity();
-
-    std::uint32_t index = 0U;
-    if (!state_->freeIndices.empty()) {
-        index = state_->freeIndices.back();
-        state_->freeIndices.pop_back();
-    } else {
-        if (state_->entries.size()
-            >= static_cast<std::size_t>(kInvalidPlayerHandleIndex)) {
-            result.error = {
-                PlayerErrorCode::InvalidArgument,
-                "Player handle space is exhausted"};
-            return result;
-        }
-        index = static_cast<std::uint32_t>(state_->entries.size());
-        state_->entries.emplace_back();
-    }
-
-    auto& entry = state_->entries[index];
-    entry.generation = entry.generation == std::numeric_limits<std::uint32_t>::max()
-        ? 1U
-        : entry.generation + 1U;
-    if (entry.generation == 0U) entry.generation = 1U;
-    entry.occupied = true;
-    entry.instance = std::move(instance);
-    entry.options = options;
-    entry.pendingReasons = FrameReason::FirstFrame;
-    entry.automaticPause = false;
-    entry.hasDeadline = false;
-    entry.lastPlaybackRevision = 0U;
-    entry.lastCompleted = false;
-
-    if (state_->scheduledFrames.capacity() < state_->entries.size()) {
-        state_->scheduledFrames.reserve(state_->entries.size());
-    }
-    if (state_->freeIndices.capacity() < state_->entries.size()) {
-        state_->freeIndices.reserve(state_->entries.size());
-    }
-    state_->accountStorageChange(
-        oldEntriesCapacity,
-        oldFreeCapacity,
-        oldFramesCapacity);
-
-    enforceHiddenFreeze(*state_, entry, now);
-    state_->resetCadence(entry, now);
-    ++state_->counters.registrations;
-    result.handle = {index, entry.generation};
-    state_->afterMutation(now, true);
-    return result;
+    static const detail::PlayerSourceOps runtimeOps{
+        .frameRate = [](const void* object) noexcept {
+            return static_cast<const runtime::Instance*>(object)
+                ->assetMetadata().frameRate;
+        },
+        .snapshot = [](const void* object, runtime::MotionTime time) noexcept {
+            return static_cast<const runtime::Instance*>(object)
+                ->playbackSnapshot(time);
+        },
+        .play = [](void* object, runtime::MotionTime time) noexcept {
+            static_cast<runtime::Instance*>(object)->play(time);
+        },
+        .pause = [](void* object, runtime::MotionTime time) noexcept {
+            static_cast<runtime::Instance*>(object)->pause(time);
+        },
+        .resume = [](void* object, runtime::MotionTime time) noexcept {
+            static_cast<runtime::Instance*>(object)->resume(time);
+        },
+        .stop = [](void* object) noexcept {
+            static_cast<runtime::Instance*>(object)->stop();
+        },
+        .seekNormalized = [](void* object, double value,
+                             runtime::MotionTime time) noexcept {
+            static_cast<runtime::Instance*>(object)->seekNormalized(value, time);
+        },
+        .setControlledProgress = [](void* object, double value) noexcept {
+            static_cast<runtime::Instance*>(object)->setControlledProgress(value);
+        },
+        .setDirection = [](void* object, runtime::PlaybackDirection value,
+                           runtime::MotionTime time) noexcept {
+            static_cast<runtime::Instance*>(object)->setDirection(value, time);
+        },
+        .setPlaybackRate = [](void* object, double value,
+                              runtime::MotionTime time) noexcept {
+            return static_cast<runtime::Instance*>(object)
+                ->setPlaybackRate(value, time);
+        },
+        .setLoopMode = [](void* object,
+                          runtime::PlaybackLoopMode value) noexcept {
+            static_cast<runtime::Instance*>(object)->setLoopMode(value);
+        },
+    };
+    detail::PlayerSource source{
+        .owner = instance,
+        .ops = &runtimeOps,
+        .runtimeInstance = instance.get(),
+        .runtimeHandle = instance->handle(),
+    };
+    return detail::PlayerSourceAccess::add(*this, std::move(source), now, options);
 }
 
 bool Player::removeInstance(
@@ -385,7 +365,7 @@ bool Player::removeInstance(
     auto* entry = validEntry(*state_, handle);
     if (entry == nullptr) return false;
     entry->occupied = false;
-    entry->instance.reset();
+    entry->source = {};
     entry->pendingReasons = FrameReason::None;
     entry->automaticPause = false;
     entry->hasDeadline = false;
@@ -401,7 +381,7 @@ void Player::clear(runtime::MotionTime now) noexcept {
         auto& entry = state_->entries[index];
         if (!entry.occupied) continue;
         entry.occupied = false;
-        entry.instance.reset();
+        entry.source = {};
         entry.hasDeadline = false;
         entry.pendingReasons = FrameReason::None;
         state_->freeIndices.push_back(index);
@@ -414,7 +394,9 @@ void Player::clear(runtime::MotionTime now) noexcept {
 std::shared_ptr<runtime::Instance> Player::instance(
     PlayerHandle handle) const noexcept {
     const auto* entry = state_->find(handle);
-    return entry != nullptr ? entry->instance : nullptr;
+    if (entry == nullptr || entry->source.runtimeInstance == nullptr) return {};
+    return std::shared_ptr<runtime::Instance>{
+        entry->source.owner, entry->source.runtimeInstance};
 }
 
 bool Player::setVisible(
@@ -426,9 +408,9 @@ bool Player::setVisible(
 
     if (!visible
         && entry->options.hiddenTimePolicy == HiddenTimePolicy::Freeze) {
-        const auto snapshot = entry->instance->playbackSnapshot(now);
+        const auto snapshot = entry->source.ops->snapshot(entry->source.owner.get(), now);
         if (snapshot.status == runtime::PlaybackStatus::Playing) {
-            entry->instance->pause(now);
+            entry->source.ops->pause(entry->source.owner.get(), now);
             entry->automaticPause = true;
             ++state_->counters.automaticPauses;
         }
@@ -436,7 +418,7 @@ bool Player::setVisible(
     entry->options.visible = visible;
     entry->pendingReasons |= FrameReason::VisibilityChanged;
     if (visible && entry->automaticPause) {
-        entry->instance->resume(now);
+        entry->source.ops->resume(entry->source.owner.get(), now);
         entry->automaticPause = false;
         ++state_->counters.automaticResumes;
     }
@@ -477,7 +459,7 @@ bool Player::play(PlayerHandle handle, runtime::MotionTime now) noexcept {
     auto* entry = validEntry(*state_, handle);
     if (entry == nullptr) return false;
     entry->automaticPause = false;
-    entry->instance->play(now);
+    entry->source.ops->play(entry->source.owner.get(), now);
     enforceHiddenFreeze(*state_, *entry, now);
     markPlaybackMutation(*state_, *entry, now);
     return true;
@@ -487,7 +469,7 @@ bool Player::pause(PlayerHandle handle, runtime::MotionTime now) noexcept {
     auto* entry = validEntry(*state_, handle);
     if (entry == nullptr) return false;
     entry->automaticPause = false;
-    entry->instance->pause(now);
+    entry->source.ops->pause(entry->source.owner.get(), now);
     markPlaybackMutation(*state_, *entry, now);
     return true;
 }
@@ -496,7 +478,7 @@ bool Player::resume(PlayerHandle handle, runtime::MotionTime now) noexcept {
     auto* entry = validEntry(*state_, handle);
     if (entry == nullptr) return false;
     entry->automaticPause = false;
-    entry->instance->resume(now);
+    entry->source.ops->resume(entry->source.owner.get(), now);
     enforceHiddenFreeze(*state_, *entry, now);
     markPlaybackMutation(*state_, *entry, now);
     return true;
@@ -506,7 +488,7 @@ bool Player::stop(PlayerHandle handle, runtime::MotionTime now) noexcept {
     auto* entry = validEntry(*state_, handle);
     if (entry == nullptr) return false;
     entry->automaticPause = false;
-    entry->instance->stop();
+    entry->source.ops->stop(entry->source.owner.get());
     markPlaybackMutation(*state_, *entry, now);
     return true;
 }
@@ -517,7 +499,7 @@ bool Player::seekNormalized(
     runtime::MotionTime now) noexcept {
     auto* entry = validEntry(*state_, handle);
     if (entry == nullptr) return false;
-    entry->instance->seekNormalized(normalizedPosition, now);
+    entry->source.ops->seekNormalized(entry->source.owner.get(), normalizedPosition, now);
     markPlaybackMutation(*state_, *entry, now);
     return true;
 }
@@ -529,7 +511,7 @@ bool Player::setControlledProgress(
     auto* entry = validEntry(*state_, handle);
     if (entry == nullptr) return false;
     entry->automaticPause = false;
-    entry->instance->setControlledProgress(normalizedPosition);
+    entry->source.ops->setControlledProgress(entry->source.owner.get(), normalizedPosition);
     markPlaybackMutation(*state_, *entry, now);
     return true;
 }
@@ -540,7 +522,7 @@ bool Player::setDirection(
     runtime::MotionTime now) noexcept {
     auto* entry = validEntry(*state_, handle);
     if (entry == nullptr) return false;
-    entry->instance->setDirection(direction, now);
+    entry->source.ops->setDirection(entry->source.owner.get(), direction, now);
     markPlaybackMutation(*state_, *entry, now);
     return true;
 }
@@ -551,7 +533,8 @@ bool Player::setPlaybackRate(
     runtime::MotionTime now) noexcept {
     auto* entry = validEntry(*state_, handle);
     if (entry == nullptr
-        || !entry->instance->setPlaybackRate(playbackRate, now)) {
+        || !entry->source.ops->setPlaybackRate(
+            entry->source.owner.get(), playbackRate, now)) {
         return false;
     }
     markPlaybackMutation(*state_, *entry, now);
@@ -564,7 +547,7 @@ bool Player::setLoopMode(
     runtime::MotionTime now) noexcept {
     auto* entry = validEntry(*state_, handle);
     if (entry == nullptr) return false;
-    entry->instance->setLoopMode(loopMode);
+    entry->source.ops->setLoopMode(entry->source.owner.get(), loopMode);
     markPlaybackMutation(*state_, *entry, now);
     return true;
 }
@@ -580,9 +563,9 @@ PlayerTickView Player::tick(
 
     for (std::uint32_t index = 0U; index < state_->entries.size(); ++index) {
         auto& entry = state_->entries[index];
-        if (!entry.occupied || !entry.instance) continue;
+        if (!entry.occupied || !entry.source.owner) continue;
 
-        auto snapshot = entry.instance->playbackSnapshot(now);
+        auto snapshot = entry.source.ops->snapshot(entry.source.owner.get(), now);
         auto reasons = entry.pendingReasons;
         const auto revisionChanged =
             snapshot.revision != entry.lastPlaybackRevision;
@@ -594,7 +577,7 @@ PlayerTickView Player::tick(
         if (entry.options.visible) {
             if (snapshot.status == runtime::PlaybackStatus::Playing) {
                 const auto interval = detail::frameIntervalNanoseconds(
-                    *entry.instance,
+                    entry.source,
                     snapshot,
                     entry.options.maximumPresentationRate);
                 if (interval.has_value()) {
@@ -653,8 +636,8 @@ PlayerTickView Player::tick(
                 || hasReason(reasons, FrameReason::VisibilityChanged))) {
             state_->scheduledFrames.push_back({
                 .handle = {index, entry.generation},
-                .instanceHandle = entry.instance->handle(),
-                .instance = entry.instance.get(),
+                .instanceHandle = entry.source.runtimeHandle,
+                .instance = entry.source.runtimeInstance,
                 .playback = snapshot,
                 .reasons = reasons,
                 .visible = entry.options.visible,
@@ -698,3 +681,106 @@ void Player::resetDiagnostics() noexcept {
 }
 
 } // namespace avemotion::player
+
+namespace avemotion::player::detail {
+
+PlayerAddResult PlayerSourceAccess::add(
+    Player& player, PlayerSource source, runtime::MotionTime now,
+    PlayerEntryOptions options) {
+    PlayerAddResult result;
+    if (!source.owner || source.ops == nullptr
+        || source.ops->frameRate == nullptr
+        || source.ops->snapshot == nullptr
+        || source.ops->play == nullptr
+        || source.ops->pause == nullptr
+        || source.ops->resume == nullptr
+        || source.ops->stop == nullptr
+        || source.ops->seekNormalized == nullptr
+        || source.ops->setControlledProgress == nullptr
+        || source.ops->setDirection == nullptr
+        || source.ops->setPlaybackRate == nullptr
+        || source.ops->setLoopMode == nullptr) {
+        result.error = {
+            PlayerErrorCode::InvalidArgument,
+            "Player source must have an owner and complete operations"};
+        return result;
+    }
+    if (!std::isfinite(options.maximumPresentationRate)
+        || options.maximumPresentationRate <= 0.0) {
+        result.error = {
+            PlayerErrorCode::InvalidArgument,
+            "maximumPresentationRate must be finite and positive"};
+        return result;
+    }
+    auto& state = *player.state_;
+    for (const auto& entry : state.entries) {
+        if (entry.occupied && entry.source.owner.get() == source.owner.get()) {
+            result.error = {
+                PlayerErrorCode::DuplicateInstance,
+                source.runtimeInstance != nullptr
+                    ? "The runtime instance is already registered with this player"
+                    : "The player source is already registered with this player"};
+            return result;
+        }
+    }
+
+    const auto oldEntriesCapacity = state.entries.capacity();
+    const auto oldFreeCapacity = state.freeIndices.capacity();
+    const auto oldFramesCapacity = state.scheduledFrames.capacity();
+
+    std::uint32_t index = 0U;
+    if (!state.freeIndices.empty()) {
+        index = state.freeIndices.back();
+        state.freeIndices.pop_back();
+    } else {
+        if (state.entries.size()
+            >= static_cast<std::size_t>(kInvalidPlayerHandleIndex)) {
+            result.error = {
+                PlayerErrorCode::InvalidArgument,
+                "Player handle space is exhausted"};
+            return result;
+        }
+        index = static_cast<std::uint32_t>(state.entries.size());
+        state.entries.emplace_back();
+    }
+
+    auto& entry = state.entries[index];
+    entry.generation = entry.generation == std::numeric_limits<std::uint32_t>::max()
+        ? 1U
+        : entry.generation + 1U;
+    if (entry.generation == 0U) entry.generation = 1U;
+    entry.occupied = true;
+    entry.source = std::move(source);
+    entry.options = options;
+    entry.pendingReasons = FrameReason::FirstFrame;
+    entry.automaticPause = false;
+    entry.hasDeadline = false;
+    entry.lastPlaybackRevision = 0U;
+    entry.lastCompleted = false;
+
+    if (state.scheduledFrames.capacity() < state.entries.size()) {
+        state.scheduledFrames.reserve(state.entries.size());
+    }
+    if (state.freeIndices.capacity() < state.entries.size()) {
+        state.freeIndices.reserve(state.entries.size());
+    }
+    state.accountStorageChange(
+        oldEntriesCapacity,
+        oldFreeCapacity,
+        oldFramesCapacity);
+
+    enforceHiddenFreeze(state, entry, now);
+    state.resetCadence(entry, now);
+    ++state.counters.registrations;
+    result.handle = {index, entry.generation};
+    state.afterMutation(now, true);
+    return result;
+}
+
+PlayerSource PlayerSourceAccess::source(
+    const Player& player, PlayerHandle handle) noexcept {
+    const auto* entry = player.state_->find(handle);
+    return entry != nullptr ? entry->source : PlayerSource{};
+}
+
+} // namespace avemotion::player::detail

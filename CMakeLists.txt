@@ -931,6 +931,15 @@ if(BUILD_TESTING)
         message(STATUS "Git unavailable: skipping optional protected-byte checkout test")
     endif()
 
+    add_executable(avemotion_player_source_tests tests/player_source_tests.cpp)
+    target_include_directories(avemotion_player_source_tests PRIVATE
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/player"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/runtime")
+    target_link_libraries(avemotion_player_source_tests PRIVATE AveMotion::Player)
+    avemotion_set_warnings(avemotion_player_source_tests)
+    add_test(NAME avemotion.player.source
+        COMMAND avemotion_player_source_tests)
+
     if(AVEMOTION_RLOTTIE_AVAILABLE)
         add_executable(avemotion_reference_tests tests/reference_tests.cpp)
         target_link_libraries(avemotion_reference_tests PRIVATE AveMotion::Reference)
