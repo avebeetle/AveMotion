@@ -2,7 +2,20 @@
 
 Updated: 2026-09-27
 
-## Current handoff — Part26J own Player bridge complete
+## Current work — Part26K own Qt visual pilot
+
+J is complete; user now requested the own visual path in Avelabs. Bases
+AveMotion1bab64b / Avelabs712d454, both clean/equal remotes at preflight.
+Spec9170bc5 and plan/ledger dated2026-09-27-own-qt-pilot are controller-approved
+under delegated authority. Task1 single product writer implements the private
+Avelabs own-warp adapter and existing Motion Lab wiring with functional TDD;
+Task2 review/static/visual/full gates and handoff. No new engine product API,
+primitive/scheduler/worker, no rlottie in own mode. Defaultreference preserved.
+Accepted Avelabs build/Release stays byte-identical; isolated build/cmake and
+build/checks only, no out recreation/install/dependency/Windows/automation.
+Check new ledger/live agents before proceeding. Do not repeat completed J.
+
+## Previous handoff — Part26J own Player bridge complete
 
 Base084d760; spec5489760 and plan/ledger dated2026-09-27-own-player-bridge,
 controller-approved under delegated authority. Existing Player retains one
