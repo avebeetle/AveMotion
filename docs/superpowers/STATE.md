@@ -2,6 +2,20 @@
 
 Updated: 2026-09-27
 
+## Current work — Part26J own Player bridge
+
+Base084d760; spec5489760 and plan/ledger dated2026-09-27-own-player-bridge,
+controller-approved under delegated authority. Existing Player retains one
+scheduler; internal owning source table and two typed own registration/lookup
+functions, no second facade registry/timer/worker. Private friend declaration is
+the only installed header change. Rendering->Player, neverreverse. Runtime
+identity remains genuine; own ScheduledFrame Runtime fields null/invalid.
+Tasks1/2 then independent final review/frozen gates. Fresh no-ref baseline40/40,
+5.17s. One writer/root-only Git, directmain; SDD records checkpoint and agents.
+No Avelabs changes/build/GUI in J: actual QImage output currently reference CPU,
+own scene output requires the next narrow preparation/render host bridge.
+No automation resumed; preserve raw/SDD, dependencies/vendor/goldens/Release.
+
 ## Current handoff — Part26I own ellipse playback complete
 
 H complete at345f1b6; do not repeat. I design3725291 and plan/durable ledger dated
