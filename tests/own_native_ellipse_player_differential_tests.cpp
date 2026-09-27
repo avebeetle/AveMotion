@@ -107,6 +107,7 @@ void mixedTrace(const std::string& json) {
     require(player.nextDeadline() && host.deadline == player.nextDeadline(),
         "mixed pair shares next host wakeup");
     compareTick(player, oldAdded.handle, ownAdded.handle, legacy.get(), at(0.01), 0);
+    compareSnapshot(legacy->playbackSnapshot(at(0.01)), own->playbackSnapshot(at(0.01)));
     compareTick(player, oldAdded.handle, ownAdded.handle, legacy.get(), at(0.25), 2, 15);
     require(player.diagnostics().skippedDeadlines > 0,
         "late mixed tick accounts skipped deadlines");
@@ -114,6 +115,7 @@ void mixedTrace(const std::string& json) {
         && player.pause(ownAdded.handle, at(0.25)), "both sources pause");
     compareTick(player, oldAdded.handle, ownAdded.handle, legacy.get(), at(0.25), 2, 15);
     compareTick(player, oldAdded.handle, ownAdded.handle, legacy.get(), at(0.75), 0);
+    compareSnapshot(legacy->playbackSnapshot(at(0.75)), own->playbackSnapshot(at(0.75)));
     require(player.resume(oldAdded.handle, at(0.75))
         && player.resume(ownAdded.handle, at(0.75)), "both sources resume");
     compareTick(player, oldAdded.handle, ownAdded.handle, legacy.get(), at(1), 2, 30);

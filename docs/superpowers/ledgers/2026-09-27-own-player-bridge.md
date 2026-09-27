@@ -55,3 +55,11 @@ Task2 reviewer limitations: root read raw functionalRED and GREEN, ran fresh
 focusedtests; final presets/install/host gates explicitly remain next. Existing
 own domain/serial/allocator/cache contract documented in new privateheader and
 real two-owner resource test; no shared Runtime planner namespace used.
+
+Whole-stage084d760..70ca815: one Important cached Runtime handle regression,
+confirmed by root inspecting public move assignment/current handle and base
+emission. No other Critical/Important. Single combined final fix wave will
+restore live handle projection with regressionRED; also close Minor emptytick
+snapshot coverage. No second broad review/fix wave; one scoped re-review next.
+
+Ruling: Runtime identity is projected live on frame emission, not frozen at registration — preserves public Instance move-assignment behavior — cost is the same per-emission handle read used before J and documenting registration metadata distinctly.

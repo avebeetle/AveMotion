@@ -22,8 +22,11 @@ struct PlayerSourceOps final {
 
 struct PlayerSource final {
     std::shared_ptr<void> owner;
+    // Points to a static-lifetime table for the concrete owner type.
     const PlayerSourceOps* ops = nullptr;
     runtime::Instance* runtimeInstance = nullptr;
+    // Registration-time metadata; live Runtime identity comes from
+    // runtimeInstance->handle() because Instance is move-assignable.
     runtime::InstanceHandle runtimeHandle;
 };
 

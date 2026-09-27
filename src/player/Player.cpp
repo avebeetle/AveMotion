@@ -636,7 +636,9 @@ PlayerTickView Player::tick(
                 || hasReason(reasons, FrameReason::VisibilityChanged))) {
             state_->scheduledFrames.push_back({
                 .handle = {index, entry.generation},
-                .instanceHandle = entry.source.runtimeHandle,
+                .instanceHandle = entry.source.runtimeInstance != nullptr
+                    ? entry.source.runtimeInstance->handle()
+                    : runtime::InstanceHandle{},
                 .instance = entry.source.runtimeInstance,
                 .playback = snapshot,
                 .reasons = reasons,

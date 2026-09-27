@@ -457,6 +457,44 @@ int main() {
     require(activeHost.cancels == 1U,
         "player destruction did not cancel the final host wakeup");
 
+    // A registered Runtime object can receive another valid InstanceData
+    // through its public move assignment without changing the retained object.
+    {
+        player::Player replacementPlayer;
+        auto registered = createSharedInstance(runtime, loaded.asset);
+        auto* const retainedAddress = registered.get();
+        const auto registeredEntry = replacementPlayer.addInstance(registered, zero);
+        require(static_cast<bool>(registeredEntry),
+            "move-assignment registration failed");
+        const auto playerHandle = registeredEntry.handle;
+        const auto originalRuntimeHandle = registered->handle();
+        static_cast<void>(replacementPlayer.tick(zero));
+
+        auto replacementInstance = createSharedInstance(runtime, loaded.asset);
+        const auto replacementRuntimeHandle = replacementInstance->handle();
+        require(replacementRuntimeHandle != originalRuntimeHandle,
+            "replacement Runtime identity did not differ");
+        *registered = std::move(*replacementInstance);
+        require(registered.get() == retainedAddress
+                && registered->handle() == replacementRuntimeHandle
+                && replacementPlayer.instance(playerHandle).get() == retainedAddress,
+            "move assignment changed retained object or Player lookup");
+        require(replacementPlayer.invalidate(playerHandle),
+            "move-assigned registration invalidation failed");
+        const auto replacementTick = replacementPlayer.tick(zero);
+        const auto* replacementFrame = findFrame(replacementTick.frames, playerHandle);
+        require(replacementFrame != nullptr,
+            "move-assigned invalidation did not emit a frame");
+        require(replacementFrame->handle == playerHandle
+                && replacementFrame->instance == retainedAddress
+                && player::hasReason(replacementFrame->reasons,
+                    player::FrameReason::ExplicitInvalidation),
+            "move-assigned frame lost its Player identity or invalidation reason");
+        require(replacementFrame->instanceHandle == replacementRuntimeHandle
+                && replacementFrame->instanceHandle == replacementFrame->instance->handle(),
+            "emitted legacy frame did not project the replacement Runtime identity");
+    }
+
     const auto diagnostics = player.diagnostics();
     require(diagnostics.registrations == 5U,
         "registration diagnostics are incorrect");

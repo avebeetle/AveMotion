@@ -135,3 +135,15 @@ Smallest concrete seam is two typed free functions over existing Player, not a
 second facade registry or copied scheduler. The private friend/header addition
 and Rendering->Player link are explicit. No own UI picture, unsupported features
 or cache/thread guarantees are promised before the next host stage.
+
+## Final-review compatibility clarification
+
+Runtime Instance is publicly move-assignable. A shared owner preserves object
+address/lifetime, not immutable InstanceData or Runtime handle. Legacy frame
+emission must read the current genuine runtimeInstance->handle(), as before J;
+the private runtimeHandle field can remain registration-time metadata but is
+not authoritative live Runtime identity. Own bindings keep null/invalid Runtime
+projection. Do not prohibit valid existing move assignment to avoid this case.
+Add a functional RED for replacement at the same retained address followed by
+explicit invalidation/tick, then restore live projection. This clarifies the
+already binding preservation requirement; no new public policy or signature.
