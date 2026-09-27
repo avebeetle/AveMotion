@@ -44,6 +44,13 @@ inline void assertOwnAuthoredModel(
     using namespace model;
     const auto& asset = *prepared.model;
     requireOwn(prepared.input && *prepared.input == input, "retained admitted input");
+    requireOwn(prepared.values.frameRate == values.frameRate
+        && prepared.values.translation == values.translation && prepared.values.size == values.size
+        && prepared.values.start == values.start && prepared.values.end == values.end
+        && prepared.values.outgoing == values.outgoing && prepared.values.incoming == values.incoming
+        && prepared.values.color == values.color && prepared.values.animated == values.animated
+        && prepared.values.firstFrame == values.firstFrame && prepared.values.lastFrame == values.lastFrame,
+        "retained numeric values");
     requireOwn(asset.schemaVersion == 2 && asset.revision == 1 && !asset.assetHandle.valid(),
         "authored metadata identity");
     requireOwn(asset.sourceAssetHash == ownRawHash(prepared.exactJson), "raw source hash");
@@ -57,6 +64,8 @@ inline void assertOwnAuthoredModel(
     requireOwn(asset.layers.empty() && asset.nodes.empty() && asset.geometries.empty()
         && asset.paints.empty() && asset.clips.empty() && asset.drawOrder.empty()
         && asset.childLayerIds.empty() && asset.layerNodeIds.empty(), "no render rows");
+    requireOwn(asset.shapeValues.empty() && asset.shapePoints.empty() && asset.gradientValues.empty()
+        && asset.gradientFloats.empty(), "unused typed tables empty");
     requireOwn(asset.compositions.size() == 1 && asset.sourceNodes.size() == 5
         && asset.sourceChildIds.size() == 4 && asset.sourcePropertyIds.size() == 8
         && asset.properties.size() == 8 && asset.tracks.size() == (values.animated ? 1U : 0U)
@@ -64,6 +73,7 @@ inline void assertOwnAuthoredModel(
     const auto& composition = asset.compositions[0];
     requireOwn(composition.present && composition.id == makeId<CompositionId>(0)
         && composition.rootNode == makeId<SourceNodeId>(0) && composition.debugName == "root"
+        && composition.logicalWidth == input.width && composition.logicalHeight == input.height
         && composition.firstFrame == 0.0 && composition.endFrame == static_cast<double>(input.endFrame)
         && composition.frameRate == static_cast<double>(values.frameRate), "composition row");
     const std::array<SourceNodeKind, 5> kinds{SourceNodeKind::Composition, SourceNodeKind::Layer,
@@ -90,7 +100,19 @@ inline void assertOwnAuthoredModel(
             && !node.hidden && node.enabled && !node.autoOrient && !node.transformParent.valid()
             && !node.referencedComposition.valid() && node.authoredParentLayerId == -1
             && node.matteMode == SourceMatteMode::None && node.maskMode == SourceMaskMode::None
-            && node.blendMode == SourceBlendMode::Normal && node.solidColor == MotionColorValue{0, 0, 0, 1},
+            && !node.maskInverted && node.blendMode == SourceBlendMode::Normal
+            && node.fillRule == SourceFillRule::Winding && node.strokeCap == SourceStrokeCap::Flat
+            && node.strokeJoin == SourceStrokeJoin::Miter && node.gradientType == SourceGradientType::None
+            && node.pathDirection == SourcePathDirection::Clockwise
+            && node.polystarType == SourcePolystarType::None && node.trimMode == SourceTrimMode::None
+            && node.miterLimit == 0.0F && node.repeaterMaximumCopies == 0.0F
+            && node.gradientColorPointCount == 0 && node.layerWidth == 0 && node.layerHeight == 0
+            && node.solidColor == MotionColorValue{0, 0, 0, 1} && node.sourceAssetRefHash == 0
+            && node.inFrame == (index == 1 ? static_cast<double>(input.layerInFrame) : 0.0)
+            && node.outFrame == (index == 1 ? static_cast<double>(input.layerOutFrame) : 0.0)
+            && node.startFrame == 0.0 && node.timeStretch == 1.0F
+            && node.layerKind == (index == 1 ? SourceLayerKind::Shape : SourceLayerKind::None)
+            && node.authoredLayerId == (index == 1 ? input.layerId : -1),
             "source node defaults");
     }
     const auto& layer = asset.sourceNodes[1];
@@ -113,17 +135,74 @@ inline void assertOwnAuthoredModel(
             && property.present && property.id == makeId<PropertyId>(index)
             && property.owner == makeId<SourceNodeId>(1 + index / 2) && property.semantic == semantics[index]
             && property.semanticIndex == 0 && property.valueType == types[index], "property row");
+        const auto expectedStatic = !(values.animated && index == 4);
+        requireOwn(property.flags == (expectedStatic ? PropertyFlagStatic : PropertyFlagAnimated)
+            && (expectedStatic ? !property.track.valid() : property.track == makeId<TrackId>(0)),
+            "property storage mode");
+    }
+    const std::array<MotionValueRef, 8> staticRefs{
+        MotionValueRef{PropertyValueType::Matrix3x2, 0}, MotionValueRef{PropertyValueType::Scalar, 0},
+        MotionValueRef{PropertyValueType::Matrix3x2, 1}, MotionValueRef{PropertyValueType::Scalar, 1},
+        MotionValueRef{PropertyValueType::Vec2, 0}, MotionValueRef{PropertyValueType::Vec2, values.animated ? 2U : 1U},
+        MotionValueRef{PropertyValueType::Color, 0}, MotionValueRef{PropertyValueType::Scalar, 2}};
+    for (std::size_t index = 0; index < staticRefs.size(); ++index) {
+        requireOwn(values.animated && index == 4 ? !asset.properties[index].staticValue.valid()
+            : asset.properties[index].staticValue == staticRefs[index], "property value reference");
     }
     requireOwn(asset.scalarValues == std::vector<float>{100, 100, 100}
         && asset.colorValues == std::vector<MotionColorValue>{values.color}
         && asset.matrixValues == std::vector<MotionMatrix3x2Value>{{1, 0, 0, 1, values.translation.x, values.translation.y}, {1, 0, 0, 1, 0, 0}},
         "static typed values");
+    const auto expectedVec2 = values.animated
+        ? std::vector<MotionVec2Value>{values.start, values.end, values.size}
+        : std::vector<MotionVec2Value>{values.start, values.size};
+    requireOwn(asset.vec2Values == expectedVec2, "vec2 typed values");
+    if (values.animated) {
+        const auto& track = asset.tracks[0];
+        const auto& segment = asset.segments[0];
+        const auto linear = values.outgoing == MotionVec2Value{0, 0}
+            && values.incoming == MotionVec2Value{1, 1};
+        requireOwn(track.present && track.id == makeId<TrackId>(0) && track.property == makeId<PropertyId>(4)
+            && track.segments.first == 0 && track.segments.count == 1
+            && track.firstFrame == static_cast<double>(values.firstFrame)
+            && track.endFrame == static_cast<double>(values.lastFrame), "track row");
+        requireOwn(segment.present && segment.id == makeId<SegmentId>(0) && segment.track == track.id
+            && segment.firstFrame == static_cast<double>(values.firstFrame)
+            && segment.endFrame == static_cast<double>(values.lastFrame)
+            && segment.interpolation == (linear ? SegmentInterpolation::Linear : SegmentInterpolation::CubicBezier)
+            && segment.spatialInterpolation == SpatialInterpolation::None
+            && segment.startValue == MotionValueRef{PropertyValueType::Vec2, 0}
+            && segment.endValue == MotionValueRef{PropertyValueType::Vec2, 1}
+            && segment.temporalControl1 == values.outgoing && segment.temporalControl2 == values.incoming
+            && segment.spatialInTangent == MotionVec2Value{} && segment.spatialOutTangent == MotionVec2Value{},
+            "segment row");
+    }
     requireOwn(asset.statistics.directParsedModel && asset.statistics.compositionCount == 1
         && asset.statistics.sourceNodeCount == 5 && asset.statistics.propertyCount == 8
         && asset.statistics.staticPropertyCount == (values.animated ? 7U : 8U)
         && asset.statistics.animatedPropertyCount == (values.animated ? 1U : 0U)
         && asset.statistics.trackCount == asset.tracks.size() && asset.statistics.segmentCount == asset.segments.size(),
         "authored statistics");
+    requireOwn(asset.statistics.declaredLayerCount == 0 && asset.statistics.declaredNodeCount == 0
+        && asset.statistics.declaredGeometryCount == 0 && asset.statistics.declaredPaintCount == 0
+        && asset.statistics.observedLayerCount == 0 && asset.statistics.observedNodeCount == 0
+        && asset.statistics.observedGeometryCount == 0 && asset.statistics.observedPaintCount == 0
+        && asset.statistics.assetStaticGeometryCount == 0 && asset.statistics.assetStaticPaintCount == 0
+        && asset.statistics.maskCount == 0 && asset.statistics.clipCount == 0
+        && asset.statistics.scalarValueCount == 3 && asset.statistics.vec2ValueCount == expectedVec2.size()
+        && asset.statistics.colorValueCount == 1 && asset.statistics.matrixValueCount == 2
+        && asset.statistics.shapeValueCount == 0 && asset.statistics.gradientValueCount == 0,
+        "complete authored statistics");
+    requireOwn(prepared.binding.root == makeId<SourceNodeId>(0)
+        && prepared.binding.layer == makeId<SourceNodeId>(1) && prepared.binding.group == makeId<SourceNodeId>(2)
+        && prepared.binding.ellipse == makeId<SourceNodeId>(3) && prepared.binding.fill == makeId<SourceNodeId>(4)
+        && prepared.binding.layerTransform == makeId<PropertyId>(0)
+        && prepared.binding.layerOpacity == makeId<PropertyId>(1)
+        && prepared.binding.groupTransform == makeId<PropertyId>(2)
+        && prepared.binding.groupOpacity == makeId<PropertyId>(3)
+        && prepared.binding.position == makeId<PropertyId>(4) && prepared.binding.size == makeId<PropertyId>(5)
+        && prepared.binding.color == makeId<PropertyId>(6) && prepared.binding.fillOpacity == makeId<PropertyId>(7),
+        "bound semantic identifiers");
 }
 
 } // namespace avemotion::test

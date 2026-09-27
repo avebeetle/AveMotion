@@ -2,6 +2,7 @@
 #include "NativeEllipseAdmissionTestData.hpp"
 
 #include <cstdlib>
+#include <cmath>
 #include <limits>
 #include <iostream>
 
@@ -79,6 +80,13 @@ void numericRepresentabilityAndInputLimitsAreEnforced() {
     const auto rateValues = avemotion::runtime::detail::interpretNativeEllipseInput(rate);
     require(rateValues && rateValues->frameRate == static_cast<float>(59.94),
         "decimal frame rate casts through double");
+
+    auto signedZero = expectedEllipseBaseline();
+    auto& motion = std::get<NativeEllipseAnimatedPosition>(signedZero.position);
+    motion.start[1] = ellipseDecimal(false, "0");
+    const auto zeroValues = avemotion::runtime::detail::interpretNativeEllipseInput(signedZero);
+    require(zeroValues && zeroValues->start.y == 0.0F && !std::signbit(zeroValues->start.y),
+        "accepted zero normalized to positive zero");
 
     auto staticPosition = expectedEllipseBaseline();
     staticPosition.position = NativeEllipseStaticPosition{{ellipseDecimal(true, "32768"),
