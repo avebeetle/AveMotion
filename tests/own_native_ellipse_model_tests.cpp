@@ -234,7 +234,10 @@ void authoredBoundaryAndNameMatrixIsIndependent() {
     emptyInput.ellipseName = ""; emptyInput.fillName = ""; emptyInput.transformName = "";
     avemotion::test::assertOwnAuthoredModel(*emptyPrepared, emptyInput, baselineValues(), empty);
 
-    const auto whitespacePrepared = preparedFrom("\n" + source + "\n");
+    const std::string whitespaceSource = "\n" + source + "\n";
+    const auto whitespacePrepared = preparedFrom(whitespaceSource);
+    avemotion::test::assertOwnAuthoredModel(*whitespacePrepared,
+        avemotion::test::expectedEllipseBaseline(), baselineValues(), whitespaceSource);
     require(whitespacePrepared->exactJson != source
         && whitespacePrepared->model->sourceAssetHash != preparedFrom(source)->model->sourceAssetHash
         && whitespacePrepared->model->parsedModelFingerprint != preparedFrom(source)->model->parsedModelFingerprint,
