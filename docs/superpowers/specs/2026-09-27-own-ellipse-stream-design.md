@@ -19,7 +19,8 @@ identity-inventory.md resource stubs predate completed G and are not new tasks.
 1. **Selected: separate Rendering-private own stream.** Consume the sealed own
    prepared owner, reuse first-party evaluation/ellipse/path/model helpers, and
    assemble the small own scene schema directly. Old certificate-backed stream
-   stays unchanged. A little scene assembly/history orchestration is repeated;
+   semantics stay unchanged; the review addendum permits identical helper
+   extraction. A little scene assembly/history orchestration is repeated;
    numeric, easing, path and hashing algorithms are not copied.
 2. A common generic scene-emitter descriptor could remove that orchestration but
    would introduce a new mutable metadata boundary and refactor a proven legacy

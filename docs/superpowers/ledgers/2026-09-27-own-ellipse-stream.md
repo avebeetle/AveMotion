@@ -56,6 +56,15 @@ out/part26h-design/baseline-none-vsdev-2606632.log. Both attempts retained.
   helper RED/GREEN retained. Failed py-launcher scratch output was overwritten
   by worker; report discloses this retention gap, successful python derivation
   is retained and no reconstructed output is accepted as original evidence.
-- Task2 pending: semantic scene/plan ordinary-reference parity.
+- Task2 complete: product4e1fa45, independent task review spec compliant/Approved,
+  no Critical/Important. All15 assets, four viewports and mixed history:
+  7920 scene/plan comparisons,12495 direct ordinary samples,150 parses,
+  12 mutation witnesses. Own-only61frames live reference counter delta0.
+  Compiling false-comparator RED retained. Full Telegram86/86,102.35s;
+  related18/18,24.68s; root fresh differential1/1,10.55s. No product change
+  or added semantic exclusion. Earlier invalid AssetHandle expectation corrected
+  after checking planner's asset0/raw-instance-ID rule; failed attempt retained.
+  Review Minor: existing vendor C4251 warning retained, not suppressed or fixed
+  by changing vendor code. Carry as final evidence limitation, not open defect.
 - Task3 pending: WARP/CPU pixels and cache/lifetime proof.
 - Final review/full platform/private-boundary gates and report pending.

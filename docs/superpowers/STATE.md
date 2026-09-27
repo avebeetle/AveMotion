@@ -2,7 +2,7 @@
 
 Updated: 2026-09-27
 
-## Current handoff — Part26H own scene stream approved; implementation next
+## Current handoff — Part26H own stream and semantic parity accepted; pixels next
 
 G complete at2606632; do not repeat. H spec2d739f5 at
 docs/superpowers/specs/2026-09-27-own-ellipse-stream-design.md; controller-approved
@@ -19,7 +19,11 @@ legacy delegation, not a legacy policy change. Latest full none38/38,4.97s;
 TG own/legacy/lifecycle3/3,10.37s; root fresh3/3,10.67s. Counter mutation RED is
 postimplementation; overwritten failed py-launcher scratch output explicitly
 disclosed, not claimed as retained evidence. Writers/reviewers quiescent.
-Task2 ordinary scene/plan parity next, Task3 pixels then full final gates.
+Task2 complete: product4e1fa45, independent spec/quality review Approved.
+7920 original own/ordinary scene+plan comparisons,12 mutation witnesses;
+full Telegram86/86,102.35s; root fresh differential1/1,10.55s. Vendor C4251
+warning retained as known evidence noise, not suppressed. Task3 WARP/CPU pixels
+and cache/lifetime next, then whole-stage review and full final gates.
 Baseline none37/37 under VsDevCmd; prior plain-shell compiler discovery failure
 retained, not product regression/functional RED. Current SDD is
 .superpowers/sdd/2026-09-27-own-ellipse-stream/progress.md.

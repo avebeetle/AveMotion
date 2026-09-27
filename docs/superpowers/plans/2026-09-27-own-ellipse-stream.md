@@ -121,23 +121,23 @@ construct a certificate or call that legacy normalizer. freshScene emits raw
 instanceId0, so assign a fixed nonzero TEST oracle ID (independent of candidate)
 before its separate planner build; keep its original asset handle/sequence/model.
 
-- [ ] Write positive equal-semantic assertion against a compiling false comparator
+- [x] Write positive equal-semantic assertion against a compiling false comparator
   stub, observe RED. Define fixed normalization exactly per spec in the test
   helper comment before implementing it. Independently validate original IDs,
   handles, resource roles/counts/aliases; no copying candidate values to oracle.
-- [ ] Use unchanged NativeEllipseOracle for all15 NativeEllipseTestAssets, four
+- [x] Use unchanged NativeEllipseOracle for all15 NativeEllipseTestAssets, four
   viewports (512x512,256x256,384x256,256x384). Per source/viewport compare forward
   0..60, reverse60..0 and [0,30,30,60,10,20,19,0], then mixed viewport sequence.
   Each original stream/oracle history has its own planner. Compare all retained
   semantic scene fields and plan fields, preserving revision/updates/history.
-- [ ] Implement normalization of approved identity/display-role differences only;
+- [x] Implement normalization of approved identity/display-role differences only;
   original scenes feed planners. Compare unchanged exact scene/plan utilities.
   Pin original fingerprints, sequence, successful-history behavior separately.
-- [ ] Mutation witnesses reject geometry, color, transform, visibility, resource
+- [x] Mutation witnesses reject geometry, color, transform, visibility, resource
   revision, unused gradient/image/stroke fields, bounds and wrong original source
   role. Live reference Runtime counters unchanged across own-only calls. Emit
   explicit comparison/sample/witness counts and matrix summary.
-- [ ] `cmake --preset windows-msvc-telegram-debug`, build same preset --parallel4,
+- [x] `cmake --preset windows-msvc-telegram-debug`, build same preset --parallel4,
   `ctest --test-dir out/build/windows-msvc-telegram-debug --output-on-failure -R
   "(own_native_ellipse|native_ellipse|own_json)"`: include the new
   `avemotion.own_native_ellipse_stream_differential` and related old/own tests.
@@ -151,13 +151,13 @@ extraction preserves the existing capture test's helpers, dimensions and behavio
 
 **Interfaces:** consumes Task1 stream/helper and unchanged NativeEllipseOracle;
 shared testsupport::WarpCaptureSurface keeps configure(profile), context(),
-beginFrame(), endFrame(), readPixels() behavior (use actual existing method names
-when extracting; no public consumer). No Task2 normalizer in pixel oracle.
+begin(), end(), readPixels() behavior; no public consumer. No Task2 normalizer
+in pixel oracle.
 As in Task2, declare the unchanged oracle header's legacy types in TEST includes
 and assign its raw scene a fixed nonzero TEST ID for its separate planner.
 
 - [ ] Extract the existing test-only WARP surface mechanically; build/run existing
-  `avemotion.direct2d_capture` to prove unchanged behavior before new assertions.
+  `avemotion.direct2d.capture` to prove unchanged behavior before new assertions.
 - [ ] New capture test observes functional RED via a compiling unset candidate
   draw step, then uses own plans to draw. Keep original ordinary reference
   scenes/plans in distinct planner/backend domains. Compare exact WARP BGRA bytes;
