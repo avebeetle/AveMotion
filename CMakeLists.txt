@@ -202,6 +202,7 @@ add_library(avemotion_rendering STATIC
     src/render/NativeEllipsePathMaterializer.cpp
     src/render/OwnNativeEllipsePreparedAsset.cpp
     src/render/OwnNativeEllipsePlayback.cpp
+    src/render/OwnNativeEllipsePlayer.cpp
     src/render/OwnNativeEllipseStream.cpp
     src/render/RepeaterTransform.cpp
     src/render/TrimPathGenerator.cpp
@@ -220,7 +221,8 @@ target_include_directories(avemotion_rendering
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>)
-target_link_libraries(avemotion_rendering PUBLIC AveMotion::Core AveMotion::Runtime)
+target_link_libraries(avemotion_rendering PUBLIC AveMotion::Core AveMotion::Runtime PRIVATE AveMotion::Player)
+target_include_directories(avemotion_rendering PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src/player")
 avemotion_set_warnings(avemotion_rendering)
 
 if(WIN32 AND AVEMOTION_BUILD_DIRECT2D_BACKEND)
@@ -588,6 +590,22 @@ if(BUILD_TESTING)
     avemotion_set_warnings(avemotion_own_native_ellipse_playback_tests)
     add_test(NAME avemotion.own_native_ellipse_playback
         COMMAND avemotion_own_native_ellipse_playback_tests)
+
+    add_executable(avemotion_own_native_ellipse_player_tests
+        tests/own_native_ellipse_player_tests.cpp)
+    target_include_directories(avemotion_own_native_ellipse_player_tests PRIVATE
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/render"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/runtime"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/formats"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/model"
+        "${CMAKE_CURRENT_SOURCE_DIR}/tests/support")
+    target_link_libraries(avemotion_own_native_ellipse_player_tests PRIVATE
+        AveMotion::Rendering AveMotion::Player)
+    target_compile_definitions(avemotion_own_native_ellipse_player_tests PRIVATE
+        AVEMOTION_FIXTURE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures")
+    avemotion_set_warnings(avemotion_own_native_ellipse_player_tests)
+    add_test(NAME avemotion.own_native_ellipse_player
+        COMMAND avemotion_own_native_ellipse_player_tests)
 
     add_executable(avemotion_own_native_ellipse_admission_tests
         tests/own_native_ellipse_admission_tests.cpp)
@@ -1013,6 +1031,22 @@ if(BUILD_TESTING)
             avemotion_set_warnings(avemotion_own_native_ellipse_playback_differential_tests)
             add_test(NAME avemotion.own_native_ellipse_playback_differential
                 COMMAND avemotion_own_native_ellipse_playback_differential_tests)
+
+            add_executable(avemotion_own_native_ellipse_player_differential_tests
+                tests/own_native_ellipse_player_differential_tests.cpp)
+            target_include_directories(avemotion_own_native_ellipse_player_differential_tests PRIVATE
+                "${CMAKE_CURRENT_SOURCE_DIR}/src/render"
+                "${CMAKE_CURRENT_SOURCE_DIR}/src/runtime"
+                "${CMAKE_CURRENT_SOURCE_DIR}/src/formats"
+                "${CMAKE_CURRENT_SOURCE_DIR}/src/model"
+                "${CMAKE_CURRENT_SOURCE_DIR}/tests/support")
+            target_link_libraries(avemotion_own_native_ellipse_player_differential_tests PRIVATE
+                AveMotion::Rendering AveMotion::Player AveMotion::Runtime AveMotion::Reference)
+            target_compile_definitions(avemotion_own_native_ellipse_player_differential_tests PRIVATE
+                AVEMOTION_FIXTURE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures")
+            avemotion_set_warnings(avemotion_own_native_ellipse_player_differential_tests)
+            add_test(NAME avemotion.own_native_ellipse_player_differential
+                COMMAND avemotion_own_native_ellipse_player_differential_tests)
 
             add_executable(avemotion_own_native_ellipse_stream_differential_tests
                 tests/own_native_ellipse_stream_differential_tests.cpp)
