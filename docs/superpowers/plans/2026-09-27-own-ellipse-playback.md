@@ -104,7 +104,7 @@ evaluateAt(now,width,height)->OwnNativeEllipseFrameResult. Durations exactly
 double(float(N-1)/floatFrameRate); mapping truncates double normalized*(N-1),
 nonfinite->0 and clamp[0,1]. No new validity policy on sealed G input.
 
-- [ ] Write no-ref tests/stubs and register avemotion.own_native_ellipse_playback
+- [x] Write no-ref tests/stubs and register avemotion.own_native_ellipse_playback
   in all variants; retain functional RED. Null factory error, N61/fr60 duration1s,
   literal frames0,15,30,60 for controlled0/.25/.5/1; normalized bounds/nonfinite,
   just-below/above mapping thresholds; actual emitted frame/geometry.
@@ -112,15 +112,15 @@ nonfinite->0 and clamp[0,1]. No new validity policy on sealed G input.
   evaluateAt on invalid viewport at terminal time must not commit revision;
   subsequent successful terminal emission commits once, earlier pure snapshot
   did not. Successful scenes retain H sequence/change history.
-- [ ] Add real JSON and existing TGS preparation-to-playback cases, two objects
+- [x] Add real JSON and existing TGS preparation-to-playback cases, two objects
   with independent controls/identities sharing prepared owner and one own-only
   planner, retained scene/plan after destruction, planner forget/rebuild. Validate
   invalid Runtime handles/source identity and no cross-object history leakage.
   API comment states H domain/single-writer/allocator lifetime/caller retirement
   contract. Do not add test-only state access to live playback.
-- [ ] Implement minimal wrapper and Runtime-private dependency. Compile new
+- [x] Implement minimal wrapper and Runtime-private dependency. Compile new
   source in Rendering for all variants, no installed header, no new library.
-- [ ] Add Telegram-only avemotion.own_native_ellipse_playback_differential:
+- [x] Add Telegram-only avemotion.own_native_ellipse_playback_differential:
   all15 existing variants, four existing viewports, deterministic trace covering
   forward samples, pause/resume, seeking, controlled, rate/direction, reverse
   endpoint and looping, Once completion/failure/retry. Compare full snapshots
@@ -129,12 +129,12 @@ nonfinite->0 and clamp[0,1]. No new validity policy on sealed G input.
   duration and mapped frame against directly loaded ordinary Telegram, including
   fractional frame-rate cases and clamped/nonfinite handling at our boundary.
   State explicitly shared-control snapshot differential is wiring-only evidence.
-- [ ] For trace emissions sample fresh ordinary scenes independently at mapped
+- [x] For trace emissions sample fresh ordinary scenes independently at mapped
   frames; use H unchanged approved full scene/plan comparison helpers and fixed
   metadata mapping. No candidate-derived semantic expectations. Preserve literal
   tests as independent timeline proof. Demonstrate own calls add no reference
   counter activity; no-ref compile/link is the stronger dependency proof.
-- [ ] GREEN full none and Telegram CTest; targeted Samsung new own playback test
+- [x] GREEN full none and Telegram CTest; targeted Samsung new own playback test
   proves no rounding macro leaks. Root focused check, commit, task review/push.
 
 ## Final review and gates (root)

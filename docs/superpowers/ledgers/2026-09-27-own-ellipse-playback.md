@@ -36,7 +36,17 @@ one missing-VS CTest invocation disclosed; rerun inside VS passed without code/t
 weakening. Samsung vendored C4251 Minor retained for final review, no vendor edits.
 Reviewer cross-task limitation resolved for Task1: exact scoped diff confirms
 reader/admission/model/stream/certificate/Player/public sources unchanged, full
-none/Telegram tests pass; final gates will cover assembled Task2. Next Task2.
+none/Telegram tests pass; final gates will cover assembled Task2.
+
+Task2 complete at9f56f29, independent spec compliant/Approved, no Critical or
+Important. Full none40/40,4.89s andTG89/89,102.33s after final test edits;
+Samsung own1/1. Root freshTG2/2,2.50s,840 scene/plan comparisons across15assets,
+4viewports,14emissions. Shared-control snapshots labeled wiring proof; independent
+literals and fresh ordinary oracle supply separate expectations. Initial missing
+test include and13-vs14 trace-count failures retained; no product weakening.
+Telegram vendorC4251 Minor retained for final review. Review's generated closure,
+integrity and frozen-HEAD limitations remain assigned to root final gates; not
+claimed complete. Next one whole-stage review, frozen gates and handoff.
 
 User's request to consult Telegram periodically becomes
 a source-inspection checkpoint at architecture decisions, not a new automation.
