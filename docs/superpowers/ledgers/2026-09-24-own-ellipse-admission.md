@@ -67,7 +67,7 @@ test, not an artificial regression of old behavior; old baseline GREEN stays lab
 
 - [x] Task1 shared core and preserved legacy frontend, product4c9237d independently approved.
 - [x] Task2 own adapter and independent/all-variant evidence, productb44dedf and reviewed test fix9269b8e.
-- [ ] Root final platform/provenance/include/link/install gates and independent whole-stage review.
+- [x] Root final platform/provenance/include/link/install gates and independent whole-stage review.
 - [ ] Next own-model/resources/certificate design, not F own-playback completion.
 
 No active writer/build at preflight. Root owns STATE/ledger/docs; workers own only
@@ -140,3 +140,40 @@ re-review task-2-fix1-review.md accepts all with no new breakage. Task2: complet
 (6d9e9ca..9269b8e, independent review clean after one fix). No deferred findings.
 Next docs handoff/ordinary guarded push, then root final stable-SHA gates and
 whole-stage review. No current product writer; no own playback claim.
+
+## Final gates — stable880020d
+
+Task2 handoff880020d ordinary-pushed with exact remote equality/clean tree.
+Whole-stage read-only review7000dd0..880020d reports no source findings. Its
+declined platform/provenance judgments remain root acceptance dependencies;
+performance/full-playback/universal-scalar claims stay explicitly outside scope.
+
+First root sequence passed none34/34,5.58s; Telegram80/80,96.27s;
+preview74/74,98.30s; Samsung configure/registration and all-vendor/TGS16;
+six actual core/own include traces. All attempt001 artifacts retained. Boundary
+verification then failed because its legacy-object substring also matched
+OwnNativeEllipseAdmission.cpp.obj. Actual four archive blocks prove legacy
+absent in none/Samsung and present only in Telegram/preview. This is an instrument
+defect, not a product regression or permission to waive the boundary.
+
+One final instrument fix wave: exact object-leaf regex replaces the substring;
+actual guard extracted into seven behavioral cases, RED own-only before fix,
+GREEN7/7 after, including leak/missing/suffix-decoy negatives. Raw
+out/part26f/boundary-original-red.log and instrument-fix1/ retain reproduction,
+original-content backup, test and review. No product change. Because the verifier
+is hashed into evidence identity, root reruns all four gates and six traces as
+fresh attempt002; do not substitute attempt001 for final matching evidence.
+Scoped independent instrument review and final boundary acceptance pending.
+
+Final acceptance: all attempt002 commands exit0; none34/34,5.19s; TG80/80,91.34s;
+preview74/74,94.05s; Samsung configure/registration and vendor/TGS16; six actual
+includes103/102 per preset; final boundary verifier passes.896 source/config files,
+five instruments stable. Root independently compared raw include sets and every
+header hash, read full link/rule/variable/install/source boundaries and protected
+diff; evidence out/part26f/root-final-boundary-review.md. Whole-stage pending
+platform/provenance judgments resolved, remaining declined claims outside scope.
+Scoped instrument review accepts exact-leaf fix, no new breakage. No second wave,
+no product fix, no open F findings. All six design rulings/costs remain explicit.
+Part26F accepted; docs-only final seal and ordinary guarded push follow. User's
+long continuation proceeds to separate own model/resource/publication design,
+not a claim of complete playback. UI clean712d454/EXE hash/out absence preserved.

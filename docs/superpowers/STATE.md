@@ -2,39 +2,37 @@
 
 Updated: 2026-09-27
 
-## Current handoff — Part26F tasks accepted; final gates next
+## Current handoff — Part26F accepted; own prepared model design next
 
-Task1 product4c9237d and Task2 productb44dedf plus test-only fix9269b8e are
-independently accepted. Task1 spec/quality review has zero findings; Task2's one
-missing precedence-coverage finding is closed by scoped re-review. No product
-writer remains active. Task1 handoff6d9e9ca was ordinary-pushed with exact remote
-equality; Task2 docs handoff/guarded ordinary push follows. Verify actual Git.
+F product4c9237d/b44dedf and test fix9269b8e accepted. Final tested HEAD880020d.
+Task reviews and whole-stage7000dd0..880020d have no open findings. Root final002
+full none34/34,5.19s;Telegram80/80,91.34s;preview74/74,94.05s;Samsung configure/
+registration, all-vendor/TGS16, six103/102-header traces and private-boundary
+verifier/manual closure pass.896 source/config inputs and five instruments stable.
+No product final fix; one exact-leaf instrument correction with7-case RED/GREEN,
+scoped review and full repeated identity-bound gates. All001 failures/evidence
+retained. Not clean rebuilds, performance or Samsung all-green claims.
 
-Current spec docs/superpowers/specs/2026-09-24-own-ellipse-admission-design.md;
+Final report docs/PART26F_OWN_ELLIPSE_ADMISSION_REPORT.md.
+Spec docs/superpowers/specs/2026-09-24-own-ellipse-admission-design.md;
 plan docs/superpowers/plans/2026-09-24-own-ellipse-admission.md;
 durable ledger docs/superpowers/ledgers/2026-09-24-own-ellipse-admission.md;
-SDD .superpowers/sdd/2026-09-24-own-ellipse-admission/progress.md. Raw out/part26f.
-Draft report docs/PART26F_OWN_ELLIPSE_ADMISSION_REPORT.md. Do not repeat tasks.
+SDD .superpowers/sdd/2026-09-24-own-ellipse-admission/progress.md.
+Raw out/part26f, including root-final-boundary-review.md. Do not repeat F.
+Docs-only final seal/ordinary guarded push follows; verify actual Git on resume.
 
-Task1 fresh none33/33, TG focused8/8, root2/2. Task2 scratch none34/34, TG7/7;
-root rebuilt missing C/D targets and ran own2+C/D4,6/6. Fix focused none/TG1/1 each.
-These are task checks, NOT final F acceptance. Next root fresh full none/Telegram/
-Win32-preview, Samsung configure/provenance, actual include/link/install closure,
-and independent whole-stage review (read-only review may overlap stable gates).
-Use existing five scratch instruments; retain every failed attempt and identity.
+Next Part26G written design/plan for own immutable model/resources and distinct
+own publication boundary, then native frame/pixel parity and isolated static
+Avelabs acceptance. Source inventories already at out/part26g-design/
+dependency-inventory.md and resources-proposal.md; do not repeat audits.
+Current Runtime still depends on reference loading/playback. No fake Asset/
+handle or weakened NativeEllipseCertificate; scope still narrow ellipse subset.
 
-September24 work stopped on a model-availability error; September27 resumed the
-same preserved changes, no reimplementation or manufactured RED history. Old active
-labels in historical sections are not proof of a live executor. Accidental SDD
-report tracking in752c2d9 was removed in6d9e9ca; local bytes/history were retained.
-
-No UI writes/builds/GUI, UI/out recreation, new automation/dependency/settings/
-license change. Host stays at accepted712d454, EXE C92F26EE...82C2. Production
-Runtime still uses reference loading/playback; F supplies only an independent
-private own-document admission path for the narrow ellipse subset. After acceptance,
-separate own-model/resources/certificate design (source inventory already at
-out/part26g-design/dependency-inventory.md), then timeline/pixels and isolated
-static Avelabs acceptance. User's delegated main commits/ordinary push continue.
+User delegates written spec/plan/SDD, reversible main commits/ordinary push.
+No UI writes/builds/GUI or UI/out recreation, no automation/dependency/settings/
+license change. UI remains clean712d454, accepted EXE C92F26EE...82C2 unchanged.
+No active product writer/build/reviewer at F acceptance. September24 interruption,
+recovery and report-tracking mistake are retained in the ledger/history.
 
 ## Previous handoff — Part26E accepted; Part26F design next
 

@@ -1,7 +1,8 @@
 # Part26F — own ellipse admission
 
-Status: in progress, 2026-09-27. Tasks1/2 accepted; final gates/review pending.
+Status: accepted, 2026-09-27. Tasks1/2, final gates and independent review complete.
 Stage baseline7000dd0b7470a17fd21ad3515a44eb7f140adae9.
+Tested HEAD880020d4ab9d6199009cf4ecf16b5da5c6caf6aa; last product/test9269b8e.
 
 ## Scope and destination
 
@@ -52,7 +53,7 @@ append-only. Raw evidence and SDD artifacts remain locally retained. No warnings
 historical failed commands or unresolved broad-stage work are erased by a passing
 focused check.
 
-## Decisions and remaining acceptance
+## Decisions and final acceptance
 
 The six detailed rulings and costs are recorded in
 docs/superpowers/ledgers/2026-09-24-own-ellipse-admission.md: one shared compiled
@@ -63,7 +64,57 @@ before normalization (different internal storage/timing); direct-main/raw retent
 witness maintenance). No speedup, zero-allocation or race-detector claim is made.
 
 Task2 independent descriptors, numeric/Unicode/path distinctions, TGS composition,
-lifetime and two-thread functional isolation are covered; this is not TSan. Final fresh full none,
-Telegram, Win32-preview, Samsung configure/provenance, actual include/link/install
-closure and independent whole-stage review are required before F acceptance.
-Samsung is configure-only here, not a claim that its known golden failures are fixed.
+lifetime and two-thread functional isolation are covered; this is not TSan.
+
+| Final root gate | Result |
+| --- | --- |
+| windows-msvc-direct2d, none |34/34,5.19s|
+| windows-msvc-telegram-debug |80/80,91.34s|
+| windows-msvc-win32-preview |74/74,94.05s; capture/WARP/preflight/selftest included|
+| windows-msvc-samsung-debug |Configure/registration only, no Samsung all-green claim|
+| Vendor/committed corpus, TGS integrity |Both vendor trees preserved;16 assets verified|
+| Actual core/own include traces |Six invocations;103/102 headers each, only expected first-party/MSVC/SDK|
+
+All built suites have zero skips/failures. These are fresh configure/incremental
+build/CTest executions, not clean rebuilds or performance comparisons. Exact
+commands, outputs, exits, CTest listings/JUnit, source/config/instrument hashes,
+graphs and original-object hashes are retained in out/part26f. Final directories
+are `880020d...-<preset>-gate-002` and `880020d...-include-trace-002`.
+
+Commands, from the repository root (tag is the full tested HEAD above):
+
+```powershell
+& .\out\part26f\run-preset-gate.cmd windows-msvc-direct2d $tag
+& .\out\part26f\run-preset-gate.cmd windows-msvc-telegram-debug $tag
+& .\out\part26f\run-preset-gate.cmd windows-msvc-win32-preview $tag
+& .\out\part26f\provenance-gate.cmd $tag
+& pwsh.exe -NoProfile -File .\out\part26f\trace-includes.ps1 -EvidenceTag $tag
+& pwsh.exe -NoProfile -File .\out\part26f\verify-boundaries.ps1 -EvidenceTag $tag
+```
+
+An initial boundary verifier used a substring which also matched the own adapter
+name. Root reproduced the false positive on actual archive blocks; a7-case
+actual-guard RED/GREEN regression and independent scoped review accepted an exact
+leaf-name check. Because that script is hashed, all gates/traces were repeated
+with the corrected instrument. Attempt001 and the failure remain retained.
+No product correction or test weakening was needed; cost was an extra full gate
+sequence, not an unexplained engine regression.
+
+The final identity covers896 product/config inputs and five instruments. None
+has zero rlottie source/enable records or vendor link edges. Telegram Runtime
+remains reference-linked; vendor search paths do not mean actual included headers.
+Root inspected full link/rule/variable closures, all six raw header inventories
+and hashes, private installation/export rules, extraction and protected diff.
+See out/part26f/root-final-boundary-review.md and the final private-boundaries JSON.
+All new interfaces remain private, and old admission/input headers/tests and E
+remain unchanged. Samsung's known golden failures are not fixed or hidden.
+
+Whole-stage review7000dd0..880020d found no source findings. All its platform/
+provenance evidence dependencies are now resolved by root; scope exclusions remain
+explicit. No open/deferred F finding. Avelabs stays clean712d454, UI/out absent,
+accepted EXE SHA256 C92F26EE8FEB4FF03F6DC7F4AFFF4B11FB48142743D1EDCCB4E213AAA81F82C2.
+
+Next: separately design/build an own immutable model and canonical resources,
+with a distinct own publication boundary, without forging or weakening the
+existing reference certificate. Then prove own frames/pixels and integrate that
+path into an isolated static Avelabs build. F alone is not own playback.

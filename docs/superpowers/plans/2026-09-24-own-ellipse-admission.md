@@ -402,11 +402,11 @@ No worker subagents, no UI/build/settings changes.
 
 ## Controller final gates and handoff
 
-- [ ] Independent task reviews, any bounded fixes, updated ledger/STATE and guarded ordinary main pushes.
-- [ ] Fresh full MSVC none/Telegram/Win32-preview configure/build/CTest at stable final product HEAD, zero skipped required tests; existing graphics gates explicitly required.
-- [ ] Samsung configure graph/registration only, both vendor trees/corpus and TGS16 integrity; no Samsung all-green claim.
-- [ ] Actual core/own source include traces and none link closure, source ownership, private installation and old-header/test/protected-file immutability. Telegram Runtime remains reference-linked intentionally.
-- [ ] Whole-stage independent review over7000dd0..HEAD, at most one combined final wave/scoped review, report exact commands/counts/limitations and all rulings/costs.
+- [x] Independent task reviews, any bounded fixes, updated ledger/STATE and guarded ordinary main pushes.
+- [x] Fresh full MSVC none/Telegram/Win32-preview configure/build/CTest at stable final product HEAD, zero skipped required tests; existing graphics gates explicitly required.
+- [x] Samsung configure graph/registration only, both vendor trees/corpus and TGS16 integrity; no Samsung all-green claim.
+- [x] Actual core/own source include traces and none link closure, source ownership, private installation and old-header/test/protected-file immutability. Telegram Runtime remains reference-linked intentionally.
+- [x] Whole-stage independent review over7000dd0..880020d, sole instrument fix/scoped review, report exact commands/counts/limitations and all rulings/costs.
 - [ ] After F acceptance, separate own-model/ID/resource/certificate design, then native timeline/pixels and isolated static Avelabs acceptance. No automation resumed.
 
 ## Preflight and execution decision
