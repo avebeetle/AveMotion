@@ -46,3 +46,22 @@ warnings remain, with provenance/counts in task report. Ancillary configure
 logs were reused; aggregate RED/final logs remain; no claim every intermediate
 per-case file is an immutable record. All actual static app/import/PDB/backup/
 promotion checks remain Task2, not inferred from mock/staged fixture checks.
+
+Whole-stage review (host f452922..699fc0b) found two Important issues before
+promotion: combined missing own mode/notices could pass as original22, and an
+error while retaining failed-copy evidence could skip rollback. Both are in
+the single combined final fix; focused functional RED/GREEN and one scoped
+re-review are required before real candidate/promotion gates. No Critical or
+new Minor findings. Candidate has not been built or installed at this point.
+Declined judgments remain explicit: public licensing unresolved; full geometry
+is next stage; native GUI acceptance unverified; routine installs are not a
+transactional updater; existing warnings/ancillary log reconstruction deferred;
+unchanged engine algorithms use K input hashes rather than a redundant suite.
+
+Single final fix host56dc299, ignored promotion recovery helper and isolated
+AST-extracted recovery tests accepted by the single scoped final re-review:
+both Important findings addressed, no new breakage/out-of-scope observations.
+Root fresh deployment97/97 (5.995s), recovery2/2 (0.897s), diffcheck pass.
+Correct functional RED/GREEN retained separately from exploratory harness
+setup and PSObject-serialization failures (~209MB raw log retained). No actual
+canonical action yet; proceed to frozen fresh candidate and complete backup.

@@ -16,7 +16,11 @@ promotion only after full backup, verified candidate/notices/imports/PDB and
 whole-stage review. No reference-linked install exception or license decision.
 Current canonical EXE C92F26EE...82C2 stays unchanged until verified promotion.
 User closed working app; read-only process check confirmed none. Whole-stage
-review and real candidate build/import/PDB/package/promotion still pending.
+review found two Important issues (partial-own-profile downgrade and evidence
+failure bypassing rollback); host56dc299 plus scratch recovery fix address both.
+One scoped final re-review accepts both, no new Critical/Important or residuals.
+Root fresh deployment97/97 and isolated recovery2/2 pass. Real candidate
+build/import/PDB/package/promotion still pending; Task2 now freezes these inputs.
 Spec/plan/durable ledger are in docs/superpowers; ignored SDD uses matching slug.
 After L separately design full unchanged first-party primitive_geometry fixture
 coverage (seven shapes); it is not a real downloaded Telegram sticker. No new
