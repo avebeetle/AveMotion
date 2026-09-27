@@ -174,6 +174,9 @@ void testFailuresAndReaderComposition(const std::string& seed) {
     rejected("0", Code::InvalidType, "/", "scalar root");
     rejected("{}", Code::UnsupportedStructure, "/fr", "missing root field");
     rejected("{\"x\":1}", Code::UnsupportedField, "/x", "unknown field");
+    rejected("{\"x\":1,\"y\":2}", Code::UnsupportedField, "/x", "first unknown field");
+    rejected("{\"y\":2,\"x\":1}", Code::UnsupportedField, "/y", "reversed unknown fields");
+    rejected("{\"fr\":0}", Code::UnsupportedStructure, "/ip", "required-field precedence");
     rejected(avemotion::test::replaceEllipseOnce(seed, "\"fr\": 60", "\"fr\": \"60\""),
         Code::InvalidType, "/fr", "bad scalar grammar");
     rejected(avemotion::test::replaceEllipseOnce(seed, "\"e\": [76, 0]",
