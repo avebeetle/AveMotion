@@ -35,6 +35,21 @@ NativeEllipseNumericValues baselineValues() {
         {static_cast<float>(0.08), static_cast<float>(0.72), static_cast<float>(0.95), 1}, true, 0, 60};
 }
 
+avemotion::runtime::detail::NativeEllipseInput expectedLinearInput() {
+    auto input = avemotion::test::expectedEllipseBaseline();
+    auto& motion = std::get<avemotion::runtime::detail::NativeEllipseAnimatedPosition>(input.position);
+    motion.outgoing = {avemotion::test::ellipseDecimal(false, "0"), avemotion::test::ellipseDecimal(false, "0")};
+    motion.incoming = {avemotion::test::ellipseDecimal(false, "1"), avemotion::test::ellipseDecimal(false, "1")};
+    return input;
+}
+
+avemotion::runtime::detail::NativeEllipseInput expectedStaticInput() {
+    auto input = avemotion::test::expectedEllipseBaseline();
+    input.position = avemotion::runtime::detail::NativeEllipseStaticPosition{{
+        avemotion::test::ellipseDecimal(true, "32768"), avemotion::test::ellipseDecimal(false, "32768")}};
+    return input;
+}
+
 std::shared_ptr<const OwnNativeEllipseModel> preparedFrom(const std::string& exact) {
     const auto parsed = avemotion::formats::detail::readOwnJson(exact);
     require(static_cast<bool>(parsed), "test document parsed");
@@ -59,7 +74,7 @@ void ownAuthoredModelIsPrepared() {
     require(static_cast<bool>(prepared), "own authored model prepared");
     const auto expected = baselineValues();
     avemotion::test::assertOwnAuthoredModel(*prepared.prepared,
-        avemotion::test::expectedEllipseBaseline(), expected);
+        avemotion::test::expectedEllipseBaseline(), expected, exact);
     require(prepared.prepared->exactJson == exact, "exact JSON is retained byte-for-byte");
     const auto& asset = *prepared.prepared->model;
     require(asset.vec2Values == std::vector<avemotion::model::MotionVec2Value>{
@@ -97,7 +112,7 @@ void ownAuthoredModelIsPrepared() {
         retained = transientModel.prepared;
     }
     avemotion::test::assertOwnAuthoredModel(*retained,
-        avemotion::test::expectedEllipseBaseline(), expected);
+        avemotion::test::expectedEllipseBaseline(), expected, exact);
 }
 
 void ownFactoryKeepsAdmissionAndNumericFailuresSeparate() {
@@ -109,7 +124,9 @@ void ownFactoryKeepsAdmissionAndNumericFailuresSeparate() {
     require(static_cast<bool>(invalid), "empty object parsed");
     const auto rejected = avemotion::runtime::detail::buildOwnNativeEllipseModel(*invalid.document);
     require(!static_cast<bool>(rejected) && !rejected.prepared
-        && rejected.code == avemotion::runtime::detail::OwnNativeEllipseModelCode::AdmissionRejected,
+        && rejected.code == avemotion::runtime::detail::OwnNativeEllipseModelCode::AdmissionRejected
+        && rejected.admission.code == avemotion::runtime::detail::NativeEllipseAdmissionCode::UnsupportedStructure
+        && rejected.admission.path == "/fr",
         "admission failure published without model");
 
     const auto unsupported = avemotion::formats::detail::readOwnJson(
@@ -133,7 +150,7 @@ void staticBoundaryModelUsesStaticPositionAndNoTrack() {
     const avemotion::runtime::detail::NativeEllipseNumericValues expected{
         static_cast<float>(60.0), {256, 256}, {120, 120}, {-32768, 32768}, {}, {}, {},
         {static_cast<float>(0.08), static_cast<float>(0.72), static_cast<float>(0.95), 1}, false, 0, 0};
-    avemotion::test::assertOwnAuthoredModel(*prepared.prepared, *prepared.prepared->input, expected);
+    avemotion::test::assertOwnAuthoredModel(*prepared.prepared, expectedStaticInput(), expected, exact);
     const auto& model = *prepared.prepared->model;
     require(model.tracks.empty() && model.segments.empty()
         && model.vec2Values == std::vector<avemotion::model::MotionVec2Value>{
@@ -166,10 +183,25 @@ void authoredBoundaryAndNameMatrixIsIndependent() {
     expected.size = {16384, 0.5F};
     expected.color = {0, 1, 0.4F, 1};
     expected.frameRate = static_cast<float>(60.0);
-    const auto& input = *prepared->input;
-    require(input.layerId == INT32_MAX && input.layerName && *input.layerName == "\xE2\x98\x83"
-        && input.groupName && *input.groupName == "a.b/[x]~", "boundary input retained");
-    avemotion::test::assertOwnAuthoredModel(*prepared, input, expected);
+    auto boundaryInput = avemotion::test::expectedEllipseBaseline();
+    boundaryInput.layerId = INT32_MAX;
+    boundaryInput.layerTranslation = {avemotion::test::ellipseDecimal(true, "32768"),
+        avemotion::test::ellipseDecimal(false, "32768")};
+    boundaryInput.size = {avemotion::test::ellipseDecimal(false, "16384"),
+        avemotion::test::ellipseDecimal(false, "5", true, "1")};
+    boundaryInput.fillColor = {avemotion::test::ellipseDecimal(false, "0"),
+        avemotion::test::ellipseDecimal(false, "1"), avemotion::test::ellipseDecimal(false, "4", true, "1"),
+        avemotion::test::ellipseDecimal(false, "1")};
+    boundaryInput.layerName = "\xE2\x98\x83";
+    boundaryInput.groupName = "a.b/[x]~";
+    require(prepared->input->frameRate == boundaryInput.frameRate, "boundary frame rate descriptor");
+    require(prepared->input->layerId == boundaryInput.layerId, "boundary layer id descriptor");
+    require(prepared->input->layerTranslation == boundaryInput.layerTranslation, "boundary translation descriptor");
+    require(prepared->input->size == boundaryInput.size, "boundary size descriptor");
+    require(prepared->input->fillColor == boundaryInput.fillColor, "boundary color descriptor");
+    require(prepared->input->layerName == boundaryInput.layerName, "boundary layer name descriptor");
+    require(prepared->input->groupName == boundaryInput.groupName, "boundary group name descriptor");
+    avemotion::test::assertOwnAuthoredModel(*prepared, boundaryInput, expected, boundary);
 
     auto absent = source;
     absent = replaced(std::move(absent), ",\n  \"nm\": \"AveMotion Telegram sticker profile fixture\"", "");
@@ -184,7 +216,11 @@ void authoredBoundaryAndNameMatrixIsIndependent() {
         && !absentPrepared->input->layerName && !absentPrepared->input->groupName
         && !absentPrepared->input->ellipseName && !absentPrepared->input->fillName
         && !absentPrepared->input->transformName, "all optional names absent");
-    avemotion::test::assertOwnAuthoredModel(*absentPrepared, *absentPrepared->input, baselineValues());
+    auto absentInput = avemotion::test::expectedEllipseBaseline();
+    absentInput.version.reset(); absentInput.name.reset(); absentInput.layerName.reset();
+    absentInput.groupName.reset(); absentInput.ellipseName.reset(); absentInput.fillName.reset();
+    absentInput.transformName.reset();
+    avemotion::test::assertOwnAuthoredModel(*absentPrepared, absentInput, baselineValues(), absent);
 
     auto empty = source;
     for (const auto& name : {std::string{"5.7.4"}, std::string{"AveMotion Telegram sticker profile fixture"},
@@ -193,11 +229,10 @@ void authoredBoundaryAndNameMatrixIsIndependent() {
         empty = replaced(std::move(empty), "\"" + name + "\"", "\"\"");
     }
     const auto emptyPrepared = preparedFrom(empty);
-    require(emptyPrepared->input->version && emptyPrepared->input->version->empty()
-        && emptyPrepared->input->name && emptyPrepared->input->name->empty()
-        && emptyPrepared->input->transformName && emptyPrepared->input->transformName->empty(),
-        "all optional names retain emptiness");
-    avemotion::test::assertOwnAuthoredModel(*emptyPrepared, *emptyPrepared->input, baselineValues());
+    auto emptyInput = avemotion::test::expectedEllipseBaseline();
+    emptyInput.version = ""; emptyInput.name = ""; emptyInput.layerName = ""; emptyInput.groupName = "";
+    emptyInput.ellipseName = ""; emptyInput.fillName = ""; emptyInput.transformName = "";
+    avemotion::test::assertOwnAuthoredModel(*emptyPrepared, emptyInput, baselineValues(), empty);
 
     const auto whitespacePrepared = preparedFrom("\n" + source + "\n");
     require(whitespacePrepared->exactJson != source
@@ -214,7 +249,7 @@ void authoredAnimationAndFailureMatrixIsIndependent() {
     auto linearExpected = baselineValues();
     linearExpected.outgoing = {0, 0};
     linearExpected.incoming = {1, 1};
-    avemotion::test::assertOwnAuthoredModel(*linearPrepared, *linearPrepared->input, linearExpected);
+    avemotion::test::assertOwnAuthoredModel(*linearPrepared, expectedLinearInput(), linearExpected, linear);
 
     auto active = replaced(source, "      \"ip\": 0,", "      \"ip\": 10,");
     active = replaced(std::move(active), "      \"op\": 61,", "      \"op\": 20,");
@@ -277,7 +312,7 @@ void evaluatorAndBinderIsolationContractsHold() {
     auto linearExpected = baselineValues();
     linearExpected.outgoing = {0, 0};
     linearExpected.incoming = {1, 1};
-    avemotion::test::assertOwnAuthoredModel(*prepared, *prepared->input, linearExpected);
+    avemotion::test::assertOwnAuthoredModel(*prepared, expectedLinearInput(), linearExpected, linear);
 
     require(static_cast<bool>(avemotion::runtime::detail::bindNativeEllipseModel(
         *prepared->input, *prepared->model)), "binder accepts own authored model");
@@ -349,13 +384,17 @@ void parallelModelsKeepDocumentsAndWorkspacesIsolated() {
 
 int main() {
     try {
-        ownAuthoredModelIsPrepared();
-        ownFactoryKeepsAdmissionAndNumericFailuresSeparate();
-        staticBoundaryModelUsesStaticPositionAndNoTrack();
-        authoredBoundaryAndNameMatrixIsIndependent();
-        authoredAnimationAndFailureMatrixIsIndependent();
-        evaluatorAndBinderIsolationContractsHold();
-        parallelModelsKeepDocumentsAndWorkspacesIsolated();
+        const auto run = [](const char* name, const auto& test) {
+            try { test(); }
+            catch (const std::exception& error) { throw std::runtime_error(std::string{name} + ": " + error.what()); }
+        };
+        run("baseline", ownAuthoredModelIsPrepared);
+        run("failures", ownFactoryKeepsAdmissionAndNumericFailuresSeparate);
+        run("static", staticBoundaryModelUsesStaticPositionAndNoTrack);
+        run("boundaries", authoredBoundaryAndNameMatrixIsIndependent);
+        run("animation", authoredAnimationAndFailureMatrixIsIndependent);
+        run("evaluator", evaluatorAndBinderIsolationContractsHold);
+        run("parallel", parallelModelsKeepDocumentsAndWorkspacesIsolated);
     } catch (const std::exception& error) {
         std::cerr << error.what() << '\n';
         return 1;

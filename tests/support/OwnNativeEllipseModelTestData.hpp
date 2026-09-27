@@ -2,8 +2,6 @@
 
 #include "OwnNativeEllipseModel.hpp"
 
-#include "avemotion/core/Hash.hpp"
-
 #include <cstddef>
 #include <array>
 #include <optional>
@@ -19,31 +17,48 @@ inline void requireOwn(bool value, std::string_view message) {
     if (!value) throw std::runtime_error(std::string{message});
 }
 
+inline void ownAppendByte(std::uint64_t& hash, std::uint8_t byte) {
+    hash ^= byte;
+    hash *= 1099511628211ULL;
+}
+
 inline std::uint64_t ownRawHash(std::string_view text) {
-    return core::fnv1a64(std::span<const std::byte>{
-        reinterpret_cast<const std::byte*>(text.data()), text.size()});
+    std::uint64_t hash = 14695981039346656037ULL;
+    for (const auto byte : text) ownAppendByte(hash, static_cast<std::uint8_t>(byte));
+    return hash;
+}
+
+inline void ownAppendString(std::uint64_t& hash, std::string_view text) {
+    for (std::size_t index = 0; index < sizeof(std::uint64_t); ++index)
+        ownAppendByte(hash, static_cast<std::uint8_t>((text.size() >> (index * 8U)) & 0xFFU));
+    for (const auto byte : text) ownAppendByte(hash, static_cast<std::uint8_t>(byte));
 }
 
 inline std::uint64_t ownStringHash(std::string_view text) {
-    core::Fnv1a64 hash;
-    hash.appendString(text);
-    return hash.value();
+    std::uint64_t hash = 14695981039346656037ULL;
+    ownAppendString(hash, text);
+    return hash;
 }
 
 inline std::uint64_t ownParsedFingerprint(std::string_view text) {
-    core::Fnv1a64 hash;
-    hash.appendString("AveMotion.OwnEllipse.Authored.v1");
-    hash.appendString(text);
-    return hash.value();
+    std::uint64_t hash = 14695981039346656037ULL;
+    ownAppendString(hash, "AveMotion.OwnEllipse.Authored.v1");
+    ownAppendString(hash, text);
+    return hash;
 }
 
 inline void assertOwnAuthoredModel(
     const runtime::detail::OwnNativeEllipseModel& prepared,
     const runtime::detail::NativeEllipseInput& input,
-    const runtime::detail::NativeEllipseNumericValues& values) {
+    const runtime::detail::NativeEllipseNumericValues& values,
+    std::string_view exactSource) {
     using namespace model;
     const auto& asset = *prepared.model;
     requireOwn(prepared.input && *prepared.input == input, "retained admitted input");
+    requireOwn(prepared.input->version == input.version && prepared.input->name == input.name
+        && prepared.input->layerName == input.layerName && prepared.input->groupName == input.groupName
+        && prepared.input->ellipseName == input.ellipseName && prepared.input->fillName == input.fillName
+        && prepared.input->transformName == input.transformName, "all optional fields retain absent versus empty state");
     requireOwn(prepared.values.frameRate == values.frameRate
         && prepared.values.translation == values.translation && prepared.values.size == values.size
         && prepared.values.start == values.start && prepared.values.end == values.end
@@ -53,9 +68,12 @@ inline void assertOwnAuthoredModel(
         "retained numeric values");
     requireOwn(asset.schemaVersion == 2 && asset.revision == 1 && !asset.assetHandle.valid(),
         "authored metadata identity");
-    requireOwn(asset.sourceAssetHash == ownRawHash(prepared.exactJson), "raw source hash");
-    requireOwn(asset.parsedModelFingerprint == ownParsedFingerprint(prepared.exactJson),
+    requireOwn(prepared.exactJson == exactSource, "exact source bytes retained");
+    requireOwn(asset.sourceAssetHash == ownRawHash(exactSource), "raw source hash");
+    requireOwn(asset.parsedModelFingerprint == ownParsedFingerprint(exactSource),
         "versioned parsed fingerprint");
+    requireOwn(ownRawHash(exactSource) != ownStringHash(exactSource),
+        "raw source hash differs from length-prefixed string hash");
     requireOwn(asset.topologyFingerprint == 0 && asset.resourceFingerprint == 0 && asset.fingerprint == 0,
         "no render-derived fingerprints");
     requireOwn(asset.logicalWidth == input.width && asset.logicalHeight == input.height
