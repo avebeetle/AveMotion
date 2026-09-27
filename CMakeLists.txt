@@ -125,7 +125,8 @@ set(AVEMOTION_RUNTIME_SOURCES
     src/runtime/Runtime.cpp
     src/runtime/Playback.cpp
     src/runtime/RecordingBackend.cpp
-    src/runtime/NativeEllipseAdmissionCore.cpp)
+    src/runtime/NativeEllipseAdmissionCore.cpp
+    src/runtime/OwnNativeEllipseAdmission.cpp)
 if(AVEMOTION_RLOTTIE_AVAILABLE)
     list(APPEND AVEMOTION_RUNTIME_SOURCES
         src/runtime/RlottieSceneBridge.cpp)
@@ -149,6 +150,7 @@ target_include_directories(avemotion_runtime
         $<INSTALL_INTERFACE:include>
     PRIVATE
         "${CMAKE_CURRENT_SOURCE_DIR}/src/runtime"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/formats"
         "${CMAKE_CURRENT_SOURCE_DIR}/src/model"
         "${AVEMOTION_RLOTTIE_INCLUDE_DIR}")
 target_link_libraries(avemotion_runtime PUBLIC AveMotion::Core AveMotion::Formats AveMotion::Model AveMotion::Evaluation)
@@ -493,6 +495,21 @@ if(BUILD_TESTING)
     add_test(NAME avemotion.runtime.native_ellipse_admission_core
         COMMAND avemotion_native_ellipse_admission_core_tests)
 
+    add_executable(avemotion_own_native_ellipse_admission_tests
+        tests/own_native_ellipse_admission_tests.cpp)
+    target_include_directories(avemotion_own_native_ellipse_admission_tests PRIVATE
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/runtime"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/formats"
+        "${CMAKE_CURRENT_SOURCE_DIR}/tests/support")
+    target_link_libraries(avemotion_own_native_ellipse_admission_tests PRIVATE
+        AveMotion::Runtime Threads::Threads)
+    target_compile_definitions(avemotion_own_native_ellipse_admission_tests PRIVATE
+        AVEMOTION_FIXTURE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures"
+        AVEMOTION_TGS_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests/compatibility/tgs")
+    avemotion_set_warnings(avemotion_own_native_ellipse_admission_tests)
+    add_test(NAME avemotion.runtime.own_native_ellipse_admission
+        COMMAND avemotion_own_native_ellipse_admission_tests)
+
     if(AVEMOTION_RLOTTIE_AVAILABLE
        AND AVEMOTION_RLOTTIE_VARIANT STREQUAL "telegram")
         add_executable(avemotion_own_json_reader_differential_tests
@@ -509,6 +526,20 @@ if(BUILD_TESTING)
         avemotion_set_warnings(avemotion_own_json_reader_differential_tests)
         add_test(NAME avemotion.formats.own_json_reader_differential
             COMMAND avemotion_own_json_reader_differential_tests)
+
+        add_executable(avemotion_own_native_ellipse_admission_differential_tests
+            tests/own_native_ellipse_admission_differential_tests.cpp)
+        target_include_directories(avemotion_own_native_ellipse_admission_differential_tests PRIVATE
+            "${CMAKE_CURRENT_SOURCE_DIR}/src/runtime"
+            "${CMAKE_CURRENT_SOURCE_DIR}/src/formats"
+            "${CMAKE_CURRENT_SOURCE_DIR}/tests/support")
+        target_link_libraries(avemotion_own_native_ellipse_admission_differential_tests PRIVATE
+            AveMotion::Runtime)
+        target_compile_definitions(avemotion_own_native_ellipse_admission_differential_tests PRIVATE
+            AVEMOTION_FIXTURE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures")
+        avemotion_set_warnings(avemotion_own_native_ellipse_admission_differential_tests)
+        add_test(NAME avemotion.runtime.own_native_ellipse_admission_differential
+            COMMAND avemotion_own_native_ellipse_admission_differential_tests)
     endif()
 
     add_executable(avemotion_tgs_runtime_tests tests/tgs_runtime_tests.cpp)
