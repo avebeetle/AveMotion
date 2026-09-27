@@ -1,4 +1,5 @@
 #include "NativeEllipseAdmissionCore.hpp"
+#include "NativeEllipseNumericHelpers.hpp"
 
 #include <algorithm>
 #include <cstddef>
@@ -903,6 +904,16 @@ NativeEllipseAdmission evaluateOwnPrimitiveValues(
     std::span<const NativeEllipseValue> values, std::shared_ptr<const OwnPrimitiveInput>* output) {
     if (output) output->reset();
     return Auditor{values, true}.runOwn(output);
+}
+
+bool exactOwnPrimitiveBound(const NativeEllipseDecimal& value,
+                            std::int64_t low, std::int64_t high, bool strictLow) {
+    if (!numeric::canonical(value)) return false;
+    const ExactDecimal exact{value.negative, value.digits,
+        {value.power.negative, value.power.magnitude}};
+    const auto lower = compareDecimal(exact, wholeNumber(low));
+    return (strictLow ? lower > 0 : lower >= 0)
+        && compareDecimal(exact, wholeNumber(high)) <= 0;
 }
 
 } // namespace avemotion::runtime::detail

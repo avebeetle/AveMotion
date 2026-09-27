@@ -31,4 +31,8 @@ struct NativeEllipseValue final {
     std::span<const NativeEllipseValue> values,
     std::shared_ptr<const OwnPrimitiveInput>* output = nullptr);
 
+[[nodiscard]] bool exactOwnPrimitiveBound(const NativeEllipseDecimal& value,
+                                          std::int64_t low, std::int64_t high,
+                                          bool strictLow = false);
+
 } // namespace avemotion::runtime::detail
