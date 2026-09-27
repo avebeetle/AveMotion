@@ -252,23 +252,36 @@ std::string pointerIndex(std::string_view parent, std::size_t index) {
 
 class Auditor final {
 public:
-    explicit Auditor(std::span<const Value> values) : values_(values) {}
+    explicit Auditor(std::span<const Value> values, bool own = false)
+        : values_(values), own_(own) {}
 
     NativeEllipseAdmission run(std::shared_ptr<const NativeEllipseInput>* output) {
-        validateTable();
-        numbers_.reserve(values_.size());
-        for (const auto& value : values_) {
-            numbers_.push_back(value.kind == NativeEllipseValueKind::Number
-                ? normalizeNumber(value.scalar) : ExactDecimal{});
-        }
+        prepare();
         rootObject(values_[0]);
         if (result_.accepted() && output != nullptr)
             *output = std::make_shared<const NativeEllipseInput>(materialize(values_[0]));
         return result_;
     }
 
+    NativeEllipseAdmission runOwn(std::shared_ptr<const OwnPrimitiveInput>* output) {
+        prepare();
+        rootObject(values_[0]);
+        if (result_.accepted() && output != nullptr)
+            *output = std::make_shared<const OwnPrimitiveInput>(materializeOwn(values_[0]));
+        return result_;
+    }
+
 private:
+    void prepare() {
+        validateTable();
+        numbers_.reserve(values_.size());
+        for (const auto& value : values_) {
+            numbers_.push_back(value.kind == NativeEllipseValueKind::Number
+                ? normalizeNumber(value.scalar) : ExactDecimal{});
+        }
+    }
     std::span<const Value> values_;
+    bool own_ = false;
     NativeEllipseAdmission result_{Code::Accepted, {}};
     std::vector<ExactDecimal> numbers_;
 
@@ -446,7 +459,14 @@ private:
     bool fill(const Value& value, std::string_view path);
     bool groupTransform(const Value& value, std::string_view path);
     bool position(const Value& value, std::string_view path, std::int64_t rootOp);
+    bool ownProperty(const Value& value, std::string_view path,
+                     std::int64_t rootOp, bool scalar, bool positive);
+    bool ownEasing(const Value& value, std::string_view path, bool scalar);
     NativeEllipseInput materialize(const Value& root) const;
+    OwnPrimitiveInput materializeOwn(const Value& root) const;
+    NativeEllipsePosition ownVectorValue(const Value& value, std::uint32_t last) const;
+    OwnPrimitiveScalar ownScalarValue(const Value& value, std::uint32_t last) const;
+    NativeEllipseVec2 ownEasingValue(const Value& value) const;
     NativeEllipseDecimal decimal(const Value& value) const;
     std::int64_t structural(const Value& value, std::int64_t low, std::int64_t high) const;
     NativeEllipseVec2 vec2(const Value& array) const;
@@ -530,6 +550,86 @@ NativeEllipseInput Auditor::materialize(const Value& root) const {
     return input;
 }
 
+NativeEllipseVec2 Auditor::ownEasingValue(const Value& value) const {
+    const auto& x = *field(value, "x");
+    const auto& y = *field(value, "y");
+    return {decimal(x.kind == NativeEllipseValueKind::Array ? element(x, 0) : x),
+            decimal(y.kind == NativeEllipseValueKind::Array ? element(y, 0) : y)};
+}
+
+NativeEllipsePosition Auditor::ownVectorValue(const Value& value, std::uint32_t last) const {
+    const auto& key = *field(value, "k");
+    if (structural(*field(value, "a"), 0, 1) == 0)
+        return NativeEllipseStaticPosition{vec2(key)};
+    const auto& first = element(key, 0);
+    NativeEllipseAnimatedPosition motion;
+    motion.firstFrame = 0;
+    motion.lastFrame = last;
+    motion.start = vec2(*field(first, "s"));
+    motion.end = vec2(*field(first, "e"));
+    motion.incoming = ownEasingValue(*field(first, "i"));
+    motion.outgoing = ownEasingValue(*field(first, "o"));
+    return motion;
+}
+
+OwnPrimitiveScalar Auditor::ownScalarValue(const Value& value, std::uint32_t last) const {
+    const auto& key = *field(value, "k");
+    if (structural(*field(value, "a"), 0, 1) == 0)
+        return OwnPrimitiveStaticScalar{decimal(key)};
+    const auto& first = element(key, 0);
+    OwnPrimitiveAnimatedScalar motion;
+    motion.firstFrame = 0;
+    motion.lastFrame = last;
+    motion.start = decimal(element(*field(first, "s"), 0));
+    motion.end = decimal(element(*field(first, "e"), 0));
+    motion.incoming = ownEasingValue(*field(first, "i"));
+    motion.outgoing = ownEasingValue(*field(first, "o"));
+    return motion;
+}
+
+OwnPrimitiveInput Auditor::materializeOwn(const Value& root) const {
+    OwnPrimitiveInput input;
+    input.width = static_cast<std::uint32_t>(structural(*field(root, "w"), 1, 8192));
+    input.height = static_cast<std::uint32_t>(structural(*field(root, "h"), 1, 8192));
+    input.endFrame = static_cast<std::uint32_t>(structural(*field(root, "op"), 2, 10000));
+    input.frameRate = decimal(*field(root, "fr"));
+    input.version = name(root, "v");
+    input.name = name(root, "nm");
+    const auto& layer = element(*field(root, "layers"), 0);
+    input.layerId = static_cast<std::int32_t>(structural(*field(layer, "ind"), 1, 2147483647));
+    input.layerInFrame = static_cast<std::uint32_t>(structural(*field(layer, "ip"), 0, input.endFrame));
+    input.layerOutFrame = static_cast<std::uint32_t>(structural(*field(layer, "op"), 0, input.endFrame));
+    input.layerName = name(layer, "nm");
+    input.layerTranslation = vec2(*field(*field(*field(layer, "ks"), "p"), "k"));
+    const auto& shapes = *field(layer, "shapes");
+    input.groups.reserve(shapes.childCount);
+    for (std::size_t index = 0; index < shapes.childCount; ++index) {
+        const auto& group = element(shapes, index);
+        const auto& items = *field(group, "it");
+        const auto& primitive = element(items, 0);
+        const auto& fill = element(items, 1);
+        OwnPrimitiveGroupInput item;
+        item.kind = field(primitive, "ty")->scalar == "rc"
+            ? OwnPrimitiveKind::Rectangle : OwnPrimitiveKind::Ellipse;
+        item.direction = structural(*field(primitive, "d"), 1, 3) == 3
+            ? model::SourcePathDirection::CounterClockwise
+            : model::SourcePathDirection::Clockwise;
+        item.position = ownVectorValue(*field(primitive, "p"), input.endFrame - 1);
+        item.size = ownVectorValue(*field(primitive, "s"), input.endFrame - 1);
+        if (item.kind == OwnPrimitiveKind::Rectangle)
+            item.roundness = ownScalarValue(*field(primitive, "r"), input.endFrame - 1);
+        const auto& color = *field(*field(fill, "c"), "k");
+        for (std::size_t channel = 0; channel < 4; ++channel)
+            item.fillColor[channel] = decimal(element(color, channel));
+        item.groupName = name(group, "nm");
+        item.primitiveName = name(primitive, "nm");
+        item.fillName = name(fill, "nm");
+        item.transformName = name(element(items, 2), "nm");
+        input.groups.push_back(std::move(item));
+    }
+    return input;
+}
+
 bool Auditor::position(const Value& value, std::string_view path, std::int64_t rootOp) {
     if (!object(value, path, {"a", "k"})) return false;
     std::int64_t animated = 0;
@@ -566,6 +666,81 @@ bool Auditor::position(const Value& value, std::string_view path, std::int64_t r
     return true;
 }
 
+bool Auditor::ownEasing(const Value& value, std::string_view path, bool scalar) {
+    if (!object(value, path, {"x", "y"})) return false;
+    for (const auto key : {"x", "y"}) {
+        const auto componentPath = pointerChild(path, key);
+        const auto& component = *field(value, key);
+        if (component.kind == NativeEllipseValueKind::Number) {
+            if (!number(component, componentPath, 0, 1)) return false;
+        } else {
+            const auto count = scalar ? 1U : 2U;
+            if (!arraySize(component, componentPath, count)) return false;
+            ExactDecimal first;
+            for (std::size_t index = 0; index < count; ++index) {
+                ExactDecimal current;
+                if (!number(element(component, index), pointerIndex(componentPath, index),
+                            0, 1, &current)) return false;
+                if (index == 0) first = current;
+                else if (compareDecimal(first, current) != 0)
+                    return reject(Code::UnsupportedValue, pointerIndex(componentPath, index));
+            }
+        }
+    }
+    return true;
+}
+
+bool Auditor::ownProperty(const Value& value, std::string_view path,
+                          std::int64_t rootOp, bool scalar, bool positive) {
+    if (!object(value, path, {"a", "k"})) return false;
+    std::int64_t animated = 0;
+    if (!integer(*field(value, "a"), pointerChild(path, "a"), 0, 1, &animated)) return false;
+    const auto kPath = pointerChild(path, "k");
+    const auto& key = *field(value, "k");
+    const auto low = positive || scalar ? 0 : -32768;
+    const auto high = positive || scalar ? 16384 : 32768;
+    const auto values = [&](const Value& source, const std::string& sourcePath,
+                            std::array<ExactDecimal, 2>* output = nullptr) {
+        if (scalar) {
+            if (!arraySize(source, sourcePath, 1)) return false;
+        } else if (!arraySize(source, sourcePath, 2)) return false;
+        for (std::size_t index = 0; index < (scalar ? 1U : 2U); ++index) {
+            ExactDecimal current;
+            if (!number(element(source, index), pointerIndex(sourcePath, index),
+                        low, high, &current)) return false;
+            if (positive && compareDecimal(current, wholeNumber(0)) <= 0)
+                return reject(Code::UnsupportedValue, pointerIndex(sourcePath, index));
+            if (output) (*output)[index] = std::move(current);
+        }
+        return true;
+    };
+    if (animated == 0) {
+        if (scalar) return number(key, kPath, 0, 16384);
+        return values(key, kPath);
+    }
+    if (!arraySize(key, kPath, 2)) return false;
+    const auto firstPath = pointerIndex(kPath, 0);
+    const auto lastPath = pointerIndex(kPath, 1);
+    const auto& first = element(key, 0);
+    const auto& last = element(key, 1);
+    if (!object(first, firstPath, {"t", "s", "e", "i", "o"})
+        || !integer(*field(first, "t"), pointerChild(firstPath, "t"), 0, 0)
+        || !values(*field(first, "s"), pointerChild(firstPath, "s"))) return false;
+    std::array<ExactDecimal, 2> end{};
+    if (!values(*field(first, "e"), pointerChild(firstPath, "e"), &end)
+        || !ownEasing(*field(first, "i"), pointerChild(firstPath, "i"), scalar)
+        || !ownEasing(*field(first, "o"), pointerChild(firstPath, "o"), scalar)
+        || !object(last, lastPath, {"t", "s"})
+        || !integer(*field(last, "t"), pointerChild(lastPath, "t"), rootOp - 1, rootOp - 1))
+        return false;
+    std::array<ExactDecimal, 2> start{};
+    if (!values(*field(last, "s"), pointerChild(lastPath, "s"), &start)) return false;
+    for (std::size_t index = 0; index < (scalar ? 1U : 2U); ++index)
+        if (compareDecimal(start[index], end[index]) != 0)
+            return reject(Code::UnsupportedValue, pointerChild(lastPath, "s"));
+    return true;
+}
+
 bool Auditor::layerTransform(const Value& value, std::string_view path) {
     if (!object(value, path, {"o", "r", "p", "a", "s"})) return false;
     return staticScalar(*field(value, "o"), pointerChild(path, "o"), 100)
@@ -579,6 +754,28 @@ bool Auditor::layerTransform(const Value& value, std::string_view path) {
 }
 
 bool Auditor::ellipse(const Value& value, std::string_view path, std::int64_t rootOp) {
+    if (own_) {
+        if (value.kind != NativeEllipseValueKind::Object)
+            return reject(Code::InvalidType, std::string{path});
+        const auto* type = field(value, "ty");
+        if (!type) return reject(Code::UnsupportedStructure, pointerChild(path, "ty"));
+        if (type->kind != NativeEllipseValueKind::String)
+            return reject(Code::InvalidType, pointerChild(path, "ty"));
+        const bool rectangle = type->scalar == "rc";
+        if (!rectangle && type->scalar != "el")
+            return reject(Code::UnsupportedValue, pointerChild(path, "ty"));
+        if (!object(value, path, rectangle
+                ? std::initializer_list<std::string_view>{"ty", "d", "s", "p", "r"}
+                : std::initializer_list<std::string_view>{"ty", "d", "s", "p"}, {"nm"})) return false;
+        std::int64_t direction = 0;
+        if (!integer(*field(value, "d"), pointerChild(path, "d"), 1, 3, &direction)) return false;
+        if (direction == 2) return reject(Code::UnsupportedValue, pointerChild(path, "d"));
+        if (!ownProperty(*field(value, "s"), pointerChild(path, "s"), rootOp, false, true)
+            || !ownProperty(*field(value, "p"), pointerChild(path, "p"), rootOp, false, false))
+            return false;
+        return !rectangle || ownProperty(*field(value, "r"), pointerChild(path, "r"),
+                                         rootOp, true, false);
+    }
     if (!object(value, path, {"ty", "d", "s", "p"}, {"nm"})) return false;
     if (!literal(*field(value, "ty"), pointerChild(path, "ty"), "el")) return false;
     if (!integer(*field(value, "d"), pointerChild(path, "d"), 1, 1)) return false;
@@ -634,18 +831,29 @@ bool Auditor::group(const Value& value, std::string_view path, std::int64_t root
 
 bool Auditor::layer(const Value& value, std::string_view path, std::int64_t rootOp) {
     if (!object(value, path,
-                {"ddd", "ind", "ty", "sr", "ks", "ao", "shapes", "ip", "op", "st", "bm"},
-                {"nm"})) return false;
+                own_ ? std::initializer_list<std::string_view>{"ddd", "ind", "ty", "sr", "ks", "shapes", "ip", "op", "st", "bm"}
+                     : std::initializer_list<std::string_view>{"ddd", "ind", "ty", "sr", "ks", "ao", "shapes", "ip", "op", "st", "bm"},
+                own_ ? std::initializer_list<std::string_view>{"nm", "ao"}
+                     : std::initializer_list<std::string_view>{"nm"})) return false;
     if (!integer(*field(value, "ddd"), pointerChild(path, "ddd"), 0, 0)
         || !integer(*field(value, "ind"), pointerChild(path, "ind"), 1, 2147483647)
         || !integer(*field(value, "ty"), pointerChild(path, "ty"), 4, 4)
         || !number(*field(value, "sr"), pointerChild(path, "sr"), 1, 1)
-        || !layerTransform(*field(value, "ks"), pointerChild(path, "ks"))
-        || !integer(*field(value, "ao"), pointerChild(path, "ao"), 0, 0)) return false;
+        || !layerTransform(*field(value, "ks"), pointerChild(path, "ks"))) return false;
+    if (const auto* ao = field(value, "ao"))
+        if (!integer(*ao, pointerChild(path, "ao"), 0, 0)) return false;
     const auto shapesPath = pointerChild(path, "shapes");
     const auto& shapes = *field(value, "shapes");
-    if (!arraySize(shapes, shapesPath, 1)) return false;
-    if (!group(element(shapes, 0), pointerIndex(shapesPath, 0), rootOp)) return false;
+    if (!own_) {
+        if (!arraySize(shapes, shapesPath, 1)) return false;
+    } else {
+        if (shapes.kind != NativeEllipseValueKind::Array)
+            return reject(Code::InvalidType, shapesPath);
+        if (shapes.childCount < 1 || shapes.childCount > 16)
+            return reject(Code::UnsupportedStructure, shapesPath);
+    }
+    for (std::size_t index = 0; index < shapes.childCount; ++index)
+        if (!group(element(shapes, index), pointerIndex(shapesPath, index), rootOp)) return false;
     std::int64_t ip = 0;
     std::int64_t op = 0;
     if (!integer(*field(value, "ip"), pointerChild(path, "ip"), 0, rootOp, &ip)
@@ -689,6 +897,12 @@ NativeEllipseAdmission evaluateNativeEllipseValues(
     std::shared_ptr<const NativeEllipseInput>* output) {
     if (output) output->reset();
     return Auditor{values}.run(output);
+}
+
+NativeEllipseAdmission evaluateOwnPrimitiveValues(
+    std::span<const NativeEllipseValue> values, std::shared_ptr<const OwnPrimitiveInput>* output) {
+    if (output) output->reset();
+    return Auditor{values, true}.runOwn(output);
 }
 
 } // namespace avemotion::runtime::detail

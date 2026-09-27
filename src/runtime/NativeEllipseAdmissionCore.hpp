@@ -1,6 +1,7 @@
 #pragma once
 
 #include "NativeEllipseInput.hpp"
+#include "OwnPrimitiveInput.hpp"
 
 #include <cstdint>
 #include <memory>
@@ -25,5 +26,9 @@ struct NativeEllipseValue final {
 [[nodiscard]] NativeEllipseAdmission evaluateNativeEllipseValues(
     std::span<const NativeEllipseValue> values,
     std::shared_ptr<const NativeEllipseInput>* output = nullptr);
+
+[[nodiscard]] NativeEllipseAdmission evaluateOwnPrimitiveValues(
+    std::span<const NativeEllipseValue> values,
+    std::shared_ptr<const OwnPrimitiveInput>* output = nullptr);
 
 } // namespace avemotion::runtime::detail

@@ -22,17 +22,9 @@ NativeEllipseValueKind projectedKind(formats::detail::OwnJsonKind kind) {
     throw std::logic_error("unknown own JSON kind");
 }
 
-} // namespace
-
-NativeEllipseInputResult decodeOwnNativeEllipseInput(
+std::vector<NativeEllipseValue> projectValues(
     const formats::detail::OwnJsonDocument& document) {
-    NativeEllipseInputResult result;
     const auto nodes = document.nodes();
-    if (nodes.empty()) {
-        result.admission = {NativeEllipseAdmissionCode::InvalidJson, "/"};
-        return result;
-    }
-
     std::vector<NativeEllipseValue> values;
     values.reserve(nodes.size());
     for (std::size_t index = 0; index < nodes.size(); ++index) {
@@ -57,7 +49,35 @@ NativeEllipseInputResult decodeOwnNativeEllipseInput(
         value.childCount = node.childCount;
         values.push_back(value);
     }
+    return values;
+}
+
+} // namespace
+
+NativeEllipseInputResult decodeOwnNativeEllipseInput(
+    const formats::detail::OwnJsonDocument& document) {
+    NativeEllipseInputResult result;
+    const auto nodes = document.nodes();
+    if (nodes.empty()) {
+        result.admission = {NativeEllipseAdmissionCode::InvalidJson, "/"};
+        return result;
+    }
+
+    const auto values = projectValues(document);
     result.admission = evaluateNativeEllipseValues(values, &result.input);
+    return result;
+}
+
+OwnPrimitiveInputResult decodeOwnPrimitiveInput(
+    const formats::detail::OwnJsonDocument& document) {
+    OwnPrimitiveInputResult result;
+    const auto nodes = document.nodes();
+    if (nodes.empty()) {
+        result.admission = {NativeEllipseAdmissionCode::InvalidJson, "/"};
+        return result;
+    }
+    const auto values = projectValues(document);
+    result.admission = evaluateOwnPrimitiveValues(values, &result.input);
     return result;
 }
 

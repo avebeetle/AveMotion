@@ -129,6 +129,7 @@ set(AVEMOTION_RUNTIME_SOURCES
     src/runtime/NativeEllipseAdmissionCore.cpp
     src/runtime/OwnNativeEllipseAdmission.cpp
     src/runtime/NativeEllipseNumeric.cpp
+    src/runtime/OwnPrimitiveNumeric.cpp
     src/runtime/OwnNativeEllipseModel.cpp
     src/runtime/NativeEllipseBinding.cpp)
 if(AVEMOTION_RLOTTIE_AVAILABLE)
@@ -621,6 +622,21 @@ if(BUILD_TESTING)
     avemotion_set_warnings(avemotion_own_native_ellipse_admission_tests)
     add_test(NAME avemotion.runtime.own_native_ellipse_admission
         COMMAND avemotion_own_native_ellipse_admission_tests)
+
+    add_executable(avemotion_own_primitive_admission_tests
+        tests/own_primitive_admission_tests.cpp)
+    target_include_directories(avemotion_own_primitive_admission_tests PRIVATE
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/runtime"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/formats"
+        "${CMAKE_CURRENT_SOURCE_DIR}/tests/support")
+    target_link_libraries(avemotion_own_primitive_admission_tests PRIVATE
+        AveMotion::Runtime Threads::Threads)
+    target_compile_definitions(avemotion_own_primitive_admission_tests PRIVATE
+        AVEMOTION_FIXTURE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures"
+        AVEMOTION_TGS_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests/compatibility/tgs")
+    avemotion_set_warnings(avemotion_own_primitive_admission_tests)
+    add_test(NAME avemotion.runtime.own_primitive_admission
+        COMMAND avemotion_own_primitive_admission_tests)
 
     if(AVEMOTION_RLOTTIE_AVAILABLE
        AND AVEMOTION_RLOTTIE_VARIANT STREQUAL "telegram")
