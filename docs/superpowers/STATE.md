@@ -2,7 +2,7 @@
 
 Updated: 2026-09-27
 
-## Current work — Part26L own working Release
+## Current handoff — Part26L own working Release installed
 
 User explicitly requested own integration in the canonical host build/Release,
 ordinary commits/push and controller selection of the next example. L spec
@@ -11,16 +11,25 @@ delegated authority. Host base f452922; engine product remains K. Task1 complete
 host699fc0b: Python95/29, boundaryPASS, Qt reference3/3, own4/4 and working-entry
 4/4. Task review no product defect; mandatory-file-list deviation accepted in
 ledger (existing PDB routing/guard files needed no edits). Warnings/raw-log
-caveat preserved in report. One writer, functional TDD, root-only Git. Task2 root
-promotion only after full backup, verified candidate/notices/imports/PDB and
-whole-stage review. No reference-linked install exception or license decision.
-Current canonical EXE C92F26EE...82C2 stays unchanged until verified promotion.
-User closed working app; read-only process check confirmed none. Whole-stage
+caveat preserved in report. One writer, functional TDD, root-only Git. No
+reference-linked install exception or license decision. User closed working
+app; process check before promotion confirmed no canonical app. Whole-stage
 review found two Important issues (partial-own-profile downgrade and evidence
 failure bypassing rollback); host56dc299 plus scratch recovery fix address both.
 One scoped final re-review accepts both, no new Critical/Important or residuals.
-Root fresh deployment97/97 and isolated recovery2/2 pass. Real candidate
-build/import/PDB/package/promotion still pending; Task2 now freezes these inputs.
+Root fresh deployment97/97 and isolated recovery2/2 pass. Task2 complete using
+clean frozen host56dc299/enginee8f21e3: fresh static app+smoke build306.112s,
+CTest1/1, exact26-file package, imports, real /MT113commands and no-reference
+graph/link audit, matching PDB, complete old22+PDB backup. Independent artifact
+acceptance passed. Canonical promotion2026-09-27T20:06:29.9193157Z verified
+all copied hashes, installed readiness and symchk. Current EXE93B10E5C...1645,
+PDB014ACD8C...3DFFF; oldC92 pair retained under hostbuild/checks/part26l-promotion-001/backup.
+923 engine K inputs unchanged. Root audit instrumentation corrections and
+launch/harness failures retained; no product test/golden weakened or rebuild
+repeated. Default own-static source PATH cache configured. Native GUI/DPI/tray
+acceptance of this EXE remains unverified; own path still narrow ellipse/WARP.
+Report docs/PART26L_OWN_WORKING_RELEASE_REPORT.md; later docs HEAD is not build
+identity. Preserve raw/SDD, no live writer/build at L handoff.
 Spec/plan/durable ledger are in docs/superpowers; ignored SDD uses matching slug.
 After L separately design full unchanged first-party primitive_geometry fixture
 coverage (seven shapes); it is not a real downloaded Telegram sticker. No new

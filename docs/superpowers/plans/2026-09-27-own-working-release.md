@@ -10,6 +10,12 @@
 
 **Spec:** docs/superpowers/specs/2026-09-27-own-working-release-design.md (1bc19f7).
 
+**Execution outcome:** Tasks1/2 complete 2026-09-27. Host699fc0b+56dc299;
+fresh candidate and installed canonical pair verified. The prospective steps
+below are the original execution contract; actual commands/results, accepted
+file-list deviation and native-GUI limitation are in
+[the completion report](../../PART26L_OWN_WORKING_RELEASE_REPORT.md) and ledger.
+
 ## Global Constraints
 
 - User explicitly authorizes build/Release replacement, ordinary commits/push in main; root-only Git and actual promotion.

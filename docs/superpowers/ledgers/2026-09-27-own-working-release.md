@@ -65,3 +65,18 @@ Root fresh deployment97/97 (5.995s), recovery2/2 (0.897s), diffcheck pass.
 Correct functional RED/GREEN retained separately from exploratory harness
 setup and PSObject-serialization failures (~209MB raw log retained). No actual
 canonical action yet; proceed to frozen fresh candidate and complete backup.
+
+Task2 complete2026-09-27T20:06:29.9193157Z, clean frozen host56dc299/enginee8f21e3.
+Fresh static app+smoke306.112s; CTest1/1; exact26/notices/imports/PDB and real
+graph/link113 /MT commands accepted independently. All923 K inputs unchanged.
+Complete old22+PDB backup verified, then canonical copied hashes/readiness/
+symchk passed. EXE93B10E5C...1645/PDB014ACD8C...3DFFF; no GUI launched. Both
+repos' product sources stayed frozen until promotion; only later reports change
+HEAD. Full paths/hashes/commands in PART26L_OWN_WORKING_RELEASE_REPORT.md.
+Three audit-only assumptions corrected against actual generated MSVC/CMake
+files (absolute reference, compiler probes, true BOOL); versions/failures kept,
+no product changes or test weakening/rebuild. Independent artifact acceptance
+checked these corrections. Default own-static cache typed PATH and diagnostic
+resolution verified without installing. No further review loop/productfix wave.
+Next full primitive_geometry design; inventory/type-transition read-only notes
+ready. Native GUI, hardware acceleration/performance and licensing remain limits.
