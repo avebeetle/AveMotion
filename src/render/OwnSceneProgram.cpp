@@ -64,9 +64,10 @@ lowerOwnVectorProgram(const runtime::detail::OwnVectorModel &owner,
     asset.childLayerIds.clear();
     asset.layerNodeIds.clear();
     const auto root = asset.compositions.front().rootNode;
-    std::function<void(model::SourceNodeId, model::LayerId, double, double, bool)> append;
+    std::function<void(model::SourceNodeId, model::LayerId, double, double,
+                       std::vector<model::SourceNodeId>)> append;
     append = [&](model::SourceNodeId source, model::LayerId parent, double first, double last,
-                 bool precompDescendant) {
+                 std::vector<model::SourceNodeId> enclosingClips) {
         const auto id = model::makeId<model::LayerId>(layers.size());
         const auto *node = asset.sourceNode(source);
         const auto name = parent.valid() ? node->debugName : "__";
@@ -83,7 +84,7 @@ lowerOwnVectorProgram(const runtime::detail::OwnVectorModel &owner,
                                 model::StaticDependencyNone,
                                 runtime::MatteMode::None});
         OwnSceneLayer layer{source, id, first, last, {static_cast<std::uint32_t>(draws.size()), 0}};
-        layer.precompDescendant = precompDescendant;
+        layer.enclosingClips = enclosingClips;
         for (const auto &b : owner.draws) {
             if (b.layer != source)
                 continue;
@@ -130,13 +131,13 @@ lowerOwnVectorProgram(const runtime::detail::OwnVectorModel &owner,
         }
         asset.layers[id.index()].nodes = layer.draws;
         layers.push_back(layer);
+        if (node->layerKind == model::SourceLayerKind::Precomposition)
+            enclosingClips.push_back(source);
         // Source allocation is independent of structural stacking. Traverse each
         // composition's authored layers backwards, expanding containers in place.
         for (auto it = owner.layers.rbegin(); it != owner.layers.rend(); ++it)
             if (it->structuralParent == source)
-                append(it->layer, id, it->inFrame, it->outFrame,
-                       precompDescendant ||
-                           node->layerKind == model::SourceLayerKind::Precomposition);
+                append(it->layer, id, it->inFrame, it->outFrame, enclosingClips);
         auto &record = asset.layers[id.index()];
         record.children.first = static_cast<std::uint32_t>(asset.childLayerIds.size());
         for (const auto &child : asset.layers)
@@ -145,7 +146,7 @@ lowerOwnVectorProgram(const runtime::detail::OwnVectorModel &owner,
         record.children.count =
             static_cast<std::uint32_t>(asset.childLayerIds.size()) - record.children.first;
     };
-    append(root, {}, 0, static_cast<double>(asset.totalFrames), false);
+    append(root, {}, 0, static_cast<double>(asset.totalFrames), {});
     return std::make_shared<const OwnSceneProgram>(std::move(layers), std::move(draws));
 }
 

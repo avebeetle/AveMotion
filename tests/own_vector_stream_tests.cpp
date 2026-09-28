@@ -6,6 +6,7 @@
 #include <iostream>
 #include <limits>
 #include <set>
+#include "support/OwnVectorInstanceTestData.hpp"
 using namespace avemotion;
 using namespace avemotion::test;
 void realRectangularProbes(render::detail::OwnNativeEllipseStream &stream) {
@@ -266,6 +267,7 @@ int main(int argc, char **argv) {
         }
         std::cout << "vector stream emitted " << scene.scene->drawItems.size() << " draws\n";
         if (argc == 1) {
+            instanceContracts();
             clippingEquivalence();
             const auto legacy = vectorRead(std::filesystem::path(AVEMOTION_FIXTURE_DIR) /
                                            "telegram_sticker_basic.json");

@@ -39,8 +39,6 @@ void exactAdmission() {
         {"group rounded scale",
          vectorReplace(group, "\"ty\":\"tr\"", R"("ty":"tr","s":{"a":0,"k":[100.000001,100]})")},
         {"precomp rounded scale", precompTransform(R"("s":{"a":0,"k":[100,100.000001]})")},
-        {"precomp rounded identity",
-         precompTransform(R"("p":{"a":0,"k":[100.000001,0]},"a":{"a":0,"k":[100,0]})")},
         {"rounded easing x equality", easing(R"({"x":[0.5,0.500000001],"y":[1,1]})")},
         {"rounded easing y equality", easing(R"({"x":[0.5,0.5],"y":[0.5,0.500000001]})")}};
     std::string failures;
@@ -170,7 +168,7 @@ void rejects(const std::string& fixture) {
     }
     reject(vectorReplace(fixture, "\"ty\":\"tr\"", "\"ty\":\"tr\",\"nm\":42"),
            "transform metadata type");
-    for (const auto& extra : {",\"masksProperties\":[]", ",\"ef\":[]", ",\"sr\":2", ",\"st\":1",
+    for (const auto& extra : {",\"masksProperties\":[]", ",\"ef\":[]", ",\"sr\":2", ",\"st\":0.5",
                               ",\"ddd\":1", ",\"unknown\":0", ",\"parent\":1", ",\"parent\":99"})
         reject(vectorRoot(vectorLayer("", extra)), extra);
     reject(vectorReplace(fixture, "\"ind\":9", "\"ind\":7"), "duplicate layer id");
@@ -211,8 +209,8 @@ void rejects(const std::string& fixture) {
            "missing precomp asset");
     reject(vectorReplace(precomp, "\"ty\":0", "\"ty\":0,\"sr\":0.5"), "precomp clock");
     reject(vectorReplace(precomp, "\"op\":170,\"ks\":{}",
-                         "\"op\":170,\"ks\":{\"p\":{\"a\":0,\"k\":[1,0]}}"),
-           "nonidentity precomp");
+                         "\"op\":170,\"ks\":{\"r\":{\"a\":0,\"k\":1}}"),
+           "rotated precomp");
     reject(vectorPrecomp(
                "{\"ty\":0,\"ind\":1,\"ip\":0,\"op\":180,\"refId\":\"x\",\"w\":128,\"h\":128}"),
            "nested precomp/cycle");

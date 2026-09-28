@@ -11,6 +11,11 @@ struct OwnVectorDrawBinding final {
     model::SourceNodeId layer, group, path, paint;
     std::optional<model::SourceNodeId> trim;
 };
+struct OwnVectorSourceBinding final {
+    model::SourceNodeId source, containingInstance;
+    std::string jsonPointer;
+    std::int32_t frameOffset = 0;
+};
 struct OwnVectorModelResult;
 class OwnVectorModel final {
 public:
@@ -18,10 +23,13 @@ public:
     const std::shared_ptr<const model::MotionAssetModel> model;
     const std::vector<OwnVectorLayerBinding> layers;
     const std::vector<OwnVectorDrawBinding> draws;
+    const std::vector<OwnVectorSourceBinding> sources;
+    const std::vector<std::int32_t> propertyFrameOffsets;
 
 private:
     OwnVectorModel(std::string, std::shared_ptr<const model::MotionAssetModel>,
-                   std::vector<OwnVectorLayerBinding>, std::vector<OwnVectorDrawBinding>);
+                   std::vector<OwnVectorLayerBinding>, std::vector<OwnVectorDrawBinding>,
+                   std::vector<OwnVectorSourceBinding>, std::vector<std::int32_t>);
     friend OwnVectorModelResult buildOwnVectorModel(const formats::detail::OwnJsonDocument&);
 };
 struct OwnVectorModelResult final {

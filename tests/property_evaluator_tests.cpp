@@ -637,7 +637,76 @@ void testConcurrentWorkspaces(
 
 } // namespace
 
+void testExplicitLocalClocks() {
+    using namespace avemotion::evaluation;
+    using namespace avemotion::model;
+    auto model = std::make_shared<MotionAssetModel>(*makeModel());
+    // A large offset must not rebase fractional endpoints and lose precision.
+    model->segments[1].firstFrame = 28.822;
+    model->segments[1].endFrame = 58.822;
+    model->tracks[1].firstFrame = 28.822;
+    model->tracks[1].endFrame = 58.822;
+    model->scalarValues[model->segments[1].endValue.index] = 100;
+    model->sourceNodes[0].startFrame = -5; // ordinary clients must ignore metadata
+    std::vector<std::int32_t> offsets(model->properties.size(), 10);
+    offsets[2] = 80000;
+    PropertyEvaluator bound(model, offsets), ordinary(model), empty(model, {});
+    require(bound.valid() && ordinary.valid() && empty.valid(), "valid explicit clock bindings");
+    offsets.assign(offsets.size(), -80000); // evaluator owns its immutable copy
+    PropertyEvaluationWorkspace workspace;
+    bound.prepare(workspace);
+    auto view = bound.evaluate(80029, workspace);
+    require(bool(view) && near(view.properties[2].value.scalar, 0.5933317F, 0.000001F),
+            "fractional key28.822 uses original local float arithmetic");
+    view = bound.evaluate(15, workspace);
+    require(bool(view) && view.properties[4].value.vec2 == MotionVec2Value{5,10} &&
+            view.properties[5].value.color == MotionColorValue{0.5F,0,0.5F,1},
+            "local clock applies to vector and color interpolation after reverse seek");
+    require(near(view.properties[11].value.vec2.x, 4.15553F, 2.0e-4F) &&
+            near(view.properties[11].value.vec2.y, 1.24479F, 2.0e-4F),
+            "spatial local midpoint");
+    view = bound.evaluate(15, workspace);
+    require(bool(view) && view.statistics.changedProperties == 0 && view.statistics.cursorHits > 0,
+            "local cursor history is stable on repeat");
+    ordinary.prepare(workspace);
+    view = ordinary.evaluate(5, workspace);
+    require(bool(view) && view.properties[4].value.vec2 == MotionVec2Value{5,10},
+            "default clock ignores source st");
+    empty.prepare(workspace);
+    view = empty.evaluate(5, workspace);
+    require(bool(view) && view.properties[4].value.vec2 == MotionVec2Value{5,10},
+            "empty binding is zero clock");
+    for (const auto bad : {std::int32_t{80001}, std::int32_t{-80001},
+                          std::numeric_limits<std::int32_t>::min()}) {
+        offsets.assign(model->properties.size(), 0);
+        offsets[0] = bad;
+        PropertyEvaluator invalid(model, offsets);
+        invalid.prepare(workspace);
+        require(!invalid.valid() && !invalid.errorMessage().empty() && workspace.propertyCount() == 0 &&
+                !invalid.evaluate(0,workspace), "invalid binding fails before workspace preparation");
+    }
+    offsets.assign(model->properties.size()-1,0);
+    require(!PropertyEvaluator(model,offsets).valid(), "short binding rejects");
+    offsets.assign(model->properties.size()+1,0);
+    require(!PropertyEvaluator(model,offsets).valid(), "long binding rejects");
+    offsets.assign(model->properties.size(),-80000);
+    PropertyEvaluator negative(model, offsets);
+    negative.prepare(workspace);
+    view = negative.evaluate(-79995,workspace);
+    require(bool(view) && view.properties[4].value.vec2 == MotionVec2Value{5,10},
+            "inclusive negative offset bound");
+
+    const auto shapeModel = makeShapeModel();
+    offsets.assign(shapeModel->properties.size(),10);
+    PropertyEvaluator shapeEvaluator(shapeModel,offsets);
+    shapeEvaluator.prepare(workspace);
+    view = shapeEvaluator.evaluate(15,workspace);
+    const auto shapeSample = evaluatedShape(view,1);
+    require(shapeSample.points[1] == MotionVec2Value{0,5}, "shape interpolation uses local frame");
+}
+
 int main() {
+    testExplicitLocalClocks();
     testShapeEvaluation();
     const auto model = makeModel();
     testWorldHierarchy();

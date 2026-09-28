@@ -219,6 +219,10 @@ class PropertyEvaluator final {
 public:
     explicit PropertyEvaluator(
         std::shared_ptr<const model::MotionAssetModel> model);
+    // Opt-in local clocks for flattened execution instances. Empty means zero;
+    // otherwise exactly one bounded offset per property. The binding is copied.
+    PropertyEvaluator(std::shared_ptr<const model::MotionAssetModel> model,
+                      std::span<const std::int32_t> frameOffsets);
     PropertyEvaluator(PropertyEvaluator&&) noexcept;
     PropertyEvaluator& operator=(PropertyEvaluator&&) noexcept;
     PropertyEvaluator(const PropertyEvaluator&) = delete;

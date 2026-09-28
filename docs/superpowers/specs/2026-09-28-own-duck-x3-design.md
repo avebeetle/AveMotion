@@ -133,6 +133,8 @@ Thus both inline trim placements in a-2 trim the raw local path before its group
 transform. A trailing sibling simultaneous trim applies separately to each
 preceding path, not their combined arc length. Admit at most one effective trim
 per path; reject compound modifier chains until separately implemented.
+The measured outer paints each consume a single path; paints aggregating multiple
+paths remain rejected. Shared two-path trim does not imply multi-path paint support.
 
 Give each draw distinct path-transform and paint-transform bindings. An inner
 paint uses its group for both; a top-level stroke uses each path's group for
@@ -146,6 +148,10 @@ profile still requires equal visible XY controls and exact-neutral Z values;
 it may validate and ignore differing bounded Z controls without changing XY.
 The existing evaluator already permits out-of-unit temporal-Y interpolation;
 only compiler admission should widen, with negative/overshoot witnesses.
+For this measured stage, visible out-of-unit Y admission is limited to stroke
+width; other visible property controls retain[0,1]. Neutral ignored Z scale
+easing-Y controls may use[-16,16]; every easing-X remains[0,1]. A future need to overshoot another visible semantic
+requires its own bounded output/parity evidence, not blanket admission here.
 
 Reference retains an enabled stroke with width0 and zero CPU coverage. Do not
 turn it into a fill or discard its draw identity. Verify WARP width0 explicitly;

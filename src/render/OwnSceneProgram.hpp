@@ -14,7 +14,7 @@ struct OwnSceneLayer final {
     model::LayerId layer;
     double inFrame = 0, outFrame = 0;
     model::IndexRange draws;
-    bool precompDescendant = false;
+    std::vector<model::SourceNodeId> enclosingClips;
 };
 struct OwnSceneDraw final {
     model::SourceNodeId group, path, paint;

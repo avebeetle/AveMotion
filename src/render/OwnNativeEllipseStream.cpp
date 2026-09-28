@@ -22,23 +22,24 @@ namespace {
 std::atomic<std::uint64_t> lastOwnStreamIdentity{0};
 
 bool precompClipRedundant(const runtime::EvaluatedDrawItem &item,
-                          const model::MotionAssetModel &model, std::size_t width,
+                          const model::MotionAssetModel &model,
+                          const model::MotionSourceNodeRecord &clip,
+                          const evaluation::EvaluatedNodeTransform &world, std::size_t width,
                           std::size_t height) {
-    const auto canvas =
-        nativeEllipseViewportTransform({}, model.logicalWidth, model.logicalHeight, width, height);
-    if (!canvas)
+    if (!world.worldSupported() || world.node != clip.id || clip.layerWidth <= 0 ||
+        clip.layerHeight <= 0)
+        return false;
+    const auto canvas = nativeEllipseViewportTransform(
+        world.worldMatrix, model.logicalWidth, model.logicalHeight, width, height);
+    if (!canvas || canvas->m12 != 0 || canvas->m21 != 0 || canvas->m11 <= 0 || canvas->m22 <= 0)
         return false;
     // Use the actual float viewport mapping, including its rounded far corners.
     // Exact equality only: a nearly coincident clip can still affect edge pixels.
-    const float right = static_cast<float>(model.logicalWidth) * canvas->m11 + canvas->dx;
-    const float bottom = static_cast<float>(model.logicalHeight) * canvas->m22 + canvas->dy;
+    const float right = static_cast<float>(clip.layerWidth) * canvas->m11 + canvas->dx;
+    const float bottom = static_cast<float>(clip.layerHeight) * canvas->m22 + canvas->dy;
     if (!std::isfinite(right) || !std::isfinite(bottom) || right <= canvas->dx ||
         bottom <= canvas->dy)
         return false;
-    if (canvas->dx == 0 && canvas->dy == 0 &&
-        static_cast<double>(right) == static_cast<double>(width) &&
-        static_cast<double>(bottom) == static_cast<double>(height))
-        return true;
     if (item.path.points.empty())
         return item.path.verbs.empty();
     const auto &bounds = item.path.controlBounds;
@@ -77,14 +78,17 @@ bool precompClipRedundant(const runtime::EvaluatedDrawItem &item,
     const double left = double(bounds.left) - padding, top = double(bounds.top) - padding;
     const double farRight = double(bounds.right) + padding,
                  farBottom = double(bounds.bottom) + padding;
-    return std::isfinite(padding) && std::isfinite(left) && std::isfinite(top) &&
-           std::isfinite(farRight) && std::isfinite(farBottom) &&
-           // Footprint intersect target must be inside the mapped clip. A
-           // coincident side is already enforced by the target, independently
-           // of the other sides. Do not use approximate equality here.
-           (canvas->dx == 0 || left >= canvas->dx) && (canvas->dy == 0 || top >= canvas->dy) &&
-           (static_cast<double>(right) == static_cast<double>(width) || farRight <= right) &&
-           (static_cast<double>(bottom) == static_cast<double>(height) || farBottom <= bottom);
+    if (!std::isfinite(padding) || !std::isfinite(left) || !std::isfinite(top) ||
+        !std::isfinite(farRight) || !std::isfinite(farBottom))
+        return false;
+    const double intersectLeft = std::max(0.0, left), intersectTop = std::max(0.0, top);
+    const double intersectRight = std::min(static_cast<double>(width), farRight),
+                 intersectBottom = std::min(static_cast<double>(height), farBottom);
+    // An empty target intersection contributes no pixels. Otherwise every side
+    // must lie inside this particular mapped clip, with exact float boundaries.
+    return intersectLeft >= intersectRight || intersectTop >= intersectBottom ||
+           (intersectLeft >= canvas->dx && intersectTop >= canvas->dy &&
+            intersectRight <= right && intersectBottom <= bottom);
 }
 
 runtime::EvaluatedLayer makeLayer(const model::MotionLayerRecord &source, bool visible,
@@ -125,7 +129,10 @@ bool tryAdvanceOwnStreamSequence(std::uint64_t &last) noexcept {
 
 OwnNativeEllipseStream::OwnNativeEllipseStream(
     std::shared_ptr<const OwnNativeEllipsePreparedAsset> prepared, std::uint64_t identity)
-    : prepared_(std::move(prepared)), identity_(identity), evaluator_(prepared_->model) {}
+    : prepared_(std::move(prepared)), identity_(identity),
+      evaluator_(prepared_->model, prepared_->vectorAuthored
+                     ? std::span<const std::int32_t>(prepared_->vectorAuthored->propertyFrameOffsets)
+                     : std::span<const std::int32_t>{}) {}
 
 OwnNativeEllipseStream::~OwnNativeEllipseStream() = default;
 
@@ -280,12 +287,18 @@ OwnNativeEllipseFrameResult OwnNativeEllipseStream::emit(std::size_t frame, std:
                 return {OwnNativeEllipseFrameCode::UnsupportedNumericOutput, "non-finite own path",
                         std::nullopt};
             }
-            if (layer.precompDescendant && !precompClipRedundant(item, model, width, height)) {
+            for (const auto clipId : layer.enclosingClips) {
+                const auto* clip = model.sourceNode(clipId);
+                if (clip && clipId.index() < view.nodeTransforms.size() &&
+                    precompClipRedundant(item, model, *clip, view.nodeTransforms[clipId.index()],
+                                         width, height))
+                    continue;
                 return {
                     OwnNativeEllipseFrameCode::UnsupportedClipping,
                     "precomp clipping required or conservative raster bounds unsupported: frame=" +
                         std::to_string(frame) + " viewport=" + std::to_string(width) + "x" +
                         std::to_string(height) + " node=" + std::to_string(binding.node.index()) +
+                        " clip=" + std::to_string(clipId.index()) +
                         " bounds=" + std::to_string(item.path.controlBounds.left) + "," +
                         std::to_string(item.path.controlBounds.top) + "," +
                         std::to_string(item.path.controlBounds.right) + "," +

@@ -12,8 +12,13 @@ nested instance clocks and translated clips, ordered multi-group paint/trim,
 animated zero-width strokes, signed keys and bounded easing extension. Existing
 reader/profile budgets suffice. No a-1/general-Lottie or UI redesign scope.
 Three sequential blocks: instances/clocks/clips; shape/width admission; independent
-real parity and same-host delivery. Fresh no-ref baseline47/47,8.32s. One product
-writer; follow current ledger. Canonical N EXE/PDB remain unchanged/protected.
+real parity and same-host delivery. Task1 implemented and independently Approved:
+47/47 no-reference,100/100 Telegram, four original a-3 regressions; root fresh8/8.
+Bounded repeated instances/local property clocks/provenance and each-enclosing
+translated clip proof are in place. Original a-2 now reaches inline shape grammar
+and correctly rejects pending Task2; no a-2 playback claim. Existing vendor C4251
+warnings retained. One product writer; follow current ledger. Canonical N EXE/PDB
+remain unchanged/protected. Next Task2 is measured shape/animated-width support.
 Engine base04c4a7b and host799c7c4 include user-recorded N controls acceptance.
 No new automation. Preserve N raw/local artwork and all previous stage results.
 

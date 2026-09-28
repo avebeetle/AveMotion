@@ -1162,6 +1162,7 @@ struct PropertyEvaluator::Impl final {
 
     std::shared_ptr<const model::MotionAssetModel> model;
     std::vector<CubicBezierRuntime> easing;
+    std::vector<std::int32_t> frameOffsets;
     std::vector<SpatialBezierRuntime> spatial;
     std::vector<model::SourceNodeId> worldOrder;
     std::vector<ShapeLayout> shapeLayouts;
@@ -1257,6 +1258,11 @@ std::uint64_t PropertyEvaluationWorkspace::storageGeneration() const noexcept {
 
 PropertyEvaluator::PropertyEvaluator(
     std::shared_ptr<const model::MotionAssetModel> modelValue)
+    : PropertyEvaluator(std::move(modelValue), {}) {}
+
+PropertyEvaluator::PropertyEvaluator(
+    std::shared_ptr<const model::MotionAssetModel> modelValue,
+    std::span<const std::int32_t> frameOffsets)
     : impl_(std::make_unique<Impl>()) {
     impl_->model = std::move(modelValue);
     if (!impl_->model) {
@@ -1264,6 +1270,14 @@ PropertyEvaluator::PropertyEvaluator(
         return;
     }
     const auto& modelRef = *impl_->model;
+    if ((!frameOffsets.empty() && frameOffsets.size() != modelRef.properties.size()) ||
+        std::any_of(frameOffsets.begin(), frameOffsets.end(), [](std::int32_t offset) {
+            return offset < -80000 || offset > 80000;
+        })) {
+        impl_->error = "property evaluator received invalid local clock bindings";
+        return;
+    }
+    impl_->frameOffsets.assign(frameOffsets.begin(), frameOffsets.end());
     if (!modelRef.statistics.directParsedModel
         || modelRef.schemaVersion != model::MotionAssetModel::kSchemaVersion) {
         impl_->error = "property evaluator requires a direct parsed canonical model";
@@ -1548,6 +1562,8 @@ PropertyEvaluationView PropertyEvaluator::evaluate(
     for (std::size_t index = 0; index < modelRef.properties.size(); ++index) {
         const auto& property = modelRef.properties[index];
         auto& output = state.properties[index];
+        const double localFrame = assetFrame -
+            (impl_->frameOffsets.empty() ? 0 : impl_->frameOffsets[index]);
         ++statistics.propertiesVisited;
         MotionPropertyValue nextValue = invalidValue();
         model::SegmentId nextSegment;
@@ -1576,7 +1592,7 @@ PropertyEvaluationView PropertyEvaluator::evaluate(
             } else {
                 auto& cursor = state.cursors[track.id.index()];
                 const auto selection = locateSegment(
-                    modelRef, track, assetFrame, cursor, statistics);
+                    modelRef, track, localFrame, cursor, statistics);
 
                 if (property.valueType == model::PropertyValueType::Shape) {
                     if (property.id.index() >= impl_->propertyShapeSlots.size()) {
@@ -1626,7 +1642,7 @@ PropertyEvaluationView PropertyEvaluator::evaluate(
                                 const float endFrame =
                                     static_cast<float>(segment.endFrame);
                                 const float requestedFrame =
-                                    static_cast<float>(assetFrame);
+                                    static_cast<float>(localFrame);
                                 const float denominator = endFrame - startFrame;
                                 progress = denominator != 0.0F
                                     ? (requestedFrame - startFrame) / denominator
@@ -1686,7 +1702,7 @@ PropertyEvaluationView PropertyEvaluator::evaluate(
                             const float endFrame =
                                 static_cast<float>(segment.endFrame);
                             const float requestedFrame =
-                                static_cast<float>(assetFrame);
+                                static_cast<float>(localFrame);
                             const float denominator = endFrame - startFrame;
                             float progress = denominator != 0.0F
                                 ? (requestedFrame - startFrame) / denominator
