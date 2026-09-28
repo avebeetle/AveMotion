@@ -1,9 +1,10 @@
 # Part26N — unchanged Duck through own AveMotion
 
-Status: engine Tasks1–3 accepted and pushed; Task4 host integration independently
-accepted. Whole-stage review, frozen static candidate and canonical native
-acceptance are still in progress. This document
-does not yet certify a new `build/Release` installation.
+Status: source integration, whole-stage review and its single operational fix
+accepted. A fresh static own candidate is installed and verified in canonical
+`build/Release`. Native visual/controls acceptance remains pending: window
+capture/input tooling failed after launch. This is a verified source/static
+delivery, not completed end-to-end native acceptance. Do not repeat source tasks.
 
 ## Target and scope
 
@@ -27,6 +28,7 @@ Artwork is not committed, bundled or newly licensed for redistribution.
 | `8b18cfe3c1a9a4a04ae63ebd8ba40d6b63caf571` | Accepted carried multi-resource model/scene prerequisite, including correct canonical resource keys. |
 | `53cbad79f5782bf113cd80ae01b3b00ad17d0efd` | Bounded own vector compiler with exact pre-conversion numeric admission. |
 | `d7aa637b12d772d534c2dc932c035f86a815f540` | One shared scene program/emitter, pure path materialization, correct final-space stroke resources and conservative clip-equivalence guard. |
+| `9330d7149309366d35b5e82c99f61eb849a32f51` | Minimal immutable playback metadata for host fit, selected-target capture test and final engine gates. |
 
 Functional RED precedes implementation and review fixes. Independent task review
 and scoped fix review accepted each task. No vendor or golden edits; explicit
@@ -107,21 +109,90 @@ ordinary-reference129x129/frame0 BGRA (66,564 bytes, SHA256
 `7D7482DD199FA7D70B93EC06CD88686BE0F6C14A05760933F737A6FAB8D03466`). Missing,
 truncated and wrong-frame reference inputs fail. Evidence:
 out/part26n/task3/captures/run-41132590301500 and host build/checks/part26n-review-*.
-Dynamic /MD smoke success is not substituted for the pending frozen /MT candidate.
-Whole-stage independent review and final frozen source identities: pending.
-Static candidate/link/import/notices/PDB audit: pending.
-Recoverable canonical promotion and native load/play/pause/seek/count/Exit: pending.
+Dynamic /MD smoke success is separate from the fresh /MT acceptance below.
 
-Protected installed Part26L EXE SHA-256:
+## Frozen static delivery
+
+Frozen build sources: engine `9330d7149309366d35b5e82c99f61eb849a32f51`,
+host `f13099db64ab531881df6c836c19258860663324`; clean and equal to their remotes
+before build. Both source commits ordinary pushed. Later documentation-only
+commits are not compilation identity.
+
+Independent whole-stage review covered57engine/13host files and local release
+instruments. I1 found that a successful static audit could come from a different
+tree. One final operational fix wave binds audit to exact tree,source pair,
+app/smoke/PDB/stage hashes and compile/link/cache/project/install evidence,
+revalidated before any canonical copy. Inert RED proved old mismatches accepted.
+GREEN17/17,existing Duck proof8/8,recovery2/2; root fresh17/17 passed.
+One scoped independent re-review accepted I1 with no new Critical/Important.
+M1 generic primitive rejection diagnostics is deferred explicitly under ruling20.
+These ignored-instrument changes did not alter the frozen product sources.
+
+Fresh candidate tree: host `build/cmake/part26n-own-release-001`.
+Evidence: host `build/checks/part26n-promotion-001`.
+Build324.420s,exit0;staticCTest1/1,0.13s;explicit original Duck smoke exit0,
+512x512,frames0/mid,2readbacks,1target. Actual graph/link/no-reference audit passed;
+11actual compiler records/119commands all Release /MT. Compiler identity probes
+excluded explicitly. No engine SDK install rules. Runtime staging/readiness,
+ordinary/delay imports,exact26files,24unchanged notices and matching PDB passed.
+All tracked input hashes stayed stable; prior package/PDB fully backed up.
+This does not establish runtime LoadLibrary behavior,complete SBOM or licensing.
+
+Actual root commands (existing pwsh runtime, repository root):
+
+```powershell
+pwsh -NoProfile -File out/part26n/build-candidate.ps1 -HostHead f13099db64ab531881df6c836c19258860663324 -EngineHead 9330d7149309366d35b5e82c99f61eb849a32f51 -Attempt 001 -DuckTgsPath C:/Users/USER/Desktop/AveMotion-CorpusLab-Part24/out/real-stickers-2026-09-28/assets/a-3.tgs
+pwsh -NoProfile -File out/part26n/audit-candidate.ps1 -Tree D:/rvc/c++/DragonianVoice/Avelabs-UI/build/cmake/part26n-own-release-001 -Evidence D:/rvc/c++/DragonianVoice/Avelabs-UI/build/checks/part26n-promotion-001
+pwsh -NoProfile -File out/part26n/promote-candidate.ps1 -Evidence D:/rvc/c++/DragonianVoice/Avelabs-UI/build/checks/part26n-promotion-001
+```
+
+Each exited0;logs `out/part26n/task4/005-root-candidate.log`,
+`006-root-static-audit.log`,`007-root-promotion.log`. Do not rerun001 or overwrite
+evidence. Exact CMake/CTest/CLI parameters and timestamps are in host command JSON.
+Actual bound audit ran after fix acceptance.
+
+Canonical promotion completed `2026-09-28T01:09:20.7980153Z`, with source/hash/
+process guards and installed readiness/symbols checks passed. Installed identity:
+
+- EXE SHA256 `A0EF0D9BE4642F38E466615BD19FE0B8989B382FBA78B25B2D9745D0F3EE3BC0`,52,712,960bytes.
+- PDB SHA256 `3F4DF26FD20A35922BC98DD6CB0F60C0EDC0C60D5755CB3947B5F0A0F90B8485`,156,430,336bytes.
+- EXE/PDB GUID `16407327-5c3f-4d83-abef-edd8a280f72f`,age1.
+- Smoke SHA256 `292B6562628CFD240952084884E84219F391E05B90EF06C631A816C888A0B18A`.
+- Full previous package/PDB: host `build/checks/part26n-promotion-001/backup`.
+
+Previous Part26L EXE SHA-256 (backup,not current):
 `93B10E5C93A3182BC59A4333F5444E95F4D4CA32D506AA05E26D1F740C5C1645`.
-Protected PDB SHA-256:
+Previous PDB SHA-256:
 `014ACD8CE9B3AFAB44A80F1ECEEAAC766D606EC958DC08DC64A392767173DFFF`.
-Those hashes were freshly checked after Task3; no promotion has occurred.
 
-Native testing, when performed, uses the actual owned canonical process and its
-ordinary geometry/file-dialog/log persistence. It is not settings-isolated and
-does not imply mixed-DPI or multimonitor acceptance. Qt test-page captures alone
-do not certify the canonical executable.
+## Native attempt and remaining gate
+
+After promotion, canonical PID32720 was launched2026-09-28T01:09:32.808134Z.
+Read-only check reports responsive; EXE hash matches above. Computer Use selected
+the actual returned window. Capture failed `FrameArrived timed out`; one fresh
+selection/activation retry failed `window capture timed out`. Accessibility reads
+expose Voices and correct own-vector/WARP controls,No file loaded,0readbacks.
+Open click failed `coordinate input geometry is unavailable`; one Tab gave no
+confirmed focus change. No file entered/loaded,no image captured,input stopped.
+User asked about desktop availability; a locked desktop is not inferred as fact.
+Owned process left running unloaded,not terminated or hidden as Exit.
+
+Evidence: host `build/checks/part26n-native-001/REPORT.md`,identity.json,
+accessibility-final.json. Pending: actual Duck visible frames,play/pause/seek/
+loop/Stop,1/4/16tiles and normal tray Quit/process exit. Do not convert Qt harness
+captures/static smoke into missing native proof. Resume only this gate on an
+operable desktop,not completed source work. Mixed-DPI,multimonitor,native drag,
+hardware GPU,quantitative speedup,zero-allocation/race-detector guarantees remain
+unverified/outside scope. Ordinary app geometry/dialog/log persistence is allowed,
+not settings-isolated. No manual Windows/settings/dependency change was made.
+
+Whole-review declined judgments: actual static provenance now verified above;
+native controls/Exit pending; broader Lottie semantics,hardware/performance/race
+guarantees,artwork distribution and optional unavailable Samsung coverage are
+outside this milestone,not silently credited. Samsung is not called all-green.
+Next after native acceptance: inventory another unchanged provenance-recorded
+sticker,select its smallest missing feature,test through this same UI. No new
+DLL/UI/scheduler or general-engine rewrite is assigned by this handoff.
 
 ## Design decisions
 

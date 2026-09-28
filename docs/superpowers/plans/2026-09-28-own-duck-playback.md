@@ -208,8 +208,12 @@ renderer or silently drop features. Stream/playback/Player API stays unchanged.
 Execution checkpoint: product/host portion independently accepted after fix1
 (visible raster reset, real Duck transport/visibility, exact fitted129 pixels).
 Final working-own4/4, opt-in-own4/4, reference3/3 and root fix checks pass;
-fresh root full none47/TG100/preview96 pass. Whole-stage review and frozen static
-candidate/promotion/native acceptance remain; do not repeat product implementation.
+fresh root full none47/TG100/preview96 pass. Whole-stage review and single final
+operational I1 fix accepted. Fresh /MT candidate001,actual bound audit119commands,
+static original Duck smoke and26-file/PDB checks pass. Canonical N promoted
+2026-09-28T01:09:20.7980153Z. Native attempt reached responsive owned process and
+accessibility only: capture/input unavailable. Native Duck controls/visual/Exit
+gate remains pending; do not repeat product/build work or claim end-to-end done.
 
 **Files:** host `src/app/motionlab/OwnMotionRenderer.cpp/.h`,
 `src/app/motionlab/MotionLabPage.cpp` only for the truthful badge/size diagnostics,

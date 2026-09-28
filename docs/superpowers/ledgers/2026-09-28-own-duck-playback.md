@@ -177,6 +177,19 @@ alone is not an isolation mechanism. No registry or production test hook added.
     the comparison meaningless; run both sides freshly with matched endpoints,
     retain raw evidence, and independently review the test handoff.
 
+19. Ruling: overlap candidate-only build/staging with read-only whole-stage
+    review on frozen clean9330d71/f13099d. Spec requires review before promotion,
+    not compilation; no canonical mutation occurs during overlap. Cost if wrong:
+    a product fix invalidates this candidate and needs a fresh retained attempt.
+    Final review required only ignored operational fixes,so product identity held.
+
+20. Ruling: defer final-review M1 generic primitive rejection diagnostics. The
+    unified primitive preparation still safely rejects,but no longer exposes
+    the old precise reason/path. A source fix would invalidate the frozen tested
+    candidate without changing accepted Duck playback. Cost: less actionable
+    diagnostics for rejected primitive inputs until a focused future change.
+    Explicitly deferred,not declared fixed or a silently satisfied requirement.
+
 ## Plan preflight
 
 | Tasks | Shared file/interface and producer/consumer | Finding |
@@ -256,3 +269,27 @@ corrected to existing `tst_own_motion_renderer.cpp` before dispatch.
   cannot-verify items checked through pinned input and full current suites;
   final static linkage/native gates remain next, not implicit task success.
   Canonical Part26L EXE/PDB untouched; no automation change.
+- Final delivery after that checkpoint: product commits engine9330d7149309366d35b5e82c99f61eb849a32f51
+  and hostf13099db64ab531881df6c836c19258860663324 were pushed normally.
+  Whole-stage review57engine/13host files plus ignored instruments found I1 audit
+  binding and M1 diagnostics. One combined operational fix author and one scoped
+  independent re-review accepted I1,no new Critical/Important. RED retained,
+  binding17/17,Duck proof8/8,recovery2/2;root fresh binding17/17. M1 ruling20.
+  Source remains unchanged; no extra product fix wave/rebuild. Ignored audit
+  SHA256A924857C564CCAE8B8530675A3430E288E82345FD3A492B19407214968DFC8E9,
+  promotion2F97B5F0E4FF297E09EE12B298084B2958D39254E2EABBBB95A8D545490E6F2A,
+  test0D15E3EF099C903766C25B781D59049738FC088138FE4880C454512AEC87E112.
+  Fresh candidate001 built324.420s;staticCTest1/1,originalTGS smoke frames0/mid.
+  Actual fixed audit119/MT commands,noReference;26files/notices/PDB/source
+  stability/backup/import gates pass. Verified promotion2026-09-28T01:09:20.7980153Z,
+  EXEA0EF0D9BE4642F38E466615BD19FE0B8989B382FBA78B25B2D9745D0F3EE3BC0,
+  PDB3F4DF26FD20A35922BC98DD6CB0F60C0EDC0C60D5755CB3947B5F0A0F90B8485.
+  Full oldLbackup retained under host build/checks/part26n-promotion-001/backup.
+  Native ownedPID32720 responsive after launch,but two screenshot timeouts,
+  Open click geometry unavailable and no confirmed Tab effect. Accessibility
+  confirms correct unloaded own Lab only. Input stopped,user asked about desktop;
+  process left running,no termination. Native visible Duck/controls/count/Exit
+  remain unverified; no end-to-end completion claimed. Read report before resume.
+  Final reviewer cannot-verify: actual static now closed; native pending; general
+  Lottie,hardware/performance/race,artwork distribution and Samsung breadth remain
+  out of scope. No Windows/dependency/automation/CI/vendor/golden/license changes.

@@ -38,13 +38,22 @@ Final own working/opt-in each4/4, reference3/3; Python97/34/29/3. Root fresh
 I1/I2/I3 each3/3; full none47/47 (7.91s), TG100/100 (127.18s), preview96/96
 (129.76s). Original external capture36/36 exact including nine129 cases.
 Rulings17/18 bound test-only output-root and capture extensions. Do not repeat
-product tasks. Next whole-stage independent review, then frozen static candidate,
-provenance audit, recoverable canonical promotion and native acceptance.
-Native canonical UI proof remains pending; current L package is untouched.
+product tasks. Whole-stage review and single final operational I1 binding fix
+accepted;17/17 inert guards,8/8Duck proof,2/2rollback. Frozen engine9330d71 /
+hostf13099d built fresh /MT candidate001,CTest1/1 and originalDuck smoke pass.
+Actual bound audit119/MT commands,noReference;26files/notices/PDB/backup verified.
+Canonical promoted2026-09-28T01:09:20.7980153Z,EXEA0EF0D9B...3BC0/PDB3F4DF26F...8485.
+Native proof pending: launched owned responsivePID32720,but Computer Use capture
+timeout twice,Open click geometry unavailable,Tab no confirmed effect.
+Accessibility sees correct unloaded own Lab. App left running,no termination;
+user asked about desktop availability. Resume only native Duck load/play/pause/
+seek/count/Exit when desktop/tooling allows. No end-to-end completion claim.
+Report docs/PART26N_REAL_DUCK_PLAYBACK_REPORT.md;full old L backup in host
+build/checks/part26n-promotion-001/backup. Do not rebuild/repeat source tasks.
 No second renderer/worker/bitmap.
 M separate synthetic host/promotion work is superseded,
-not completed. No new automation. Installed L EXE/PDB remains protected and its
-hash freshly matches the existing report. Real artwork stays local.
+not completed. No new automation. Previous L EXE/PDB remains hash-verified in the
+full backup; current package is N as above. Real artwork stays local.
 Do not repeat previous stages or claim compiler/reference success as own UI
 playback. Read current N spec/plan/ledger before historical M material below.
 
