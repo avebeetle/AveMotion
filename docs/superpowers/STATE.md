@@ -2,6 +2,21 @@
 
 Updated: 2026-09-28
 
+## Current execution — Part26O unchanged Duck X3
+
+Spec `docs/superpowers/specs/2026-09-28-own-duck-x3-design.md`, plan
+`docs/superpowers/plans/2026-09-28-own-duck-x3.md`, ledger
+`.superpowers/sdd/2026-09-28-own-duck-x3/progress.md` are controller-approved
+under delegated authority. Read-only inventories complete: a-2 needs repeated/
+nested instance clocks and translated clips, ordered multi-group paint/trim,
+animated zero-width strokes, signed keys and bounded easing extension. Existing
+reader/profile budgets suffice. No a-1/general-Lottie or UI redesign scope.
+Three sequential blocks: instances/clocks/clips; shape/width admission; independent
+real parity and same-host delivery. Fresh no-ref baseline47/47,8.32s. One product
+writer; follow current ledger. Canonical N EXE/PDB remain unchanged/protected.
+Engine base04c4a7b and host799c7c4 include user-recorded N controls acceptance.
+No new automation. Preserve N raw/local artwork and all previous stage results.
+
 ## Current execution — Part26N unchanged Duck playback
 
 Latest update: user confirmed animation/Pause and supplied64.715s native recording.
