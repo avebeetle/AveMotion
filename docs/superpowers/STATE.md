@@ -33,8 +33,15 @@ Test-oracle corruption probes were added during implementation, not all before;
 report preserves that process qualification. New review minor: failure-only
 per-draw capture diagnostic needs a count guard, for final triage. Debug phase
 measurements and fresh a-2 reference129/frame0 BGRA are bound in task3 provenance.
+Task4 host test/script preparation independently accepted after linker-target
+identity fix1. H2b9982f: three test files, no product route changes; required
+a-2 own-working4/4,opt-in4/4,reference3/3,originala-3 regressions; Python97/34/29/3.
+Root focused worker3/page3/renderer4 pass. Inert audit19/recovery2/dual-smoke4;
+root audit19/19. a-2 fitted1x1 remains fail-closed for precomp clipping, with
+atomic rejection/recovery test and originala-3 tiny-size acceptance retained.
+Deferred final-review minor: inert smoke tests use filename-stubbed input hashes.
 One product writer; follow current ledger. Canonical N EXE/PDB remain unchanged/
-protected. Next Task4 is same-host tests, fresh static candidate and delivery.
+protected. Next: whole-stage review, frozen static candidate/audit and delivery.
 Engine base04c4a7b and host799c7c4 include user-recorded N controls acceptance.
 No new automation. Preserve N raw/local artwork and all previous stage results.
 

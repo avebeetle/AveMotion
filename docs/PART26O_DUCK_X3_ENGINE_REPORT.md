@@ -91,3 +91,26 @@ Task3 review also notes a missing count guard in failure-only per-draw capture
 diagnostics; current passing equal-count evidence is unaffected. Both minors are
 carried to the whole-stage review before delivery. Root fresh default-scene
 CTest1/1 and original a-2 full2960scenes passed after the final source freeze.
+
+## Same-host test checkpoint
+
+Host source `2b9982ff9312df80b4f7cdc9887d72860c93adff` adds only three test
+seams and its handoff report. Fresh /MD working-own4/4,opt-in-own4/4,
+reference3/3 passed; explicit required a-2 Qt tests have no skips, and original
+a-3 focused controls/rendering pass in both own trees. Root worker3/page3/
+renderer4 passed independently. Python deployment97/diagnostics34/build29/
+runner3 are green. A fitted1x1 a-2 frame is still rejected by the unchanged
+conservative clip policy; tests verify null/no new target or readback/exact129
+recovery and retain a-3 tiny-target success.
+
+Independent Task4 review and scoped fix1 review accepted O operational scripts
+after a real inert RED exposed insufficient linker-log target identity. Exact
+app/smoke project, intermediate directory and output binding now passes19/19
+guards (also root19/19), recovery2/2 and dual-original smoke-proof4/4. This is
+script preparation, not an actual static audit or promotion. Real-byte hash
+coverage in inert smoke tests remains a minor for final triage.
+
+Canonical N EXE/PDB remain untouched. Whole-stage review, fresh frozen /MT
+candidate, actual bound source/link/import audit, full26-file/PDB backup and
+native acceptance are still pending. Host report:
+`D:/rvc/c++/DragonianVoice/Avelabs-UI/docs/testing/own-duck-x3-2026-09-28/REPORT.md`.
