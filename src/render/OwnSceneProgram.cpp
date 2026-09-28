@@ -40,6 +40,7 @@ lowerOwnPrimitiveProgram(const runtime::detail::OwnNativeEllipseModel &owner,
     for (auto it = owner.binding.groups.rbegin(); it != owner.binding.groups.rend(); ++it) {
         OwnSceneDraw draw;
         draw.group = it->group;
+        draw.paintScope = it->group;
         draw.path = it->primitive;
         draw.paint = it->fill;
         draw.node = model::makeId<model::NodeId>(draws.size());
@@ -90,6 +91,7 @@ lowerOwnVectorProgram(const runtime::detail::OwnVectorModel &owner,
                 continue;
             OwnSceneDraw d;
             d.group = b.group;
+            d.paintScope = b.paintScope;
             d.path = b.path;
             d.paint = b.paint;
             d.trim = b.trim;
@@ -195,6 +197,7 @@ bool materializeOwnScenePath(const model::MotionAssetModel &asset, const OwnScen
 }
 
 bool sampleOwnScenePaint(const model::MotionAssetModel &asset, const OwnSceneDraw &draw,
+                         const evaluation::PropertyEvaluationView &view,
                          runtime::EvaluatedStroke &stroke, runtime::EvaluatedPaint &paint) {
     if (!draw.paintColor.valid()) {
         const auto &record = asset.paints[asset.nodes[draw.node.index()].paint.index()];
@@ -218,10 +221,11 @@ bool sampleOwnScenePaint(const model::MotionAssetModel &asset, const OwnSceneDra
     if (draw.strokeWidth.valid()) {
         const auto *width = asset.property(draw.strokeWidth);
         const auto *source = asset.sourceNode(draw.paint);
-        if (!width || !source || width->staticValue.index >= asset.scalarValues.size())
+        if (!width || !source ||
+            !resolveNativeEllipseScalar(asset, view, draw.strokeWidth, stroke.width) ||
+            !std::isfinite(stroke.width) || stroke.width < 0)
             return false;
         stroke.enabled = true;
-        stroke.width = asset.scalarValues[width->staticValue.index];
         stroke.miterLimit = source->miterLimit;
         stroke.cap = source->strokeCap == model::SourceStrokeCap::Round ? runtime::LineCap::Round
                      : source->strokeCap == model::SourceStrokeCap::Square

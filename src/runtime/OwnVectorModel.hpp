@@ -8,7 +8,7 @@ struct OwnVectorLayerBinding final {
     double inFrame = 0, outFrame = 0;
 };
 struct OwnVectorDrawBinding final {
-    model::SourceNodeId layer, group, path, paint;
+    model::SourceNodeId layer, group, paintScope, path, paint;
     std::optional<model::SourceNodeId> trim;
 };
 struct OwnVectorSourceBinding final {

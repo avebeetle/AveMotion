@@ -11,14 +11,21 @@ under delegated authority. Read-only inventories complete: a-2 needs repeated/
 nested instance clocks and translated clips, ordered multi-group paint/trim,
 animated zero-width strokes, signed keys and bounded easing extension. Existing
 reader/profile budgets suffice. No a-1/general-Lottie or UI redesign scope.
-Three sequential blocks: instances/clocks/clips; shape/width admission; independent
-real parity and same-host delivery. Task1 implemented and independently Approved:
+Four sequential blocks: instances/clocks/clips; shape/width admission; independent
+real parity; same-host delivery. Task1 implemented and independently Approved:
 47/47 no-reference,100/100 Telegram, four original a-3 regressions; root fresh8/8.
 Bounded repeated instances/local property clocks/provenance and each-enclosing
-translated clip proof are in place. Original a-2 now reaches inline shape grammar
-and correctly rejects pending Task2; no a-2 playback claim. Existing vendor C4251
-warnings retained. One product writer; follow current ledger. Canonical N EXE/PDB
-remain unchanged/protected. Next Task2 is measured shape/animated-width support.
+translated clip proof are in place. Task2 independently Approved: bounded shape
+scopes, separate path/paint spaces and animated zero-width strokes. Original a-2
+prepares50layers/52draws/94tracks and emits180forward+180reverse at128/129/256/512;
+this is not independent visual parity or installed playback. Final none47/47,
+TG100/100; root focused2/2. CPU/WARP width witness0/80/0, no backend change.
+The initial combined shape RED did not cover width; isolated width RED followed
+removal of that owned extension, then tested reimplementation. Ledger/report
+preserve the sequence. Review minors: preparation-clock witness strength and
+inherited vendor C4251; final review must triage. One product writer; follow
+current ledger. Canonical N EXE/PDB remain unchanged/protected. Next Task3 is
+independent full-instance scene/pixel parity, then Task4 same-host delivery.
 Engine base04c4a7b and host799c7c4 include user-recorded N controls acceptance.
 No new automation. Preserve N raw/local artwork and all previous stage results.
 

@@ -233,11 +233,23 @@ OwnNativeEllipseFrameResult OwnNativeEllipseStream::emit(std::size_t frame, std:
                 return {OwnNativeEllipseFrameCode::UnsupportedNumericOutput,
                         "non-finite viewport transform", std::nullopt};
             }
+            if (binding.paintScope.index() >= view.nodeTransforms.size())
+                return {OwnNativeEllipseFrameCode::EvaluationFailed,
+                        "bound paint scope transform unavailable", std::nullopt};
+            const auto &paintScope = view.nodeTransforms[binding.paintScope.index()];
+            if (paintScope.node != binding.paintScope || !paintScope.worldSupported())
+                return {OwnNativeEllipseFrameCode::EvaluationFailed,
+                        "paint scope world transform unavailable", std::nullopt};
+            const auto paintTransform = nativeEllipseViewportTransform(
+                paintScope.worldMatrix, model.logicalWidth, model.logicalHeight, width, height);
+            if (!paintTransform)
+                return {OwnNativeEllipseFrameCode::UnsupportedNumericOutput,
+                        "non-finite paint scope viewport transform", std::nullopt};
             runtime::EvaluatedDrawItem item;
             const auto &node = model.nodes[binding.node.index()];
             runtime::EvaluatedStroke localStroke;
             runtime::EvaluatedPaint localPaint;
-            if (!sampleOwnScenePaint(model, binding, localStroke, localPaint)) {
+            if (!sampleOwnScenePaint(model, binding, view, localStroke, localPaint)) {
                 return {OwnNativeEllipseFrameCode::EvaluationFailed, "bound paint unavailable",
                         std::nullopt};
             }
@@ -259,15 +271,15 @@ OwnNativeEllipseFrameResult OwnNativeEllipseStream::emit(std::size_t frame, std:
             item.paint = localPaint;
             item.stroke = localStroke;
             item.paint.solid.a = static_cast<std::uint8_t>(static_cast<float>(item.paint.solid.a) *
-                                                           group.worldOpacity);
+                                                           paintScope.worldOpacity);
             if (item.stroke.enabled) {
                 // Match the existing final-space stroke route. Nonuniform matrices
                 // use Telegram's diagonal scale, not a transformed local pen.
                 constexpr float sqrt2 = 1.41421F;
                 const float dx =
-                    sqrt2 * transform->m11 + sqrt2 * transform->m21 + transform->dx - transform->dx;
+                    sqrt2 * paintTransform->m11 + sqrt2 * paintTransform->m21;
                 const float dy =
-                    sqrt2 * transform->m12 + sqrt2 * transform->m22 + transform->dy - transform->dy;
+                    sqrt2 * paintTransform->m12 + sqrt2 * paintTransform->m22;
                 item.stroke.width *= std::sqrt(dx * dx + dy * dy) / 2.0F;
                 if (!std::isfinite(item.stroke.width)) {
                     return {OwnNativeEllipseFrameCode::UnsupportedNumericOutput,
@@ -280,7 +292,7 @@ OwnNativeEllipseFrameResult OwnNativeEllipseStream::emit(std::size_t frame, std:
                 item.localPaint = localPaint;
                 item.localStroke = localStroke;
                 item.opacitySeparated = true;
-                item.separatedOpacity = group.worldOpacity;
+                item.separatedOpacity = paintScope.worldOpacity;
             }
             if (!materializeOwnScenePath(model, binding, view, *transform, item.localPath,
                                          item.path)) {

@@ -7,6 +7,7 @@
 #include "support/WarpCaptureSurface.hpp"
 #include <array>
 #include <chrono>
+#include <cstdlib>
 #include <fstream>
 #include <iostream>
 namespace {
@@ -157,6 +158,46 @@ void clippingWitnesses(const fs::path &root) {
                     "zero-handle sharp fixtures characterize conservative rejection, not spill");
     }
 }
+void widthZeroWitness() {
+    const auto path = std::string("{\"a\":0,\"k\":") + vectorShape(2, false) + "}";
+    const std::string stroke = R"({"ty":"st","c":{"a":0,"k":[1,0,0,1]},"w":{"a":1,"k":[{"t":0,"s":[0],"h":1},{"t":10,"s":[8],"h":1},{"t":20,"s":[0]}]}})";
+    const auto json = vectorReplace(
+        vectorRoot(vectorReplace(vectorShapeLayer(path), "{\"ty\":\"tr\"}",
+                                 stroke + R"(,{"ty":"tr","p":{"a":0,"k":[40,64]}})")),
+        "{\"fr\":", "{\"v\":\"5.5.2\",\"fr\":");
+    const auto compiled = vectorCompile(json);
+    require(bool(compiled), "width0 fixture compiles: " + compiled.path + compiled.message);
+    const auto prepared = render::detail::prepareOwnVectorAsset(compiled.prepared);
+    require(bool(prepared), "width0 fixture prepares: " + prepared.message);
+    auto stream = render::detail::OwnNativeEllipseStream::create(prepared.prepared);
+    require(bool(stream), "width0 stream");
+    auto cpu = rlottie::Animation::loadFromData(json, "width0-cpu", {}, false);
+    require(bool(cpu), "width0 ordinary CPU");
+    testsupport::CaptureProfile profile{"width0", 128, 128, 128, 128, 96, 96};
+    WarpCaptureSurface surface;
+    surface.configure(profile);
+    backends::direct2d::Backend backend;
+    render::MotionRenderPlanner planner;
+    for (const auto &[frame, expectedWidth] :
+         {std::pair{0U, 0.F}, {10U, 8.F}, {20U, 0.F}}) {
+        auto emitted = stream.stream->emit(frame, 128, 128);
+        require(bool(emitted), "width0 scene: " + emitted.message);
+        require(emitted.scene->drawItems.size() == 1 &&
+                    emitted.scene->drawItems[0].stroke.enabled &&
+                    std::abs(emitted.scene->drawItems[0].stroke.width - expectedWidth) < 0.001F,
+                "width0 enabled scene draw retains sampled width");
+        auto plan = planner.build(std::move(*emitted.scene));
+        require(bool(plan), "width0 render plan");
+        const auto pixels = renderPlan(surface, backend, plan.plan);
+        const auto cpuPixels = ordinaryCpuPixels(*cpu, frame, profile);
+        std::cout << "width0 frame=" << frame << " cpu_active=" << activePixels(cpuPixels)
+                  << " warp_active=" << activePixels(pixels) << '\n';
+        require((activePixels(cpuPixels) == 0) == (expectedWidth == 0),
+                "ordinary CPU width0 raster characterization");
+        require((activePixels(pixels) == 0) == (expectedWidth == 0),
+                "WARP width0 raster follows enabled stroke coverage");
+    }
+}
 
 void run(const std::string &json, const fs::path &root, bool rectangles) {
     auto parsed = formats::detail::readOwnJson(json, {65536, 32});
@@ -236,12 +277,18 @@ void run(const std::string &json, const fs::path &root, bool rectangles) {
 }
 } // namespace
 int main(int argc, char **argv) {
+    char *environmentRoot = nullptr;
+    std::size_t environmentLength = 0;
+    _dupenv_s(&environmentRoot, &environmentLength, "AVEMOTION_TASK_CAPTURE_ROOT");
+    std::unique_ptr<char, decltype(&std::free)> requestedRoot(environmentRoot, &std::free);
     const fs::path root =
-        fs::path(AVEMOTION_VECTOR_CAPTURE_DIR) /
+        fs::path(requestedRoot && *requestedRoot ? requestedRoot.get() : AVEMOTION_VECTOR_CAPTURE_DIR) /
         ("run-" + std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()));
     try {
         fs::create_directories(root);
         std::cout << "captures=" << root.string() << '\n';
+        if (argc == 1)
+            widthZeroWitness();
         clippingWitnesses(root);
         run(vectorInput(argc, argv), root, argc == 1);
         if (argc == 1) {

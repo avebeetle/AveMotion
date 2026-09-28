@@ -101,6 +101,61 @@ void properties() {
                 near(p.value.scalar, expected, "hold to ordinary terminal boundary");
     }
 }
+void measuredNumericAdmission() {
+    const auto keyedRotation = vectorRoot(vectorLayer(
+        R"("r":{"a":1,"k":[{"t":-12,"s":[0],"h":1},{"t":20,"s":[30]}]})"));
+    auto result = test::vectorCompile(keyedRotation);
+    vectorRequire(bool(result), "signed bounded key time: " + result.path + " " + result.message);
+    const auto scale = vectorRoot(vectorLayer(
+        R"("s":{"a":1,"k":[{"t":0,"s":[100,100,100],"i":{"x":[0.75,0.75,0.9],"y":[1,1,-3.532]},"o":{"x":[0.25,0.25,0.1],"y":[0,0,7.017]}},{"t":10,"s":[90,90,100]}]})"));
+    result = test::vectorCompile(scale);
+    vectorRequire(bool(result), "neutral Z easing ignored: " + result.path + " " + result.message);
+    const std::string width = R"({"ty":"st","c":{"a":0,"k":[0,0,1,1]},"w":{"a":1,"k":[{"t":0,"s":[0],"i":{"x":0.75,"y":2},"o":{"x":0.25,"y":2}},{"t":10,"s":[10]}]}})";
+    const auto strokeJson = vectorRoot(vectorReplace(
+        vectorShapeLayer("{\"a\":0,\"k\":" + vectorShape(2, false) + "}"),
+        "{\"ty\":\"tr\"}", width + ",{\"ty\":\"tr\"}"));
+    result = test::vectorCompile(strokeJson);
+    vectorRequire(bool(result), "stroke width Y overshoot admitted: " + result.path + " " + result.message);
+    evaluation::PropertyEvaluator evaluator(result.prepared->model);
+    evaluation::PropertyEvaluationWorkspace ws;
+    evaluator.prepare(ws);
+    const auto view = evaluator.evaluate(5, ws);
+    vectorRequire(bool(view), "overshoot width evaluates");
+    for (const auto& p : view.properties)
+        if (p.semantic == PropertySemantic::StrokeWidth)
+            near(p.value.scalar, 16.25F, "literal width overshoot at midpoint");
+    for (const auto& [name, json] : std::vector<std::pair<std::string, std::string>>{
+             {"negative time below bound", vectorReplace(keyedRotation, "\"t\":-12", "\"t\":-20001")},
+             {"width Y above bound", vectorReplace(strokeJson, "\"y\":2", "\"y\":16.001")},
+             {"width X outside unit", vectorReplace(strokeJson, "\"x\":0.75", "\"x\":1.001")},
+             {"visible scale Y overshoot", vectorReplace(scale, "\"y\":[1,1,-3.532]", "\"y\":[1.01,1.01,-3.532]")},
+             {"neutral Z Y below bound", vectorReplace(scale, "-3.532", "-16.001")},
+             {"neutral Z X outside unit", vectorReplace(scale, "0.9", "1.001")}}) {
+        const auto bad = test::vectorCompile(json);
+        vectorRequire(!bad && !bad.prepared, "exact numeric rejection: " + name);
+    }
+}
+void measuredScopeRejections() {
+    const auto shape = vectorShape(2, false);
+    const auto path = std::string("{\"ty\":\"sh\",\"ks\":{\"a\":0,\"k\":") + shape + "}}";
+    const std::string stroke = R"({"ty":"st","c":{"a":0,"k":[1,0,0,1]},"w":{"a":0,"k":2}})";
+    const std::string trim = R"({"ty":"tm","m":1,"s":{"a":0,"k":0},"e":{"a":0,"k":50}})";
+    const auto group = std::string("{\"ty\":\"gr\",\"it\":[") + path + "," + stroke + R"(,{"ty":"tr"}]})";
+    const auto root = [&](const std::string& items) {
+        return vectorRoot("{\"ty\":4,\"ind\":1,\"ip\":0,\"op\":180,\"ks\":{},\"shapes\":[" + items + "]}");
+    };
+    for (const auto& [name, json] : std::vector<std::pair<std::string, std::string>>{
+             {"two effective trims", root(vectorReplace(group, stroke, trim + "," + stroke) + "," + trim)},
+             {"nested group", root(vectorReplace(group, path, group))},
+             {"outer multi-path paint", root(group + "," + group + "," + stroke)},
+             {"individual trim", root(group + "," + vectorReplace(trim, "\"m\":1", "\"m\":2"))},
+             {"nonuniform scale", root(vectorReplace(group, "{\"ty\":\"tr\"}", R"({"ty":"tr","s":{"a":0,"k":[75,76]}})"))},
+             {"zero scale", root(vectorReplace(group, "{\"ty\":\"tr\"}", R"({"ty":"tr","s":{"a":0,"k":[0,0]}})"))},
+             {"oversize scale", root(vectorReplace(group, "{\"ty\":\"tr\"}", R"({"ty":"tr","s":{"a":0,"k":[1000.001,1000.001]}})"))}}) {
+        const auto bad = test::vectorCompile(json);
+        vectorRequire(!bad && !bad.prepared && !bad.path.empty(), "bounded scope rejection: " + name);
+    }
+}
 void morphsAndDefaults() {
     for (bool closed : {false, true}) {
         const auto start = vectorShape(2, closed), end = vectorShape(2, closed, 20);
@@ -182,8 +237,8 @@ void rejects(const std::string& fixture) {
     reject(vectorReplace(fixture, "\"k\":[200,300]", "\"k\":[200,300,99]"), "scale Z");
     reject(vectorReplace(fixture, "\"r\":1", "\"r\":3"), "fill rule");
     reject(vectorReplace(fixture, "\"lc\":2", "\"lc\":4"), "stroke cap");
-    reject(vectorReplace(fixture, "\"w\":{\"a\":0,\"k\":2}", "\"w\":{\"a\":0,\"k\":0}"),
-           "stroke zero width");
+    reject(vectorReplace(fixture, "\"w\":{\"a\":0,\"k\":2}", "\"w\":{\"a\":0,\"k\":-0.01}"),
+           "stroke negative width");
     reject(vectorReplace(fixture, "\"ty\":\"tr\"", "\"ty\":\"tr\",\"sk\":{\"a\":0,\"k\":1}"),
            "skew");
     reject(vectorReplace(fixture, "\"k\":[3,4]", "\"k\":[3,4],\"x\":\"expression\""), "expression");
@@ -302,6 +357,8 @@ int main(int argc, char** argv) {
                 vectorReplace(vectorReplace(json, "\"ddd\":0,", ""), "\"ddd\":0,", ""));
             vectorRequire(bool(omitted), "omitted ddd defaults to admitted 2D");
             properties();
+            measuredNumericAdmission();
+            measuredScopeRejections();
             morphsAndDefaults();
             rejects(json);
         } else {
@@ -310,11 +367,20 @@ int main(int argc, char** argv) {
                 return std::count_if(m.sourceNodes.begin(), m.sourceNodes.end(),
                                      [&](const auto& n) { return n.kind == kind; });
             };
-            vectorRequire(
-                result.prepared->layers.size() == 37 && result.prepared->draws.size() == 36 &&
-                    count(SourceNodeKind::Shape) == 32 && count(SourceNodeKind::Trim) == 7 &&
-                    m.tracks.size() == 33 && m.segments.size() == 304,
-                "unchanged Duck authored inventory");
+            const bool second = std::filesystem::path(argv[2]).filename() == "a-2.tgs";
+            if (second)
+                vectorRequire(result.prepared->layers.size() == 50 &&
+                                  result.prepared->draws.size() == 52 &&
+                                  count(SourceNodeKind::Shape) == 38 &&
+                                  count(SourceNodeKind::Trim) == 14 &&
+                                  m.tracks.size() == 94,
+                              "unchanged Duck X3 expanded inventory");
+            else
+                vectorRequire(
+                    result.prepared->layers.size() == 37 && result.prepared->draws.size() == 36 &&
+                        count(SourceNodeKind::Shape) == 32 && count(SourceNodeKind::Trim) == 7 &&
+                        m.tracks.size() == 33 && m.segments.size() == 304,
+                    "unchanged Duck authored inventory");
         }
         std::cout << "PASS own vector layers=" << result.prepared->layers.size()
                   << " draws=" << result.prepared->draws.size()

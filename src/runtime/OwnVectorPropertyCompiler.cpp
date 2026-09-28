@@ -83,22 +83,32 @@ MotionVec2Value point(Value input, std::int64_t low, std::int64_t high, float z 
         a[2].fail("non-neutral Z component");
     return {a[0].number(low, high), a[1].number(low, high)};
 }
-float channel(Value input) {
+float channel(Value input, std::int64_t low, std::int64_t high, bool ignoredZ = false,
+              std::int64_t ignoredLow = 0, std::int64_t ignoredHigh = 1) {
     if (input.exists() && input.document->node(input.id)->kind == OwnJsonKind::Number)
-        return input.number(0, 1);
+        return input.number(low, high);
     auto values = input.array(1, 3);
     values.front().require(OwnJsonKind::Number);
     const auto firstToken = *values.front().document->valueBytes(values.front().id);
-    for (const auto& v : values) {
+    for (std::size_t i = 0; i < values.size(); ++i) {
+        const auto& v = values[i];
         v.require(OwnJsonKind::Number);
+        if (i == 2 && ignoredZ) {
+            (void)v.number(ignoredLow, ignoredHigh);
+            continue;
+        }
         if (!equalOwnNumericTokens(firstToken, *v.document->valueBytes(v.id)))
             v.fail("unequal channel easing is unsupported");
     }
-    return values.front().number(0, 1);
+    return values.front().number(low, high);
 }
-MotionVec2Value ease(Value input) {
+MotionVec2Value ease(Value input, PropertySemantic semantic) {
     input.keys({"x", "y"});
-    return {channel(input.get("x")), channel(input.get("y"))};
+    const bool neutralScaleZ = semantic == PropertySemantic::TransformScale;
+    const bool width = semantic == PropertySemantic::StrokeWidth;
+    return {channel(input.get("x"), 0, 1, neutralScaleZ, 0, 1),
+            channel(input.get("y"), width ? -16 : 0, width ? 16 : 1,
+                    neutralScaleZ, -16, 16)};
 }
 } // namespace
 MotionValueRef PropertyCompiler::shape(Value input) {
@@ -213,7 +223,7 @@ PropertyId PropertyCompiler::add(SourceNodeId owner, PropertySemantic semantic, 
     for (std::size_t n = 0; n < keys.size(); ++n) {
         const auto& k = keys[n];
         k.keys({"t", "s", "h", "i", "o", "ti", "to"});
-        Key entry{k.get("t").number(0, 20000),
+        Key entry{k.get("t").number(-20000, 20000),
                   value(k.get("s"), type, low, high, z, strictLow, true), false};
         if (!parsed.empty() && entry.time <= parsed.back().time)
             k.get("t").fail("key times must strictly increase");
@@ -225,8 +235,8 @@ PropertyId PropertyCompiler::add(SourceNodeId owner, PropertySemantic semantic, 
                 if (k.get(field).exists())
                     k.get(field).fail("held/terminal key cannot carry interpolation controls");
         } else {
-            entry.in = ease(k.get("i"));
-            entry.out = ease(k.get("o"));
+            entry.in = ease(k.get("i"), semantic);
+            entry.out = ease(k.get("o"), semantic);
             entry.spatial = k.get("ti").exists() || k.get("to").exists();
             if (entry.spatial) {
                 if (semantic != PropertySemantic::TransformPosition)

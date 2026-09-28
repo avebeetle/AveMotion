@@ -17,7 +17,7 @@ struct OwnSceneLayer final {
     std::vector<model::SourceNodeId> enclosingClips;
 };
 struct OwnSceneDraw final {
-    model::SourceNodeId group, path, paint;
+    model::SourceNodeId group, paintScope, path, paint;
     std::optional<model::SourceNodeId> trim;
     model::NodeId node;
     model::PropertyId shape, position, size, roundness, trimStart, trimEnd, trimOffset;
@@ -42,5 +42,6 @@ bool materializeOwnScenePath(const model::MotionAssetModel &, const OwnSceneDraw
                              const runtime::AffineTransform &, runtime::EvaluatedPath &,
                              runtime::EvaluatedPath &);
 bool sampleOwnScenePaint(const model::MotionAssetModel &, const OwnSceneDraw &,
+                         const evaluation::PropertyEvaluationView &,
                          runtime::EvaluatedStroke &, runtime::EvaluatedPaint &);
 } // namespace avemotion::render::detail

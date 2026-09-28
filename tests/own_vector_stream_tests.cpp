@@ -230,9 +230,88 @@ void staticLocalDependencies(const std::string &fixture) {
                         "\"t\":10,\"s\":[50]}]}"),
           true);
 }
+std::string measuredShapeLayer(const std::string &items) {
+    return "{\"ty\":4,\"ind\":1,\"ip\":0,\"op\":180,\"ks\":{},\"shapes\":[" +
+           items + "]}";
+}
+std::string measuredGroup(const std::string &middle, const std::string &transform = "") {
+    return "{\"ty\":\"gr\",\"it\":[{\"ty\":\"sh\",\"ks\":{\"a\":0,\"k\":" +
+           vectorShape(2, false) + "}}," + middle + ",{\"ty\":\"tr\"" + transform + "}]}";
+}
+void measuredShapeScopeAndWidth() {
+    const std::string fill = R"({"ty":"fl","c":{"a":0,"k":[1,0,0,1]}})";
+    const std::string stroke = R"({"ty":"st","c":{"a":0,"k":[0,0,1,1]},"w":{"a":0,"k":2}})";
+    const std::string half = R"({"ty":"tm","m":1,"s":{"a":0,"k":0},"e":{"a":0,"k":50}})";
+    const auto emit = [](const std::string &json, unsigned frame = 0) {
+        auto compiled = vectorCompile(json);
+        vectorRequire(bool(compiled), "measured grammar compiles: " + compiled.path + " " + compiled.message);
+        auto prepared = render::detail::prepareOwnVectorAsset(compiled.prepared);
+        vectorRequire(bool(prepared), "measured grammar prepares: " + prepared.path + " " + prepared.message);
+        auto stream = render::detail::OwnNativeEllipseStream::create(prepared.prepared);
+        vectorRequire(bool(stream), "measured stream created");
+        auto scene = stream.stream->emit(frame, 128, 128);
+        vectorRequire(bool(scene), "measured grammar emits: " + scene.message);
+        return *scene.scene;
+    };
+    const std::string animatedStroke = R"({"ty":"st","c":{"a":0,"k":[0,0,1,1]},"w":{"a":1,"k":[{"t":0,"s":[0],"h":1},{"t":10,"s":[10],"h":1},{"t":20,"s":[0]}]}})";
+    const auto widthJson = vectorRoot(measuredShapeLayer(measuredGroup(animatedStroke)));
+    for (const auto &[frame, width] : {std::pair{0U, 0.F}, {10U, 10.F}, {20U, 0.F}}) {
+        const auto scene = emit(widthJson, frame);
+        vectorRequire(scene.drawItems.size() == 1 && scene.drawItems[0].stroke.enabled &&
+                          std::abs(scene.drawItems[0].stroke.width - width) < 0.001F,
+                      "animated width keeps enabled stroke including zero");
+    }
+    const auto nestedWidth = vectorReplace(
+        vectorPrecomp(measuredShapeLayer(measuredGroup(animatedStroke))),
+        "\"ip\":10,\"op\":170,\"ks\":{}",
+        "\"ip\":10,\"op\":170,\"st\":10,\"ks\":{}");
+    const auto nestedAt10 = emit(nestedWidth, 10).drawItems[0].stroke.width;
+    const auto nestedAt20 = emit(nestedWidth, 20).drawItems[0].stroke.width;
+    vectorRequire(nestedAt10 == 0.F && std::abs(nestedAt20 - 10.F) < 0.001F,
+                  "nested animated width samples containing local clock during preparation and stream: " +
+                      std::to_string(nestedAt10) + "/" + std::to_string(nestedAt20));
+    const auto negativeEaseStroke = vectorReplace(animatedStroke,
+        R"({"t":0,"s":[0],"h":1})",
+        R"({"t":0,"s":[0],"i":{"x":0.75,"y":-2},"o":{"x":0.25,"y":-2}})");
+    const auto negativeJson = vectorRoot(measuredShapeLayer(measuredGroup(negativeEaseStroke)));
+    const auto negativeModel = vectorCompile(negativeJson);
+    vectorRequire(bool(negativeModel), "bounded negative ease admitted");
+    const auto negativePrepared = render::detail::prepareOwnVectorAsset(negativeModel.prepared);
+    vectorRequire(bool(negativePrepared), "negative ease initial width0 prepares");
+    auto negativeStream = render::detail::OwnNativeEllipseStream::create(negativePrepared.prepared);
+    const auto negativeFrame = negativeStream.stream->emit(5, 128, 128);
+    vectorRequire(!negativeFrame && !negativeFrame.scene && !negativeFrame.message.empty(),
+                  "negative evaluated width rejects without publishing a scene");
+    for (const auto &middle : {half + "," + stroke, stroke + "," + half}) {
+        const auto scene = emit(vectorRoot(measuredShapeLayer(measuredGroup(
+            middle, R"(,"p":{"a":0,"k":[20,20]},"s":{"a":0,"k":[75.153,75.153]})"))));
+        vectorRequire(scene.drawItems.size() == 1 && scene.drawItems[0].stroke.enabled,
+                      "inline trim retains painted stroke");
+        const auto &draw = scene.drawItems[0];
+        vectorRequire(std::abs(draw.localPath.points.back().x - 5.F) < 0.01F &&
+                          std::abs(draw.path.points.back().x - 23.75765F) < 0.02F,
+                      "inline trim measures raw path before group scale");
+    }
+    const auto shared = emit(vectorRoot(measuredShapeLayer(
+        measuredGroup(stroke, R"(,"p":{"a":0,"k":[20,20]})") + "," +
+        measuredGroup(stroke, R"(,"p":{"a":0,"k":[40,20]})") + "," + half)));
+    vectorRequire(shared.drawItems.size() == 2 &&
+                      std::abs(shared.drawItems[0].path.points.back().x - 45.F) < 0.02F &&
+                      std::abs(shared.drawItems[1].path.points.back().x - 25.F) < 0.02F,
+                  "trailing simultaneous trim independently reaches both sibling paths");
+    const auto outer = emit(vectorRoot(measuredShapeLayer(measuredGroup(
+        fill, R"(,"p":{"a":0,"k":[20,20]},"s":{"a":0,"k":[75.153,75.153]})") +
+        "," + stroke)));
+    vectorRequire(outer.drawItems.size() == 2 && outer.drawItems[0].stroke.enabled &&
+                      !outer.drawItems[1].stroke.enabled &&
+                      std::abs(outer.drawItems[0].stroke.width - 2.F) < 0.001F &&
+                      std::abs(outer.drawItems[0].path.points.back().x - 27.5153F) < 0.02F,
+                  "outer stroke paints first in layer width over scaled group path");
+}
 int main(int argc, char **argv) {
     try {
         const auto json = vectorInput(argc, argv);
+        const bool second = argc == 3 && std::filesystem::path(argv[2]).filename() == "a-2.tgs";
         lifecycle(json);
         auto compiled = vectorCompile(json);
         vectorRequire(bool(compiled), "vector compile: " + compiled.path + compiled.message);
@@ -240,13 +319,32 @@ int main(int argc, char **argv) {
         vectorRequire(bool(prepared), "vector preparation: " + prepared.path + prepared.message);
         auto stream = render::detail::OwnNativeEllipseStream::create(prepared.prepared);
         vectorRequire(bool(stream), "stream creation: " + stream.message);
-        if (argc != 1)
+        if (argc != 1 && !second)
             realRectangularProbes(*stream.stream);
         auto scene = stream.stream->emit(0, 128, 128);
         vectorRequire(bool(scene), "vector emission: " + scene.message);
-        vectorRequire(scene.scene->drawItems.size() == (argc == 1 ? 2U : 36U),
+        vectorRequire(second ? !scene.scene->drawItems.empty() :
+                      scene.scene->drawItems.size() == (argc == 1 ? 2U : 36U),
                       "all painted vector draws emitted");
+        if (second) {
+            for (unsigned target : {128U, 129U, 256U, 512U}) {
+                for (unsigned f = 0; f < 180; ++f) {
+                    const auto emitted = stream.stream->emit(f, target, target);
+                    vectorRequire(bool(emitted), "a-2 forward frame=" + std::to_string(f) +
+                                                   " target=" + std::to_string(target) +
+                                                   " " + emitted.message);
+                }
+                for (unsigned f = 180; f-- > 0;) {
+                    const auto emitted = stream.stream->emit(f, target, target);
+                    vectorRequire(bool(emitted), "a-2 reverse frame=" + std::to_string(f) +
+                                                   " target=" + std::to_string(target) +
+                                                   " " + emitted.message);
+                }
+            }
+            std::cout << "a-2 forward/reverse all 180 frames emitted at 128/129/256/512 square\n";
+        }
         if (argc == 1) {
+            measuredShapeScopeAndWidth();
             const auto &fill = scene.scene->drawItems[0];
             const auto &stroke = scene.scene->drawItems[1];
             const auto &strokeGeometry =

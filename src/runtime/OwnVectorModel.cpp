@@ -138,9 +138,21 @@ private:
              !group && !precomp);
         vec2(owner, object, "a", PropertySemantic::TransformAnchor, {}, group ? 0 : -32768,
              group ? 0 : 32768, false);
+        if (group && object.get("s").exists()) {
+            const auto scale = object.get("s");
+            scale.keys({"a", "k", "ix"});
+            if (scale.get("a").exists())
+                (void)scale.get("a").number(0, 0, true);
+            const auto xy = scale.get("k").array(2, 3);
+            (void)xy[0].number(0, 1000, false, true);
+            (void)xy[1].number(0, 1000, false, true);
+            if (!equalOwnNumericTokens(*xy[0].document->valueBytes(xy[0].id),
+                                       *xy[1].document->valueBytes(xy[1].id)))
+                scale.fail("group scale must be uniform");
+        }
         vec2(owner, object, "s", PropertySemantic::TransformScale, {100, 100},
-             group || precomp ? 100 : -1000, group || precomp ? 100 : 1000, !group && !precomp,
-             100);
+             group ? 0 : precomp ? 100 : -1000,
+             group ? 1000 : precomp ? 100 : 1000, !group && !precomp, 100);
         scalar(owner, object, "r", PropertySemantic::TransformRotation, 0,
                group || precomp ? 0 : -32768, group || precomp ? 0 : 32768, !group && !precomp);
         scalar(owner, object, "o", PropertySemantic::TransformOpacity, 100,
@@ -158,13 +170,13 @@ private:
                 }
         }
     }
-    SourceNodeId paint(Value input, SourceNodeId group, bool stroke) {
+    SourceNodeId paint(Value input, SourceNodeId scope, bool stroke) {
         if (stroke)
             input.keys({"ty", "nm", "c", "o", "w", "lc", "lj", "ml", "bm", "hd"});
         else
             input.keys({"ty", "nm", "c", "o", "r", "bm", "hd"});
         input.metadata();
-        const auto id = node(stroke ? SourceNodeKind::Stroke : SourceNodeKind::Fill, group, input);
+        const auto id = node(stroke ? SourceNodeKind::Stroke : SourceNodeKind::Fill, scope, input);
         properties_.add(id, stroke ? PropertySemantic::StrokeColor : PropertySemantic::FillColor,
                         input.get("c"), PropertyValueType::Color, 0, 1, false);
         scalar(id, input, "o",
@@ -172,7 +184,7 @@ private:
                100, false);
         if (stroke) {
             properties_.add(id, PropertySemantic::StrokeWidth, input.get("w"),
-                            PropertyValueType::Scalar, 0, 1024, false, 0, true);
+                            PropertyValueType::Scalar, 0, 1024, true);
             auto& n = model->sourceNodes[id.index()];
             const int cap =
                 input.get("lc").exists() ? static_cast<int>(input.get("lc").number(1, 3, true)) : 1;
@@ -193,60 +205,90 @@ private:
         return id;
     }
     void shapes(Value input, SourceNodeId layer) {
-        const auto items = input.array(1, 2);
-        const auto groupValue = items[0];
-        groupValue.keys({"ty", "nm", "it", "bm", "hd"});
-        groupValue.metadata();
-        if (groupValue.get("ty").string() != "gr")
-            groupValue.fail("one top-level shape group required");
-        const auto group = node(SourceNodeKind::ShapeGroup, layer, groupValue);
-        const auto contents = groupValue.get("it").array(2, 4);
-        if (contents.front().get("ty").string() != "sh" ||
-            contents.back().get("ty").string() != "tr")
-            groupValue.get("it").fail("expected path, optional stroke/fill, then transform");
-        const auto pathValue = contents.front();
-        pathValue.keys({"ty", "nm", "ind", "ks", "hd"});
-        pathValue.metadata();
-        if (pathValue.get("ind").exists())
-            (void)pathValue.get("ind").number(0, 32768, true);
-        if (pathCount_ >= 128)
-            pathValue.fail("path count limit exceeded");
-        ++pathCount_;
-        const auto path = node(SourceNodeKind::Shape, group, pathValue);
-        properties_.add(path, PropertySemantic::ShapePath, pathValue.get("ks"),
-                        PropertyValueType::Shape, -32768, 32768);
-        std::vector<SourceNodeId> paints;
-        bool sawStroke = false, sawFill = false;
-        for (std::size_t n = 1; n + 1 < contents.size(); ++n) {
-            const auto type = contents[n].get("ty").string();
-            if (type == "st" && !sawStroke && !sawFill) {
-                paints.push_back(paint(contents[n], group, true));
-                sawStroke = true;
-            } else if (type == "fl" && !sawFill) {
-                paints.push_back(paint(contents[n], group, false));
-                sawFill = true;
-            } else
-                contents[n].fail("expected optional stroke then optional fill");
-        }
-        transform(group, contents.back(), true);
-        std::optional<SourceNodeId> trim;
-        if (items.size() == 2) {
-            const auto t = items[1];
+        const auto items = input.array(1, 3);
+        struct ScopedPath {
+            SourceNodeId group, path;
+            std::optional<SourceNodeId> trim;
+        };
+        std::vector<ScopedPath> paths;
+        std::vector<OwnVectorDrawBinding> authored;
+        const auto addTrim = [&](Value t, SourceNodeId scope) {
             t.keys({"ty", "nm", "s", "e", "o", "m", "hd"});
             t.metadata();
-            if (t.get("ty").string() != "tm")
-                t.fail("only trailing trim supported");
             (void)t.get("m").number(1, 1, true);
-            trim = node(SourceNodeKind::Trim, layer, t);
-            model->sourceNodes[trim->index()].trimMode = SourceTrimMode::Simultaneous;
-            scalar(*trim, t, "s", PropertySemantic::TrimStart, 0, 0, 100);
-            scalar(*trim, t, "e", PropertySemantic::TrimEnd, 100, 0, 100);
-            scalar(*trim, t, "o", PropertySemantic::TrimOffset, 0, 0, 0, false);
+            const auto id = node(SourceNodeKind::Trim, scope, t);
+            model->sourceNodes[id.index()].trimMode = SourceTrimMode::Simultaneous;
+            scalar(id, t, "s", PropertySemantic::TrimStart, 0, 0, 100);
+            scalar(id, t, "e", PropertySemantic::TrimEnd, 100, 0, 100);
+            scalar(id, t, "o", PropertySemantic::TrimOffset, 0, 0, 0, false);
+            return id;
+        };
+        for (const auto& item : items) {
+            const auto type = item.get("ty").string();
+            if (type == "gr") {
+                if (paths.size() >= 2)
+                    item.fail("at most two one-path groups admitted");
+                item.keys({"ty", "nm", "it", "bm", "hd"});
+                item.metadata();
+                const auto group = node(SourceNodeKind::ShapeGroup, layer, item);
+                const auto contents = item.get("it").array(2, 5);
+                if (contents.front().get("ty").string() != "sh" ||
+                    contents.back().get("ty").string() != "tr")
+                    item.get("it").fail("expected one path then paints/trim then transform");
+                const auto pathValue = contents.front();
+                pathValue.keys({"ty", "nm", "ind", "ks", "hd"});
+                pathValue.metadata();
+                if (pathValue.get("ind").exists())
+                    (void)pathValue.get("ind").number(0, 32768, true);
+                if (pathCount_ >= 128)
+                    pathValue.fail("path count limit exceeded");
+                ++pathCount_;
+                const auto path = node(SourceNodeKind::Shape, group, pathValue);
+                properties_.add(path, PropertySemantic::ShapePath, pathValue.get("ks"),
+                                PropertyValueType::Shape, -32768, 32768);
+                paths.push_back({group, path, {}});
+                bool sawStroke = false, sawFill = false;
+                for (std::size_t n = 1; n + 1 < contents.size(); ++n) {
+                    const auto innerType = contents[n].get("ty").string();
+                    if (innerType == "tm" && !paths.back().trim)
+                        paths.back().trim = addTrim(contents[n], group);
+                    else if (innerType == "st" && !sawStroke && !sawFill) {
+                        authored.push_back({layer, group, group, path,
+                                            paint(contents[n], group, true), {}});
+                        sawStroke = true;
+                    } else if (innerType == "fl" && !sawFill) {
+                        authored.push_back({layer, group, group, path,
+                                            paint(contents[n], group, false), {}});
+                        sawFill = true;
+                    } else
+                        contents[n].fail("unsupported group paint/trim scope");
+                }
+                transform(group, contents.back(), true);
+            } else if (type == "tm") {
+                if (paths.empty())
+                    item.fail("trim requires preceding paths");
+                const auto trim = addTrim(item, layer);
+                for (auto& path : paths) {
+                    if (path.trim)
+                        item.fail("multiple effective trims on one path unsupported");
+                    path.trim = trim;
+                }
+            } else if (type == "st") {
+                if (paths.size() != 1)
+                    item.fail("outer paint requires exactly one preceding path");
+                authored.push_back({layer, paths[0].group, layer, paths[0].path,
+                                    paint(item, layer, true), {}});
+            } else
+                item.fail("unsupported top-level shape item");
         }
-        if (paints.size() > 256 - draws.size())
+        if (authored.size() > 256 - draws.size())
             input.fail("painted draw limit exceeded");
-        for (auto it = paints.rbegin(); it != paints.rend(); ++it)
-            draws.push_back({layer, group, path, *it, trim});
+        for (auto it = authored.rbegin(); it != authored.rend(); ++it) {
+            for (const auto& path : paths)
+                if (path.path == it->path)
+                    it->trim = path.trim;
+            draws.push_back(*it);
+        }
     }
     void composition(Value input, SourceNodeId structural, double first, double end,
                      std::int32_t offset) {
@@ -443,18 +485,20 @@ bool validateOwnVectorModel(const OwnVectorModel& owner) {
     for (const auto& b : owner.draws) {
         const auto* l = m.sourceNode(b.layer);
         const auto* g = m.sourceNode(b.group);
+        const auto* s = m.sourceNode(b.paintScope);
         const auto* p = m.sourceNode(b.path);
         const auto* paint = m.sourceNode(b.paint);
-        if (!l || !g || !p || !paint || l->kind != model::SourceNodeKind::Layer ||
+        if (!l || !g || !s || !p || !paint || l->kind != model::SourceNodeKind::Layer ||
             g->kind != model::SourceNodeKind::ShapeGroup || g->parent != l->id ||
             p->kind != model::SourceNodeKind::Shape || p->parent != g->id ||
-            paint->parent != g->id ||
+            (s->id != g->id && s->id != l->id) || paint->parent != s->id ||
             (paint->kind != model::SourceNodeKind::Fill &&
              paint->kind != model::SourceNodeKind::Stroke))
             return false;
         if (b.trim) {
             const auto* t = m.sourceNode(*b.trim);
-            if (!t || t->kind != model::SourceNodeKind::Trim || t->parent != l->id ||
+            if (!t || t->kind != model::SourceNodeKind::Trim ||
+                (t->parent != l->id && t->parent != g->id) ||
                 t->trimMode != model::SourceTrimMode::Simultaneous)
                 return false;
         }

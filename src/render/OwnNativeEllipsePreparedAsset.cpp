@@ -168,7 +168,7 @@ prepareOwnVectorAsset(std::shared_ptr<const runtime::detail::OwnVectorModel> aut
                 "invalid own vector model"};
     auto asset = std::make_shared<model::MotionAssetModel>(*authored->model);
     auto program = lowerOwnVectorProgram(*authored, *asset);
-    evaluation::PropertyEvaluator evaluator(asset);
+    evaluation::PropertyEvaluator evaluator(asset, authored->propertyFrameOffsets);
     evaluation::PropertyEvaluationWorkspace workspace;
     evaluator.prepare(workspace);
     const auto view = evaluator.evaluate(0, workspace);
@@ -198,7 +198,7 @@ prepareOwnVectorAsset(std::shared_ptr<const runtime::detail::OwnVectorModel> aut
         asset->geometries.push_back(std::move(geometry));
         runtime::EvaluatedStroke stroke;
         runtime::EvaluatedPaint paint;
-        if (!sampleOwnScenePaint(*asset, draw, stroke, paint))
+        if (!sampleOwnScenePaint(*asset, draw, view, stroke, paint))
             return {OwnNativeEllipsePrepareCode::ResourceConstructionFailed, nullptr, "/",
                     "vector paint unavailable"};
         const bool isStroke = stroke.enabled;
