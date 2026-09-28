@@ -216,6 +216,12 @@ OwnNativeEllipseFrameResult OwnNativeEllipseStream::emit(std::size_t frame, std:
             ++scene.statistics.visibleLayerCount;
         if (!active)
             continue;
+        // Time-visible shape layers retain their identity, but the ordinary
+        // renderer publishes no draws when the layer's combined alpha is zero.
+        // The evaluator separates structural opacity from transform parenting.
+        if (layer.source.index() < view.nodeTransforms.size() &&
+            std::abs(view.nodeTransforms[layer.source.index()].worldOpacity) <= 0.000001F)
+            continue;
         for (std::uint32_t offset = 0; offset < layer.draws.count; ++offset) {
             const auto &binding = prepared_->program->draws[layer.draws.first + offset];
             if (binding.group.index() >= view.nodeTransforms.size()) {
@@ -276,10 +282,14 @@ OwnNativeEllipseFrameResult OwnNativeEllipseStream::emit(std::size_t frame, std:
                 // Match the existing final-space stroke route. Nonuniform matrices
                 // use Telegram's diagonal scale, not a transformed local pen.
                 constexpr float sqrt2 = 1.41421F;
-                const float dx =
-                    sqrt2 * paintTransform->m11 + sqrt2 * paintTransform->m21;
-                const float dy =
-                    sqrt2 * paintTransform->m12 + sqrt2 * paintTransform->m22;
+                // Preserve mapped-point subtraction, including float translation
+                // cancellation: its subpixel pen width affects raster coverage.
+                const float mappedX = sqrt2 * paintTransform->m11 +
+                                      sqrt2 * paintTransform->m21 + paintTransform->dx;
+                const float mappedY = sqrt2 * paintTransform->m12 +
+                                      sqrt2 * paintTransform->m22 + paintTransform->dy;
+                const float dx = mappedX - paintTransform->dx;
+                const float dy = mappedY - paintTransform->dy;
                 item.stroke.width *= std::sqrt(dx * dx + dy * dy) / 2.0F;
                 if (!std::isfinite(item.stroke.width)) {
                     return {OwnNativeEllipseFrameCode::UnsupportedNumericOutput,

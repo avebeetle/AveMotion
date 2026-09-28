@@ -2,99 +2,93 @@
 #include "OwnVectorSceneOracle.hpp"
 namespace avemotion::test::vector_scene {
 using namespace model;
-std::string role(const MotionAssetModel &m, SourceNodeId id) {
-    const auto &n = m.sourceNodes.at(id.index());
-    if (n.kind == SourceNodeKind::Composition)
-        return "composition";
-    if (n.kind == SourceNodeKind::Layer) {
-        std::string scope = "root";
-        if (const auto *parent = m.sourceNode(n.parent);
-            parent && parent->layerKind == SourceLayerKind::Precomposition)
-            scope = "precomp:" + std::to_string(parent->authoredLayerId);
-        else if (n.composition.valid() && n.composition.index() != 0)
-            for (const auto &candidate : m.sourceNodes)
-                if (candidate.layerKind == SourceLayerKind::Precomposition &&
-                    candidate.referencedComposition == n.composition)
-                    scope = "precomp:" + std::to_string(candidate.authoredLayerId);
-        return scope + "/layer:" + std::to_string(n.authoredLayerId);
+class OwnRoles {
+  public:
+    explicit OwnRoles(const render::detail::OwnNativeEllipsePreparedAsset &prepared)
+        : prepared_(prepared), authored_(*prepared.vectorAuthored) {
+        const auto read = formats::detail::readOwnJson(authored_.exactJson, {65536, 32});
+        vectorRequire(bool(read), "own provenance JSON");
+        document_ = read.document;
+        std::function<void(formats::detail::OwnJsonNodeId, std::string)> walk =
+            [&](auto id, std::string pointer) {
+                pointers_[pointer] = id;
+                const auto *node = document_->node(id);
+                unsigned index = 0;
+                for (auto child = node->firstChild; child != formats::detail::OwnJsonNoNode;
+                     child = document_->node(child)->nextSibling, ++index)
+                    walk(child, pointer + "/" +
+                                    (node->kind == formats::detail::OwnJsonKind::Array
+                                         ? std::to_string(index)
+                                         : std::string(*document_->memberName(child))));
+            };
+        walk(0, "");
     }
-    return role(m, n.parent) + "/" + std::to_string(static_cast<int>(n.kind));
-}
-using Roles = std::map<std::string, SourceNodeId>;
-Roles roles(const MotionAssetModel &m) {
-    Roles result;
-    for (const auto &n : m.sourceNodes)
-        if (n.kind != SourceNodeKind::Composition)
-            vectorRequire(result.emplace(role(m, n.id), n.id).second, "unique semantic role");
-    return result;
-}
-double maximum = 0;
-std::set<std::string> permittedInactiveMiter;
-std::set<std::string> observedInactiveMiter;
-// This test-only source walk independently checks whether the author omitted
-// ml; the comparator never infers omission from either compiled model's value.
-void inspectMiterSource(const std::string &json) {
-    using namespace formats::detail;
-    const auto read = readOwnJson(json, {65536, 32});
-    vectorRequire(bool(read), "miter source read");
-    const auto &d = *read.document;
-    const auto member = [&](OwnJsonNodeId id, const char *key) {
-        for (auto c = d.node(id)->firstChild; c != OwnJsonNoNode; c = d.node(c)->nextSibling)
-            if (d.memberName(c) == key)
-                return c;
-        return OwnJsonNoNode;
-    };
-    struct Pending {
-        OwnJsonNodeId id;
-        std::string layer;
-        std::string scope = "root";
-    };
-    std::map<std::string, std::string> assetScopes;
-    const auto rootLayers = member(0, "layers");
-    for (auto l = d.node(rootLayers)->firstChild; l != OwnJsonNoNode; l = d.node(l)->nextSibling) {
-        const auto ref = member(l, "refId");
-        if (ref != OwnJsonNoNode)
-            assetScopes[std::string(*d.valueBytes(ref))] =
-                "precomp:" + std::to_string(static_cast<int>(
-                                 std::stof(std::string(*d.valueBytes(member(l, "ind"))))));
+    std::string value(const std::string &pointer) const {
+        return std::string(*document_->valueBytes(pointers_.at(pointer)));
     }
-    std::vector<Pending> pending{{0, {}}};
-    while (!pending.empty()) {
-        auto current = pending.back();
-        pending.pop_back();
-        const auto *node = d.node(current.id);
-        if (node->kind == OwnJsonKind::Object) {
-            const auto assetId = member(current.id, "id");
-            if (assetId != OwnJsonNoNode) {
-                const auto scope = assetScopes.find(std::string(*d.valueBytes(assetId)));
-                if (scope != assetScopes.end())
-                    current.scope = scope->second;
-            }
-            const auto type = member(current.id, "ty");
-            if (type != OwnJsonNoNode && d.node(type)->kind == OwnJsonKind::Number) {
-                const auto ind = member(current.id, "ind");
-                if (ind != OwnJsonNoNode)
-                    current.layer = current.scope + "/layer:" +
-                                    std::to_string(static_cast<int>(
-                                        std::stof(std::string(*d.valueBytes(ind)))));
-            }
-            if (type != OwnJsonNoNode && d.valueBytes(type) == "st" &&
-                member(current.id, "ml") == OwnJsonNoNode) {
-                const auto join = member(current.id, "lj");
-                if (join != OwnJsonNoNode &&
-                    (d.valueBytes(join) == "2" || d.valueBytes(join) == "3"))
-                    permittedInactiveMiter.insert(
-                        current.layer + "/" +
-                        std::to_string(static_cast<int>(SourceNodeKind::ShapeGroup)) + "/" +
-                        std::to_string(static_cast<int>(SourceNodeKind::Stroke)));
-            }
+    std::string instance(SourceNodeId id) const {
+        const auto &node = authored_.model->sourceNodes.at(id.index());
+        if (node.kind == SourceNodeKind::Composition)
+            return "root";
+        const auto &source = authored_.sources.at(id.index());
+        const auto &parent = authored_.model->sourceNodes.at(source.containingInstance.index());
+        auto prefix = instance(source.containingInstance);
+        if (parent.kind == SourceNodeKind::Layer)
+            prefix += "->" + value(authored_.sources.at(parent.id.index()).jsonPointer + "/refId");
+        return prefix + "/layer:" + std::to_string(node.authoredLayerId) + "[" +
+               source.jsonPointer.substr(source.jsonPointer.rfind('/') + 1) + "]";
+    }
+    SourceNodeId layer(SourceNodeId id) const {
+        while (authored_.model->sourceNodes.at(id.index()).kind != SourceNodeKind::Layer)
+            id = authored_.model->sourceNodes.at(id.index()).parent;
+        return id;
+    }
+    std::string definition(SourceNodeId id) const {
+        const auto owner = layer(id);
+        const auto &base = authored_.sources.at(owner.index()).jsonPointer;
+        std::string composition = "root";
+        if (base.starts_with("/assets/"))
+            composition = value(base.substr(0, base.find("/layers/")) + "/id");
+        return composition + "/layer:" +
+               std::to_string(authored_.model->sourceNodes.at(owner.index()).authoredLayerId) +
+               authored_.sources.at(id.index()).jsonPointer.substr(base.size());
+    }
+    std::string draw(const runtime::EvaluatedScene &scene,
+                     const runtime::EvaluatedDrawItem &draw) const {
+        const auto owner = layer(draw.sourcePathNode);
+        vectorRequire(owner == layer(draw.sourcePaintNode), "own path and paint share instance");
+        const auto found =
+            std::find_if(prepared_.program->layers.begin(), prepared_.program->layers.end(),
+                         [&](const auto &binding) { return binding.source == owner; });
+        vectorRequire(found != prepared_.program->layers.end() &&
+                          found->layer == scene.layers.at(draw.layerIndex).modelLayer,
+                      "own draw layer agrees with provenance");
+        for (auto id = owner;
+             authored_.model->sourceNodes.at(id.index()).kind != SourceNodeKind::Composition;) {
+            const auto &source = authored_.sources.at(id.index());
+            vectorRequire(authored_.model->sourceNodes.at(id.index()).parent ==
+                              source.containingInstance,
+                          "own structural source edge");
+            id = source.containingInstance;
         }
-        for (auto child = node->firstChild; child != OwnJsonNoNode;
-             child = d.node(child)->nextSibling)
-            pending.push_back({child, current.layer, current.scope});
+        return instance(owner) + "|" + definition(draw.sourcePathNode) + "|" +
+               definition(draw.sourcePaintNode);
     }
-}
+    bool omittedMiter(SourceNodeId id) const {
+        const auto &p = authored_.sources.at(id.index()).jsonPointer;
+        return !pointers_.contains(p + "/ml") && pointers_.contains(p + "/lj") &&
+               value(p + "/lj") != "1";
+    }
+    int clock(SourceNodeId id) const { return authored_.sources.at(id.index()).frameOffset; }
 
+  private:
+    const render::detail::OwnNativeEllipsePreparedAsset &prepared_;
+    const runtime::detail::OwnVectorModel &authored_;
+    std::shared_ptr<const formats::detail::OwnJsonDocument> document_;
+    std::map<std::string, formats::detail::OwnJsonNodeId> pointers_;
+};
+inline std::set<std::string> permittedInactiveMiter;
+inline std::set<std::string> observedInactiveMiter;
 inline std::map<std::string, double> maxima;
 inline bool collectNumericFailures = false;
 inline std::size_t numericFailures = 0;
@@ -218,22 +212,38 @@ inline void recordRawLocal(const runtime::EvaluatedPath &a, const runtime::Evalu
         record(a.controlBounds.bottom, b.controlBounds.bottom, "localBounds");
     }
 }
-inline void compare(const runtime::EvaluatedScene &ref, const model::MotionAssetModel &rm,
-                    const runtime::EvaluatedScene &own, const model::MotionAssetModel &om,
-                    const std::map<std::uint32_t, VMatrix> &matrices) {
+inline void compare(const runtime::EvaluatedScene &ref, const OwnVectorSceneOracle &oracle,
+                    const runtime::EvaluatedScene &own, const OwnRoles &ownRoles) {
+    oracle.validateInstances(ref);
+    oracle.assertRedundantClips(ref);
+    if (ref.drawItems.size() != own.drawItems.size()) {
+        std::set<std::string> expected;
+        for (const auto &draw : ref.drawItems)
+            expected.insert(oracle.drawRole(ref, draw));
+        for (const auto &draw : own.drawItems) {
+            const auto key = ownRoles.draw(own, draw);
+            if (!expected.contains(key))
+                std::cerr << "unexpected own draw frame=" << own.frameIndex << ' ' << key
+                          << " alpha=" << draw.separatedOpacity << '\n';
+        }
+    }
     vectorRequire(ref.drawItems.size() == own.drawItems.size(),
-                  "visible draw count ref=" + std::to_string(ref.drawItems.size()) +
+                  "frame=" + std::to_string(own.frameIndex) +
+                      " visible draw count ref=" + std::to_string(ref.drawItems.size()) +
                       " own=" + std::to_string(own.drawItems.size()));
     std::set<std::string> seen;
     for (std::size_t i = 0; i < ref.drawItems.size(); ++i) {
         const auto &a = ref.drawItems[i];
         const auto &b = own.drawItems[i];
-        const auto key = role(rm, a.sourcePaintNode);
+        const auto key = oracle.drawRole(ref, a);
         const auto context =
             "frame=" + std::to_string(own.frameIndex) + " draw=" + std::to_string(i) + " " + key;
-        vectorRequire(key == role(om, b.sourcePaintNode) &&
-                          role(rm, a.sourcePathNode) == role(om, b.sourcePathNode),
-                      context + " ordered source roles");
+        vectorRequire(key == ownRoles.draw(own, b), context + " ordered source roles");
+        const auto expectedOffset =
+            oracle.instances().at(ref.layers.at(a.layerIndex).modelLayer.value).offset;
+        vectorRequire(ownRoles.clock(b.sourcePathNode) == expectedOffset &&
+                          ownRoles.clock(b.sourcePaintNode) == expectedOffset,
+                      context + " independently derived containing-composition clock");
         vectorRequire(seen.insert(key).second, context + " unique visible role");
         vectorRequire(a.fillRule == b.fillRule, context + " fill rule");
         vectorRequire(a.drawOrder == b.drawOrder, context + " visible draw ordinal");
@@ -245,29 +255,35 @@ inline void compare(const runtime::EvaluatedScene &ref, const model::MotionAsset
                           a.opacitySeparated == b.opacitySeparated,
                       context + " available local/opacity seams");
         path(a.path, b.path, "finalPath", context);
-        const auto *sourcePath = rm.sourceNode(a.sourcePathNode);
-        const auto *sourcePaint = rm.sourceNode(a.sourcePaintNode);
-        vectorRequire(sourcePath && sourcePaint && sourcePath->parent == sourcePaint->parent &&
-                          a.sourcePathCount == 1,
-                      context + " same-group single-path applicability");
-        const auto &m = matrices.at(a.sourcePaintNode.value);
+        vectorRequire(a.sourcePathCount == 1, context + " single-path applicability");
+        const auto &m = oracle.matrices().at(a.modelNode.value);
+        const auto group = oracle.sourceWorld(ref, a, a.sourcePathNode);
+        const auto paintMatrix = oracle.sourceWorld(ref, a, a.sourcePaintNode);
+        near(paintMatrix.m_11(), m.m_11(), "referencePaintMatrix", context);
+        near(paintMatrix.m_12(), m.m_12(), "referencePaintMatrix", context);
+        near(paintMatrix.m_21(), m.m_21(), "referencePaintMatrix", context);
+        near(paintMatrix.m_22(), m.m_22(), "referencePaintMatrix", context);
+        near(paintMatrix.m_tx(), m.m_tx(), "referencePaintMatrix", context);
+        near(paintMatrix.m_ty(), m.m_ty(), "referencePaintMatrix", context);
         vectorRequire(m.isAffine() && m.m_13() == 0 && m.m_23() == 0 && m.m_33() == 1,
                       context + " affine pinned matrix");
         bool invertible = false;
         const auto inverse = m.inverted(&invertible);
         vectorRequire(invertible, context + " invertible pinned matrix");
         recordRawLocal(a.localPath, b.localPath, context);
-        compareLocal(a.localPath, b.localPath, m * inverse, context);
+        compareLocal(a.localPath, b.localPath, group * inverse, context);
         if (collectNumericFailures)
             path(a.localPath, b.localPath, "rawLocalDiagnostic", context);
-        near(a.localToViewport.m11, b.localToViewport.m11, "matrix", context);
-        near(a.localToViewport.m12, b.localToViewport.m12, "matrix", context);
-        near(a.localToViewport.m21, b.localToViewport.m21, "matrix", context);
-        near(a.localToViewport.m22, b.localToViewport.m22, "matrix", context);
-        near(a.localToViewport.dx, b.localToViewport.dx, "matrix", context);
-        near(a.localToViewport.dy, b.localToViewport.dy, "matrix", context);
+        near(group.m_11(), b.localToViewport.m11, "matrix", context);
+        near(group.m_12(), b.localToViewport.m12, "matrix", context);
+        near(group.m_21(), b.localToViewport.m21, "matrix", context);
+        near(group.m_22(), b.localToViewport.m22, "matrix", context);
+        near(group.m_tx(), b.localToViewport.dx, "matrix", context);
+        near(group.m_ty(), b.localToViewport.dy, "matrix", context);
         near(a.separatedOpacity, b.separatedOpacity, "separatedOpacity", context);
         paint(a.paint, b.paint, context + " final");
+        if (ownRoles.omittedMiter(b.sourcePaintNode))
+            permittedInactiveMiter.insert(key);
         stroke(a.stroke, b.stroke, key, context, true);
         if (a.localPaintAvailable)
             paint(a.localPaint, b.localPaint, context + " local");

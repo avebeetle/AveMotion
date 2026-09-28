@@ -155,16 +155,18 @@ void clippingWitnesses(const fs::path &root) {
                     "independent CPU proves letterbox clipping is observable");
         else
             require(cpuLetterbox == 0 && warpLetterbox == 0,
-                    "zero-handle sharp fixtures characterize conservative rejection, not spill");
+                    "zero-handle sharp fixtures characterize conservative rejection, "
+                    "not spill");
     }
 }
 void widthZeroWitness() {
     const auto path = std::string("{\"a\":0,\"k\":") + vectorShape(2, false) + "}";
-    const std::string stroke = R"({"ty":"st","c":{"a":0,"k":[1,0,0,1]},"w":{"a":1,"k":[{"t":0,"s":[0],"h":1},{"t":10,"s":[8],"h":1},{"t":20,"s":[0]}]}})";
-    const auto json = vectorReplace(
-        vectorRoot(vectorReplace(vectorShapeLayer(path), "{\"ty\":\"tr\"}",
-                                 stroke + R"(,{"ty":"tr","p":{"a":0,"k":[40,64]}})")),
-        "{\"fr\":", "{\"v\":\"5.5.2\",\"fr\":");
+    const std::string stroke =
+        R"({"ty":"st","c":{"a":0,"k":[1,0,0,1]},"w":{"a":1,"k":[{"t":0,"s":[0],"h":1},{"t":10,"s":[8],"h":1},{"t":20,"s":[0]}]}})";
+    const auto json =
+        vectorReplace(vectorRoot(vectorReplace(vectorShapeLayer(path), "{\"ty\":\"tr\"}",
+                                               stroke + R"(,{"ty":"tr","p":{"a":0,"k":[40,64]}})")),
+                      "{\"fr\":", "{\"v\":\"5.5.2\",\"fr\":");
     const auto compiled = vectorCompile(json);
     require(bool(compiled), "width0 fixture compiles: " + compiled.path + compiled.message);
     const auto prepared = render::detail::prepareOwnVectorAsset(compiled.prepared);
@@ -178,8 +180,7 @@ void widthZeroWitness() {
     surface.configure(profile);
     backends::direct2d::Backend backend;
     render::MotionRenderPlanner planner;
-    for (const auto &[frame, expectedWidth] :
-         {std::pair{0U, 0.F}, {10U, 8.F}, {20U, 0.F}}) {
+    for (const auto &[frame, expectedWidth] : {std::pair{0U, 0.F}, {10U, 8.F}, {20U, 0.F}}) {
         auto emitted = stream.stream->emit(frame, 128, 128);
         require(bool(emitted), "width0 scene: " + emitted.message);
         require(emitted.scene->drawItems.size() == 1 &&
@@ -213,7 +214,8 @@ void run(const std::string &json, const fs::path &root, bool rectangles) {
     backends::direct2d::Backend ownBackend, refBackend;
     WarpCaptureSurface ownSurface, refSurface;
     std::ofstream metrics(root / "metrics.tsv");
-    metrics << "width\theight\tframe\tdiff_pixels\tmax_channel\tmean_abs\tcpu_pass\tcpu_"
+    metrics << "width\theight\tframe\tdiff_pixels\tmax_channel\tmean_abs\tcpu_"
+               "pass\tcpu_"
                "iou\tcpu_alpha\tcpu_mean\n";
     std::size_t failures = 0;
     std::vector<std::pair<unsigned, unsigned>> viewports{{128, 128}, {256, 256}, {512, 512}};
@@ -227,10 +229,12 @@ void run(const std::string &json, const fs::path &root, bool rectangles) {
         testsupport::CaptureProfile profile{"vector", width, height, width, height, 96, 96};
         ownSurface.configure(profile);
         refSurface.configure(profile);
-        for (const auto frame : {0U, 10U, 15U, 20U, 45U, 90U, 110U, 135U, 179U}) {
+        for (const auto frame : {0U, 10U, 15U, 20U, 33U, 34U, 45U, 67U, 68U, 90U, 110U, 127U, 128U,
+                                 135U, 137U, 138U, 179U}) {
             auto own = stream.stream->emit(frame, width, height);
             require(bool(own), own.message);
             auto ref = oracle.freshScene(frame, width, height);
+            oracle.assertRedundantClips(ref);
             auto ownPlan = ownPlanner.build(std::move(*own.scene));
             auto refPlan = refPlanner.build(std::move(ref));
             require(bool(ownPlan) && bool(refPlan), "plans built");
@@ -250,6 +254,24 @@ void run(const std::string &json, const fs::path &root, bool rectangles) {
             const auto label = "s" + std::to_string(width) +
                                (width == height ? "" : "x" + std::to_string(height)) + "-f" +
                                std::to_string(frame);
+            if (differences && frame == 0) {
+                std::cout.precision(12);
+                for (std::size_t i = 0; i < ownPlan.plan.drawItems.size(); ++i) {
+                    auto isolatedOwn = ownPlan.plan, isolatedReference = refPlan.plan;
+                    isolatedOwn.drawItems = {ownPlan.plan.drawItems[i]};
+                    isolatedReference.drawItems = {refPlan.plan.drawItems[i]};
+                    const auto op = renderPlan(ownSurface, ownBackend, isolatedOwn);
+                    const auto rp = renderPlan(refSurface, refBackend, isolatedReference);
+                    const auto delta = testsupport::comparePixels(rp, op, width, height);
+                    if (delta.maxChannelDifference != 0)
+                        std::cout << "isolated mismatch draw=" << i
+                                  << " max_channel=" << unsigned(delta.maxChannelDifference)
+                                  << " own_width="
+                                  << ownPlan.plan.sourceScene->drawItems[i].stroke.width
+                                  << " ref_width="
+                                  << refPlan.plan.sourceScene->drawItems[i].stroke.width << '\n';
+                }
+            }
             writeMismatch(root, label, expected, actual, width, height);
             writePpm(root / (label + "-cpu.ppm"), cpuPixels, width, height);
             std::ofstream ownRaw(root / (label + "-own.bgra"), std::ios::binary);
@@ -282,7 +304,8 @@ int main(int argc, char **argv) {
     _dupenv_s(&environmentRoot, &environmentLength, "AVEMOTION_TASK_CAPTURE_ROOT");
     std::unique_ptr<char, decltype(&std::free)> requestedRoot(environmentRoot, &std::free);
     const fs::path root =
-        fs::path(requestedRoot && *requestedRoot ? requestedRoot.get() : AVEMOTION_VECTOR_CAPTURE_DIR) /
+        fs::path(requestedRoot && *requestedRoot ? requestedRoot.get()
+                                                 : AVEMOTION_VECTOR_CAPTURE_DIR) /
         ("run-" + std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()));
     try {
         fs::create_directories(root);

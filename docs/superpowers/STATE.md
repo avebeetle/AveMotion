@@ -23,9 +23,18 @@ TG100/100; root focused2/2. CPU/WARP width witness0/80/0, no backend change.
 The initial combined shape RED did not cover width; isolated width RED followed
 removal of that owned extension, then tested reimplementation. Ledger/report
 preserve the sequence. Review minors: preparation-clock witness strength and
-inherited vendor C4251; final review must triage. One product writer; follow
-current ledger. Canonical N EXE/PDB remain unchanged/protected. Next Task3 is
-independent full-instance scene/pixel parity, then Task4 same-host delivery.
+inherited vendor C4251; final review must triage. Task3 independently Approved:
+independent occurrence/clock/clip oracle; zero-alpha publication and stroke-float
+operation-order fixes have separate RED/GREEN. Final none47/47,TG100/100,
+explicitpreview96/96; a-2 full2960scenes, each original68exactWARP/68CPU captures.
+Root fresh defaultscene1/1 and a-2 full2960pass. Raw outer-paint coordinate-space
+differences are preserved with independent predictor; no tolerance change.
+Test-oracle corruption probes were added during implementation, not all before;
+report preserves that process qualification. New review minor: failure-only
+per-draw capture diagnostic needs a count guard, for final triage. Debug phase
+measurements and fresh a-2 reference129/frame0 BGRA are bound in task3 provenance.
+One product writer; follow current ledger. Canonical N EXE/PDB remain unchanged/
+protected. Next Task4 is same-host tests, fresh static candidate and delivery.
 Engine base04c4a7b and host799c7c4 include user-recorded N controls acceptance.
 No new automation. Preserve N raw/local artwork and all previous stage results.
 

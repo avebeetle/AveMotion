@@ -1,6 +1,8 @@
 #include "OwnNativeEllipseStream.hpp"
 #include "support/OwnVectorClippingTestData.hpp"
+#include "support/OwnVectorInstanceTestData.hpp"
 #include "support/OwnVectorSceneComparison.hpp"
+#include <chrono>
 #include <iostream>
 using namespace avemotion;
 using namespace avemotion::test;
@@ -58,10 +60,9 @@ std::string mixedComposition() {
                          "\"layers\":[" + top + ",{\"ddd\":0,\"ty\":0");
     return vectorReplace(json, "\"ks\":{}}]}", "\"ks\":{}}," + bottom + "]}");
 }
-void run(const std::string &json, bool rectangles = false) {
+void run(const std::string &json, bool rectangles = false, bool exhaustive = false) {
     vector_scene::permittedInactiveMiter.clear();
     vector_scene::observedInactiveMiter.clear();
-    vector_scene::inspectMiterSource(json);
     const auto compiled = vectorCompile(json);
     vectorRequire(bool(compiled), compiled.path + compiled.message);
     const auto prepared = render::detail::prepareOwnVectorAsset(compiled.prepared);
@@ -69,13 +70,13 @@ void run(const std::string &json, bool rectangles = false) {
     auto stream = render::detail::OwnNativeEllipseStream::create(prepared.prepared);
     vectorRequire(bool(stream), stream.message);
     OwnVectorSceneOracle oracle(json);
+    vector_scene::OwnRoles ownRoles(*prepared.prepared);
     {
         auto own = stream.stream->emit(3, 512, 512);
         auto ref = oracle.freshScene(3, 512, 512);
         vectorRequire(bool(own), own.message);
         const auto full = [&](const runtime::EvaluatedScene &changed) {
-            vector_scene::compare(ref, oracle.model(), changed, *prepared.prepared->model,
-                                  oracle.matrices());
+            vector_scene::compare(ref, oracle, changed, ownRoles);
         };
         full(*own.scene);
         auto changed = *own.scene;
@@ -107,8 +108,8 @@ void run(const std::string &json, bool rectangles = false) {
                 continue;
             if (std::abs(a.localPath.points[0].y - b.localPath.points[0].y) <= 1e-4)
                 continue;
-            const auto &m = oracle.matrices().at(a.sourcePaintNode.value);
-            const auto residual = m * m.inverted();
+            const auto &m = oracle.matrices().at(a.modelNode.value);
+            const auto residual = oracle.sourceWorld(ref, a, a.sourcePathNode) * m.inverted();
             auto local = b.localPath;
             local.points[0].y += 0.01F;
             local.controlBounds = vector_scene::pointBounds(local);
@@ -148,17 +149,33 @@ void run(const std::string &json, bool rectangles = false) {
         auto own = stream.stream->emit(frame, width, height);
         vectorRequire(bool(own), own.message);
         auto ref = oracle.freshScene(frame, width, height);
-        vector_scene::compare(ref, oracle.model(), *own.scene, *prepared.prepared->model,
-                              oracle.matrices());
+        vector_scene::compare(ref, oracle, *own.scene, ownRoles);
         ++samples;
     };
-    for (std::size_t f = 0; f < 180; ++f)
-        compare(f, 512, 512);
-    for (std::size_t f = 180; f-- > 0;)
-        compare(f, 512, 512);
-    for (auto f : {179U, 0U, 90U, 15U, 14U, 15U, 179U, 0U})
-        for (auto width : {128U, 512U, 128U})
+    for (auto width :
+         exhaustive ? std::vector<unsigned>{128, 129, 256, 512} : std::vector<unsigned>{512}) {
+        for (std::size_t f = 0; f < 180; ++f)
             compare(f, width, width);
+        for (std::size_t f = 180; f-- > 0;)
+            compare(f, width, width);
+    }
+    for (auto f :
+         {179U, 0U, 33U, 34U, 67U, 68U, 127U, 128U, 137U, 138U, 90U, 15U, 14U, 15U, 179U, 0U})
+        for (auto width : {128U, 129U, 256U, 512U, 128U})
+            compare(f, width, width);
+    if (exhaustive) {
+        auto second = render::detail::OwnNativeEllipseStream::create(prepared.prepared);
+        vectorRequire(bool(second), second.message);
+        for (auto width : {128U, 129U, 256U, 512U})
+            for (std::size_t f = 0; f < 180; ++f) {
+                const auto other = second.stream->emit(179 - f, width, width);
+                vectorRequire(bool(other), other.message);
+                auto ref = oracle.freshScene(179 - f, width, width);
+                vector_scene::compare(ref, oracle, *other.scene, ownRoles);
+                ++samples;
+                compare(f, width, width);
+            }
+    }
     if (rectangles)
         for (std::size_t f = 0; f < 180; ++f) {
             compare(f, 512, 256);
@@ -187,15 +204,245 @@ void authoredMutation(const std::string &original, const std::string &changed,
     auto stream = render::detail::OwnNativeEllipseStream::create(prepared.prepared);
     const auto own = stream.stream->emit(10, 512, 512);
     vectorRequire(bool(own), own.message);
-    rejects(
-        [&] {
-            vector_scene::compare(ref, oracle.model(), *own.scene, *prepared.prepared->model,
-                                  oracle.matrices());
-        },
-        label);
+    vector_scene::OwnRoles ownRoles(*prepared.prepared);
+    rejects([&] { vector_scene::compare(ref, oracle, *own.scene, ownRoles); }, label);
+}
+std::string repeatedOracleFixture() {
+    auto leaf = vectorReplace(
+        clippingShape(30, 30, 40, 40), "\"ks\":{}",
+        R"("st":-5,"ks":{"p":{"a":1,"k":[{"t":0,"s":[10,0],"h":1},{"t":28.822,"s":[20,0],"h":1},{"t":110,"s":[30,0]}]}})");
+    leaf = vectorReplace(leaf, "\"op\":180", "\"op\":110");
+    const auto inner = instancePrecomp(21, "inner", 86, 206, 86, R"("p":{"k":[12,9]})") + "," +
+                       instancePrecomp(22, "inner", 10, 130, 10, R"("p":{"k":[12,9]})");
+    return vectorReplace(
+        instanceRoot(instanceAsset("outer", inner) + "," + instanceAsset("inner", leaf),
+                     instancePrecomp(1, "outer", 128, 308, 128) + "," +
+                         instancePrecomp(2, "outer", -52, 128, -52)),
+        "\"fr\":60", "\"v\":\"5.5.2\",\"fr\":60");
+}
+std::string opacityOracleFixture() {
+    auto leaf = vectorReplace(
+        clippingShape(30, 30, 40, 40), "\"ks\":{}",
+        R"("ks":{"o":{"a":1,"k":[{"t":0,"s":[100],"h":1},{"t":4,"s":[0],"h":1},{"t":8,"s":[100]}]}})");
+    return vectorReplace(vectorRoot(leaf), "\"fr\":60", "\"v\":\"5.5.2\",\"fr\":60");
+}
+void instanceOracleWitnesses() {
+    const auto json = repeatedOracleFixture();
+    OwnVectorSceneOracle oracle(json);
+    const auto compiled = vectorCompile(json);
+    const auto prepared = render::detail::prepareOwnVectorAsset(compiled.prepared);
+    auto stream = render::detail::OwnNativeEllipseStream::create(prepared.prepared);
+    vector_scene::OwnRoles roles(*prepared.prepared);
+    const auto own = stream.stream->emit(34, 256, 256);
+    auto ref = oracle.freshScene(34, 256, 256);
+    vector_scene::compare(ref, oracle, *own.scene, roles);
+    vectorRequire(ref.drawItems.size() == 2, "two simultaneous reference occurrences");
+    const auto &a = ref.drawItems[0], &b = ref.drawItems[1];
+    vectorRequire(a.sourcePathNode == b.sourcePathNode && a.sourcePaintNode == b.sourcePaintNode &&
+                      a.modelNode != b.modelNode,
+                  "shared definition, unique reference execution draw");
+    std::set<int> clocks;
+    std::set<std::string> paths;
+    for (const auto &draw : ref.drawItems) {
+        const auto &instance = oracle.instances().at(ref.layers[draw.layerIndex].modelLayer.value);
+        clocks.insert(34 - instance.offset);
+        paths.insert(instance.path);
+    }
+    vectorRequire(
+        clocks == std::set<int>{0, 76} &&
+            paths == std::set<std::string>{"root/layer:2[1]->outer/layer:21[0]->inner/layer:1[0]",
+                                           "root/layer:2[1]->outer/layer:22[1]->inner/layer:1[0]"},
+        "literal independent instance ancestry and clocks");
+    const auto compareOwn = [&](const auto &changed) {
+        vector_scene::compare(ref, oracle, changed, roles);
+    };
+    auto changed = *own.scene;
+    changed.drawItems[0].layerIndex = changed.drawItems[1].layerIndex;
+    rejects([&] { compareOwn(changed); }, "own draw assigned other repeated layer");
+    changed = *own.scene;
+    changed.drawItems[0].sourcePathNode = changed.drawItems[1].sourcePathNode;
+    rejects([&] { compareOwn(changed); }, "own repeated path source substituted");
+    changed = *own.scene;
+    std::swap(changed.drawItems[0], changed.drawItems[1]);
+    rejects([&] { compareOwn(changed); }, "equal-definition repeated draw order");
+    auto referenceMutation = ref;
+    referenceMutation.layers.back().modelLayer = referenceMutation.layers.front().modelLayer;
+    rejects([&] { oracle.validateInstances(referenceMutation); },
+            "reference duplicate execution layer");
+    referenceMutation = ref;
+    referenceMutation.drawItems[0].modelNode = referenceMutation.drawItems[1].modelNode;
+    rejects([&] { oracle.validateInstances(referenceMutation); },
+            "reference duplicate execution draw");
+    referenceMutation = ref;
+    referenceMutation.layers[a.layerIndex].parentLayer = runtime::kInvalidSceneIndex;
+    rejects([&] { oracle.validateInstances(referenceMutation); },
+            "reference removed structural ancestry");
+    referenceMutation = ref;
+    referenceMutation.layers[a.layerIndex].visible = false;
+    rejects([&] { oracle.validateInstances(referenceMutation); },
+            "reference wrong local visibility");
+    referenceMutation = ref;
+    auto clip = std::find_if(referenceMutation.layers.begin(), referenceMutation.layers.end(),
+                             [](const auto &layer) { return !layer.clipPath.points.empty(); });
+    vectorRequire(clip != referenceMutation.layers.end(), "translated clip mutation available");
+    clip->clipPath.points[0].x += 1;
+    rejects([&] { oracle.assertCanvasClip(referenceMutation); }, "reference displaced clip");
+    referenceMutation = ref;
+    for (auto &layer : referenceMutation.layers)
+        if (!layer.clipPath.points.empty()) {
+            layer.clipPath = {};
+            break;
+        }
+    rejects([&] { oracle.assertCanvasClip(referenceMutation); }, "reference omitted required clip");
+    const auto wrongClock = stream.stream->emit(63, 256, 256);
+    rejects([&] { compareOwn(*wrongClock.scene); }, "other local-clock sample");
+    std::cout << "instance-role/clock/clip mutation witnesses passed\n";
+}
+void outerPaintWitness() {
+    auto leaf = clippingShape(30, 30, 40, 40);
+    leaf = vectorReplace(
+        leaf, R"({"ty":"tr"}]}])",
+        R"({"ty":"tr","p":{"k":[12,9]},"s":{"k":[75,75]}}]},{"ty":"st","c":{"k":[0,0,1,1]},"w":{"k":4},"lc":1,"lj":1,"ml":4}])");
+    const auto json = vectorReplace(vectorRoot(leaf), "\"fr\":60", "\"v\":\"5.5.2\",\"fr\":60");
+    const auto compiled = vectorCompile(json);
+    vectorRequire(bool(compiled), compiled.path + compiled.message);
+    const auto prepared = render::detail::prepareOwnVectorAsset(compiled.prepared);
+    auto stream = render::detail::OwnNativeEllipseStream::create(prepared.prepared);
+    const auto own = stream.stream->emit(3, 128, 128);
+    OwnVectorSceneOracle oracle(json);
+    const auto ref = oracle.freshScene(3, 128, 128);
+    vector_scene::OwnRoles roles(*prepared.prepared);
+    vector_scene::compare(ref, oracle, *own.scene, roles);
+    bool witnessed = false;
+    for (std::size_t i = 0; i < ref.drawItems.size(); ++i) {
+        const auto &draw = ref.drawItems[i];
+        if (!draw.stroke.enabled)
+            continue;
+        const auto m = oracle.matrices().at(draw.modelNode.value);
+        vectorRequire(draw.localPath.points.front().x == 34.5F &&
+                          own.scene->drawItems[i].localPath.points.front().x == 30,
+                      "outer stroke raw local spaces differ by literal group transform");
+        rejects(
+            [&] {
+                vector_scene::compareLocal(draw.localPath, own.scene->drawItems[i].localPath,
+                                           m * m.inverted(), "wrong same-group predictor");
+            },
+            "outer paint requires group-world times inverse paint-world");
+        auto wrong = *own.scene;
+        wrong.drawItems[i].localToViewport = draw.localToViewport;
+        rejects([&] { vector_scene::compare(ref, oracle, wrong, roles); },
+                "outer draw assigned paint-world instead of path-world");
+        witnessed = true;
+    }
+    vectorRequire(witnessed, "outer stroke mutation exercised");
+    std::cout << "outer paint transform mutation witnesses passed\n";
+}
+void strokeScaleWitness() {
+    auto leaf = vectorReplace(clippingShape(30, 30, 40, 40, true), "\"ks\":{}",
+                              R"("ks":{"p":{"k":[160,280]}})");
+    const auto json = vectorReplace(vectorRoot(leaf), "\"fr\":60", "\"v\":\"5.5.2\",\"fr\":60");
+    const auto compiled = vectorCompile(json);
+    const auto prepared = render::detail::prepareOwnVectorAsset(compiled.prepared);
+    auto stream = render::detail::OwnNativeEllipseStream::create(prepared.prepared);
+    const auto own = stream.stream->emit(0, 128, 128);
+    OwnVectorSceneOracle oracle(json);
+    const auto ref = oracle.freshScene(0, 128, 128);
+    std::cout.precision(12);
+    std::cout << "translated stroke scale own=" << own.scene->drawItems[0].stroke.width
+              << " reference=" << ref.drawItems[0].stroke.width << '\n';
+    vectorRequire(own.scene->drawItems[0].stroke.width == ref.drawItems[0].stroke.width,
+                  "translated stroke preserves pinned mapped-diagonal cancellation");
+}
+void costs(const std::string &json) {
+    using Clock = std::chrono::steady_clock;
+    const auto micros = [](auto first, auto last) {
+        return std::chrono::duration<double, std::micro>(last - first).count();
+    };
+    std::cout.precision(12);
+    std::cout << "cost route=own decoded_bytes=" << json.size() << " decoded_fnv1a64="
+              << core::fnv1a64(std::as_bytes(std::span(json.data(), json.size())))
+              << " iterations=5 frames_per_iteration=720\n";
+    for (unsigned iteration = 0; iteration < 5; ++iteration) {
+        const auto start = Clock::now();
+        const auto read = formats::detail::readOwnJson(json, {65536, 32});
+        const auto parsed = Clock::now();
+        vectorRequire(bool(read), "cost parse");
+        const auto compiled = runtime::detail::buildOwnVectorModel(*read.document);
+        const auto built = Clock::now();
+        vectorRequire(bool(compiled), compiled.message);
+        const auto prepared = render::detail::prepareOwnVectorAsset(compiled.prepared);
+        const auto ready = Clock::now();
+        vectorRequire(bool(prepared), prepared.message);
+        auto stream = render::detail::OwnNativeEllipseStream::create(prepared.prepared);
+        const auto created = Clock::now();
+        vectorRequire(bool(stream), stream.message);
+        std::size_t draws = 0, points = 0, changed = 0;
+        std::uint64_t sequence = 0;
+        for (unsigned width : {128U, 129U, 256U, 512U})
+            for (unsigned frame = 0; frame < 180; ++frame) {
+                const auto sample = stream.stream->emit(frame, width, width);
+                vectorRequire(bool(sample), sample.message);
+                draws += sample.scene->drawItems.size();
+                points += sample.scene->statistics.pathPointCount;
+                changed += sample.scene->changes.visualChanged;
+                sequence = sample.scene->evaluationSequence;
+            }
+        const auto replayed = Clock::now();
+        std::cout << "cost iteration=" << iteration << " read_us=" << micros(start, parsed)
+                  << " compile_us=" << micros(parsed, built)
+                  << " prepare_us=" << micros(built, ready)
+                  << " create_us=" << micros(ready, created)
+                  << " replay720_us=" << micros(created, replayed)
+                  << " json_values=" << read.statistics.nodeCount
+                  << " layers=" << compiled.prepared->layers.size()
+                  << " properties=" << compiled.prepared->model->properties.size()
+                  << " draws=" << draws << " path_points=" << points
+                  << " changed_frames=" << changed << " sequence=" << sequence << '\n';
+        if (iteration == 0) {
+            evaluation::PropertyEvaluator evaluator(prepared.prepared->model,
+                                                    compiled.prepared->propertyFrameOffsets);
+            evaluation::PropertyEvaluationWorkspace workspace;
+            evaluator.prepare(workspace);
+            std::size_t visits = 0, cursor = 0, adjacent = 0, search = 0, shapes = 0;
+            for (unsigned frame = 0; frame < 180; ++frame) {
+                const auto view = evaluator.evaluate(frame, workspace);
+                vectorRequire(bool(view), "cost evaluator");
+                visits += view.statistics.propertiesVisited;
+                cursor += view.statistics.cursorHits;
+                adjacent += view.statistics.adjacentCursorMoves;
+                search += view.statistics.binarySearches;
+                shapes += view.statistics.shapePointInterpolations;
+            }
+            std::cout << "separate retained evaluator180 counters properties_visited=" << visits
+                      << " cursor_hits=" << cursor << " adjacent_moves=" << adjacent
+                      << " binary_searches=" << search << " shape_point_interpolations=" << shapes
+                      << '\n';
+        }
+    }
 }
 int main(int argc, char **argv) {
     try {
+        if (argc == 4 && std::string(argv[3]) == "--costs") {
+            costs(vectorInput(3, argv));
+            return 0;
+        }
+        const bool exhaustive = argc == 4 && std::string(argv[3]) == "--full";
+        if (exhaustive)
+            --argc;
+        if (argc == 2 && std::string(argv[1]) == "--instances") {
+            instanceOracleWitnesses();
+            outerPaintWitness();
+            run(repeatedOracleFixture());
+            return 0;
+        }
+        if (argc == 2 && std::string(argv[1]) == "--stroke-scale") {
+            strokeScaleWitness();
+            return 0;
+        }
+        if (argc == 2 && std::string(argv[1]) == "--opacity") {
+            run(opacityOracleFixture());
+            return 0;
+        }
         if (argc == 4 && std::string(argv[3]) == "--diagnostic") {
             vector_scene::collectNumericFailures = true;
             --argc;
@@ -204,8 +451,13 @@ int main(int argc, char **argv) {
         const auto input = vectorInput(argc, argv);
         // Direct real-Duck rectangle admission is conservatively bounded;
         // rectangular rejection probes live in the stream lifecycle test.
-        run(input);
+        run(input, false, exhaustive);
         if (argc == 1) {
+            instanceOracleWitnesses();
+            outerPaintWitness();
+            strokeScaleWitness();
+            run(repeatedOracleFixture());
+            run(opacityOracleFixture());
             const auto animated = vectorRead(std::filesystem::path(AVEMOTION_FIXTURE_DIR) /
                                              "own_vector/animated.json");
             run(animated);
