@@ -2,7 +2,30 @@
 
 Updated: 2026-09-28
 
-## Current execution — Part26O unchanged Duck X3
+## Current checkpoint — Part26O installed; native controls pending
+
+Original a-2 Duck X3 is implemented, independently reviewed and installed in
+the same Avelabs build/Release/AvelabsUI.exe, preserving a-3. Do not repeat
+Tasks1–3 or Task4 source/build/audit/promotion. Frozen build pair E9576920 /
+H2b9982f; later documentation HEADs are not build revisions. Actual001 static
+/MT build,CTest1/1,both-original smoke,119actual /MT compile commands and bound
+app/smoke linkage/noReference audit pass.26package files/notices and matchedPDB
+verified, full previousN backup in H/build/checks/part26o-promotion-001/backup.
+Promoted-and-verified2026-09-28T04:27:53.6096947Z. EXE SHA256
+94DBDE53F2EF59991783C8134C6BC6747719C44AF2D5BA00D4F6A0B3B210B6BA;
+PDB1EAEBAD1A35BAA671A4366D32F563CF64A9F1099543A54F6EA24D334220F81F4.
+No active writer/build. Native attempt launched canonical PID840,responding;
+capture failed twice (FrameArrived/window capture timeouts). Inputs stopped
+per Computer Use guidance, app left running. Native load/play/pause/seek/count/
+visibility/Quit NOT accepted; Qt harness is not a substitute. Next only this
+native confirmation when tool/desktop works, then a separately measured next
+asset decision. Do not start a-1/general interpreter or rebuild for docs alone.
+No schedule was created/changed. Engine report docs/PART26O_DUCK_X3_ENGINE_REPORT.md;
+host docs/testing/own-duck-x3-2026-09-28/REPORT.md; raw out/part26o retained.
+Three nonblocking test-only Minors and disclosed chronology/warnings retained
+by final review/controller ruling9; no optional cleanup loop before delivery.
+
+## Part26O implementation history (completed source/gates)
 
 Spec `docs/superpowers/specs/2026-09-28-own-duck-x3-design.md`, plan
 `docs/superpowers/plans/2026-09-28-own-duck-x3.md`, ledger

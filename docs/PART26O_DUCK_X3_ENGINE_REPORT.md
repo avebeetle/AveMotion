@@ -1,7 +1,8 @@
 # Part26O — Duck X3 engine parity
 
-Task3 engine work independently reviewed and accepted; same-host delivery remains.
-The canonical Part26N host package has not been changed by this task.
+Engine and host source independently accepted; Part26O is now installed in the
+canonical AvelabsUI EXE. Automated/static/installed checks passed. Native control
+acceptance is pending after two capture-tool failures; do not infer it from tests.
 
 ## Input and independent correspondence
 
@@ -114,3 +115,51 @@ Canonical N EXE/PDB remain untouched. Whole-stage review, fresh frozen /MT
 candidate, actual bound source/link/import audit, full26-file/PDB backup and
 native acceptance are still pending. Host report:
 `D:/rvc/c++/DragonianVoice/Avelabs-UI/docs/testing/own-duck-x3-2026-09-28/REPORT.md`.
+
+## Final delivery checkpoint
+
+The preceding pending-delivery paragraph describes the pre-build checkpoint.
+Final whole-stage review approved E9576920/H2b9982f without Critical/Important
+findings. Controller retained three nonblocking test-only Minors: discriminating
+preparation-clock witness, bounds-safe failure diagnostics, and actual-byte
+inert smoke-hash coverage. No optional cleanup wave or source change followed.
+
+Using the reviewed scripts with that clean pair, root built fresh
+`H/build/cmake/part26o-own-release-001` (H is the Avelabs root). Configure/build
+used existing static Qt6.10/MSVC19.44.35229.0,/MT,own-warp,rlottie=none,parallel4.
+Serial CTest1/1 and separate original a-2/a-3 smoke calls passed. Each smoke
+renders two distinct frames,2readbacks/1target; not a full-frame native test.
+Actual bound audit passed119/MT commands in11records, exact app/smoke target
+linker pairs, no Reference/rlottie libraries and no engine SDK install rules.
+Readiness/imports and matching PDB passed. Complete prior N26files+PDB were
+backed up and verified; all24notices remain unchanged. Tracked inputs stayed
+stable through build. Existing UI C4100/C4505 and unused overlay options are
+warnings, not new failures or a pristine-build claim.
+
+Promotion passed fresh process/path/source/input/artifact guards and returned
+`promoted-and-verified` at2026-09-28T04:27:53.6096947Z. Installed identity:
+
+- Host source2b9982ff9312df80b4f7cdc9887d72860c93adff.
+- Engine source9576920e168a956fba14f573df1bc380187d4a0e.
+- EXE52,728,320bytes,SHA256
+  94DBDE53F2EF59991783C8134C6BC6747719C44AF2D5BA00D4F6A0B3B210B6BA.
+- PDB156,553,216bytes,SHA256
+  1EAEBAD1A35BAA671A4366D32F563CF64A9F1099543A54F6EA24D334220F81F4;
+  GUIDf96c39f1-c43d-4ec4-960d-51465855abec,age1.
+
+Raw candidate/audit/promotion/installed command JSON and logs:
+`H/build/checks/part26o-promotion-001`; complete N backup in its `backup`.
+Historical N/earlier evidence stays intact, host out remains absent. Later
+documentation commit HEADs are not the compilation identities above.
+
+Root launched the canonical app with Computer Use, found its exact-path window
+and responsive PID840. First capture failed `FrameArrived timed out: timed out
+waiting on channel`; refreshed selection/activation and one retry failed
+`window capture timed out: timed out waiting on channel`. Native input stopped,
+app left running. No native load/play/pause/seek/count/visibility/trayQuit result
+is claimed. Raw `out/part26o/native-observation-001.md`; old user a-3 video is
+not new O acceptance. This tool limitation does not establish a playback defect.
+
+Next: native confirmation of this installed package, then a separately measured
+asset/feature choice. No claim of general Lottie/SVG completeness, hardware GPU,
+mixed-DPI,16-playing stress,race freedom,zeroallocation or Release speedup.
