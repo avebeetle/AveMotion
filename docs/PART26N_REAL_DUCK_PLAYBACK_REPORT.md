@@ -1,10 +1,30 @@
 # Part26N — unchanged Duck through own AveMotion
 
-Status: source integration, whole-stage review and its single operational fix
-accepted. A fresh static own candidate is installed and verified in canonical
-`build/Release`. Native visual/controls acceptance remains pending: window
-capture/input tooling failed after launch. This is a verified source/static
-delivery, not completed end-to-end native acceptance. Do not repeat source tasks.
+Status: source integration, whole-stage review, static canonical delivery and
+user-recorded basic native Duck controls are accepted. The later user recording
+closes the earlier tool-blocked load/play/pause/seek/Stop and1/4/16display checks.
+It is not a16-instance playback stress run or trayExit/DPI acceptance. Original
+failed tool attempt remains below as history. Do not repeat completed source work.
+
+## Later user acceptance — 2026-09-28
+
+User explicitly confirmed animation and Pause,then supplied
+`D:/видео/Новая папка/2026-09-28 04-46-12.mkv` (64.715s,1920x1080).
+Reviewed frames show a-3 loaded in4copies at32s,16copies at34s,1copy at38s;
+paused seek positions289/182/24/157 at43/44/45/47s with corresponding new frames;
+Playing50s,Paused54–55s with stableposition598/readbacks314,Stopped56s with
+position0;resumed playback63–64.5s crosses the loop. Multiple-copy display was
+paused,not a stress benchmark. No native Quit shown. Recording does not itself
+prove binary hash; it was supplied in the verified canonical-package context.
+Raw local review: out/part26n/user-video-20260928-044612/observations.md and frames.
+Original video/artwork/captures are not committed or published.
+
+The same recording shows a-1/a-2 safely rejected at `/assets`;code and actual
+JSON confirm4/2asset entries versus the admitted0..1. Both also need multiple/
+nested precomps. This bounded coverage gap is the next measured extension,not
+permission to raise a constant or silently omit layers. User then approved
+continuing; a-2 is the next inventory candidate. The72px preview is small;
+no unrelated UI layout rewrite is implied.
 
 ## Target and scope
 

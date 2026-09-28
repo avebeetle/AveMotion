@@ -4,6 +4,16 @@ Updated: 2026-09-28
 
 ## Current execution — Part26N unchanged Duck playback
 
+Latest update: user confirmed animation/Pause and supplied64.715s native recording.
+Root inspected it: a-3 visible1/4/16copies(paused multicopy),paused seeks,Play,
+Pause stability,Stop→0 and resumed loop. Basic native Duck controls accepted by
+user evidence,not by the earlier failed capture tool. TrayExit/DPI and16-playing
+stress remain unverified. Raw observations under out/part26n/user-video-20260928-044612.
+User now authorizes next real-sticker work. Part26O read-only inventory/design
+in progress for unchanged a-2.tgs: multiple/nested precomp gap,not a constants
+bump. No product writer yet; approved current N Release remains protected.
+Follow the next spec/plan when written; do not restart N source/build tasks.
+
 User approved continuation toward real Duck think in canonical AvelabsUI.
 Controller-approved spec1eb21da, plan and durable ledger dated
 2026-09-28-own-duck-playback; matching SDD/progress is the execution checkpoint.
