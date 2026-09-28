@@ -37,6 +37,11 @@ void literalsAndLifecycle(const std::string& json) {
     auto made = Playback::create(owner);
     require(bool(made), "sealed owner creates own playback");
     auto& playback = *made.playback;
+    require(&playback.preparedAsset() == owner.get()
+        && playback.preparedAsset().model->logicalWidth == 512
+        && playback.preparedAsset().model->logicalHeight == 512
+        && !playback.preparedAsset().vectorAuthored,
+        "playback exposes its immutable prepared primitive owner");
     // Wrong N or wrong frame-rate arithmetic must fail these independent literals.
     require(playback.durationSeconds() == 1.0 && playback.frameRate() == 60.0,
         "61 frames at 60 fps last one second");

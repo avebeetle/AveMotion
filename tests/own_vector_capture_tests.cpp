@@ -179,6 +179,8 @@ void run(const std::string &json, const fs::path &root, bool rectangles) {
     if (rectangles) {
         viewports.emplace_back(512, 256);
         viewports.emplace_back(256, 512);
+    } else {
+        viewports.emplace_back(129, 129);
     }
     for (const auto [width, height] : viewports) {
         testsupport::CaptureProfile profile{"vector", width, height, width, height, 96, 96};

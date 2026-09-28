@@ -205,9 +205,16 @@ renderer or silently drop features. Stream/playback/Player API stays unchanged.
 
 ### Task 4: Same UI, verified static candidate and canonical promotion
 
+Execution checkpoint: product/host portion independently accepted after fix1
+(visible raster reset, real Duck transport/visibility, exact fitted129 pixels).
+Final working-own4/4, opt-in-own4/4, reference3/3 and root fix checks pass;
+fresh root full none47/TG100/preview96 pass. Whole-stage review and frozen static
+candidate/promotion/native acceptance remain; do not repeat product implementation.
+
 **Files:** host `src/app/motionlab/OwnMotionRenderer.cpp/.h`,
 `src/app/motionlab/MotionLabPage.cpp` only for the truthful badge/size diagnostics,
-`MotionTypes.h` and `MotionWorker.cpp` only for actual-raster diagnostics (no
+`MotionTypes.h`, `MotionWorker.cpp/.h` and `MotionController.cpp` only for
+actual-raster diagnostics and clearing stale values at load (no
 scheduling/control changes); engine private `OwnNativeEllipsePlayback.hpp/.cpp`
 and its existing test only for minimal immutable prepared-owner access;
 `tests/motionlab/tst_own_motion_renderer.cpp` and actual corresponding own page/
@@ -216,6 +223,15 @@ support if needed; host current-release/own Motion Lab docs and engine report/
 STATE/ledger. Do not edit unrelated window/docking/tray code. Existing build
 instruments under ignored `out/part26l` may be adapted into `out/part26n` without
 overwriting earlier evidence; host artifacts use build only.
+
+Task4 verification clarification (ruling17): host
+`tests/build/test_own_release_build.py` may add an optional log-root override
+and derive its staged fixture path from it, so repeated fresh required gates
+preserve previous L evidence. No assertion or production build behavior changes.
+Review clarification (ruling18): existing engine
+`tests/own_vector_capture_tests.cpp` may add129 to the capture matrix. Its raw
+ordinary-reference BGRA supplies the host same-selected-target comparison; no
+reference link in the own host/product and no new renderer/helper subsystem.
 
 **Interfaces:** host reader explicitly selects65536/depth32 and invokes
 `prepareOwnMotionAsset(document)`. Same prepared pointer and worker/playback

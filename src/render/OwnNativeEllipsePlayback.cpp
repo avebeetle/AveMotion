@@ -68,6 +68,9 @@ double OwnNativeEllipsePlayback::durationSeconds() const noexcept {
 double OwnNativeEllipsePlayback::frameRate() const noexcept {
     return static_cast<double>(static_cast<float>(prepared_->model->frameRate));
 }
+const OwnNativeEllipsePreparedAsset& OwnNativeEllipsePlayback::preparedAsset() const noexcept {
+    return *prepared_;
+}
 OwnNativeEllipseFrameResult OwnNativeEllipsePlayback::evaluateAt(
     runtime::MotionTime now, std::size_t width, std::size_t height) {
     const auto snapshot = playbackSnapshot(now);

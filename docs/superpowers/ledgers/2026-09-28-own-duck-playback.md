@@ -141,6 +141,11 @@ Raw/SDD evidence retained. Date2026-09-28.
     Duck presentation in the same UI, including1/4/16 and odd integer bounds.
     This supersedes ruling14's expectation of direct rectangular Duck admission,
     not I1 correctness, primitive behavior or the native canonical acceptance gate.
+    File-scope clarification: the worker's new last-successful raster-size member
+    and controller's immediate stale-value clear on load belong to this diagnostic
+    requirement. MotionWorker.h/MotionController.cpp are included, with no timer,
+    queue, transport or scheduling change. Root inspected these tiny plumbing
+    deltas before confirming their scope; product review remains independent.
 
 Pinned parser inspection resolves303/304: layer16's final rotation key at180
 has h=1 and is retained as a zero-length hold; ordinary terminal keys only update
@@ -149,6 +154,28 @@ Host badge update narrowed to truthful own-vector-subset label. Native canonical
 test isolation is unavailable in current settings contract: default QSettings
 uses registry, whereas Qt test helpers set INI internally. APPDATA redirection
 alone is not an isolation mechanism. No registry or production test hook added.
+
+17. Ruling: allow a minimal test-only output-root override in host
+    `tests/build/test_own_release_build.py` — the required fresh build suite
+    encounters existing L configure directories, while its log/stage paths
+    are hardcoded to retained L evidence. Keep the existing build-root override,
+    add an optional log-root override and derive its stage path from that root.
+    Defaults and all configure/package assertions remain unchanged. Functional
+    routing RED/GREEN and a fresh full build suite must validate this change.
+    Cost if wrong: test artifact routing could hide or overwrite evidence;
+    use unique N roots, retain failures and independently review the small diff.
+    No production/build/deployment behavior changes are authorized by this ruling.
+
+18. Ruling: close Task4 review I3 using the existing test-only ordinary WARP
+    capture's raw BGRA at the actual odd fitted target, compared with host QImage
+    pixels — the capture test already exports own/reference raw data; adding129
+    preserves all earlier sizes without a second product renderer or reference
+    linkage. Include tests/own_vector_capture_tests.cpp in Task4 review scope.
+    Supplied reference input must be checked for size/readability and mismatched
+    bytes must fail. Keep exact source/frame/target provenance and original
+    unmodified input. Cost if wrong: stale or misframed reference data could make
+    the comparison meaningless; run both sides freshly with matched endpoints,
+    retain raw evidence, and independently review the test handoff.
 
 ## Plan preflight
 
@@ -214,4 +241,18 @@ corrected to existing `tst_own_motion_renderer.cpp` before dispatch.
   Prior-task numeric/no-reference checks remain covered by current suites;
   native controls/linkage/promotion are assigned explicitly to Task4, not
   credited as engine success. Fix report/reviews in matching SDD workspace.
-- Task4 pending. Canonical Part26L EXE/PDB untouched; no automation change.
+- Task4 product/host accepted after independent task review and scoped fix1:
+  I1 visible raster reset now signalled (functional RED/GREEN); I2 real Duck
+  play/pause/hidden/resume explicitly covered; I3 same-selected129 host pixels
+  equal the fresh ordinary-reference WARP output, with missing/truncated/wrong
+  frame negative witnesses. No new Critical/Important findings. Original capture
+  36/36 exact, including nine129 cases; Qt working-own4/4, opt-in-own4/4,
+  reference3/3, with0 skips. Python97/34/29/3 passed; earlier fixed-root collisions
+  retained. Root fresh three fix tests each3/3; final full none47/47 (7.91s),
+  TG100/100 (127.18s), preview96/96 (129.76s). Current raw logs under task4/001–004
+  and host build/checks/part26n-root-i*.txt. Reference/vendor and inherited UI
+  warnings remain disclosed; no warning-free clean-build claim. All reviewed
+  source hashes must match before scoped commits. Upstream hash/default-reader
+  cannot-verify items checked through pinned input and full current suites;
+  final static linkage/native gates remain next, not implicit task success.
+  Canonical Part26L EXE/PDB untouched; no automation change.

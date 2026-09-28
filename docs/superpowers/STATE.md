@@ -31,8 +31,17 @@ under ruling13, not claimed zero. Inherited vendor C4251 remains. Real Duck
 portrait direct emission is conservatively rejected, not silently rendered.
 Ruling16 routes Task4 vector presentation through composition-aspect targets
 and the existing canvas, preserving primitive sizes, with actual-raster metrics.
-Next Task4 same UI/static working Release. Native canonical UI proof remains
-pending; current L package is still untouched. No second renderer/worker/bitmap.
+Task4 product/host accepted after independent fix1 review: I1 stale visible
+raster reset, I2 explicit Duck play/pause/visibility, I3 host pixels vs fresh
+ordinary-reference at fitted129 all addressed, no new Critical/Important.
+Final own working/opt-in each4/4, reference3/3; Python97/34/29/3. Root fresh
+I1/I2/I3 each3/3; full none47/47 (7.91s), TG100/100 (127.18s), preview96/96
+(129.76s). Original external capture36/36 exact including nine129 cases.
+Rulings17/18 bound test-only output-root and capture extensions. Do not repeat
+product tasks. Next whole-stage independent review, then frozen static candidate,
+provenance audit, recoverable canonical promotion and native acceptance.
+Native canonical UI proof remains pending; current L package is untouched.
+No second renderer/worker/bitmap.
 M separate synthetic host/promotion work is superseded,
 not completed. No new automation. Installed L EXE/PDB remains protected and its
 hash freshly matches the existing report. Real artwork stays local.

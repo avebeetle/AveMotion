@@ -46,6 +46,7 @@ public:
     [[nodiscard]] std::size_t frameAtPosition(double position) const noexcept;
     [[nodiscard]] double durationSeconds() const noexcept;
     [[nodiscard]] double frameRate() const noexcept;
+    [[nodiscard]] const OwnNativeEllipsePreparedAsset& preparedAsset() const noexcept;
     [[nodiscard]] OwnNativeEllipseFrameResult evaluateAt(
         runtime::MotionTime now, std::size_t width, std::size_t height);
 
