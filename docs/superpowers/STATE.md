@@ -1,8 +1,35 @@
 # AveMotion autonomous work state
 
-Updated: 2026-09-28
+Updated: 2026-10-08 (Moscow local date)
 
-## Current checkpoint — Part26O installed; native controls pending
+## Current checkpoint — diverse real corpus / primitive boundary correction
+
+The user's 8 October direction supersedes the old "Next only" continuation
+restriction: diverse rights-known real inputs, general capability expansion,
+automatic asset availability in Avelabs, then actual Release 1/4/16 measurements.
+There is no 30–40 animation cap. The Telegram video is not native X3 acceptance.
+
+Three unchanged official Noto animations are local-only evaluation samples.
+Fire reproduced a mismatch between the 65536-node reader and the 4096-value
+primitive compiler: both own adapters previously let oversized documents enter
+an internal invariant. A narrow TDD correction now returns ResourceLimit at `/`
+before projection; no cap/grammar/fallback/renderer extension. Independent task
+review approved. Fresh MSVC gates: no-reference47/47,Telegram100/100,
+explicitWin32-preview96/96. Original X3 full2960scenes, a-3 four tools and
+eachDuck68exactWARPpairs pass. Final whole-correction review Approved; scoped
+source/documentation integration is ready. No remaining source fix in this block.
+Plan/ledger: out/real-corpus-2026-10-08/primitive-admission-boundary-plan.md and
+.superpowers/sdd/primitive-admission-boundary-plan/progress.md; report
+docs/REAL_CORPUS_2026-10-08.md. Raw evidence remains ignored/local.
+
+Installed O EXE remains byte-identical (SHA below); source correction is NOT yet
+promoted to build/Release. Do not claim installed Fire rejection is corrected.
+Noto Fire/Party/Turtle are not supported playback; a-2/a-3 preparation is retained.
+Native Duck X3 controls still pending. Existing property-only comparator rejects
+a-2 repeated semantic roles; it is not changed/made passing. Original regressions
+use the established instance-aware full-scene/capture route. No schedule change.
+
+## Previous checkpoint — 2026-09-28 Part26O installed; native controls pending
 
 Original a-2 Duck X3 is implemented, independently reviewed and installed in
 the same Avelabs build/Release/AvelabsUI.exe, preserving a-3. Do not repeat

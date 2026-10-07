@@ -287,7 +287,7 @@ private:
     std::vector<ExactDecimal> numbers_;
 
     void validateTable() const {
-        if (values_.empty() || values_.size() > 4096 || values_[0].hasKey
+        if (values_.empty() || values_.size() > NativeEllipseMaxValues || values_[0].hasKey
             || values_[0].nextSibling != NativeEllipseNoValue)
             throw std::logic_error("invalid internal ellipse root");
         std::vector<bool> seen(values_.size());

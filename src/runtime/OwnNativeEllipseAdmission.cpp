@@ -62,6 +62,10 @@ NativeEllipseInputResult decodeOwnNativeEllipseInput(
         result.admission = {NativeEllipseAdmissionCode::InvalidJson, "/"};
         return result;
     }
+    if (nodes.size() > NativeEllipseMaxValues) {
+        result.admission = {NativeEllipseAdmissionCode::ResourceLimit, "/"};
+        return result;
+    }
 
     const auto values = projectValues(document);
     result.admission = evaluateNativeEllipseValues(values, &result.input);
@@ -74,6 +78,10 @@ OwnPrimitiveInputResult decodeOwnPrimitiveInput(
     const auto nodes = document.nodes();
     if (nodes.empty()) {
         result.admission = {NativeEllipseAdmissionCode::InvalidJson, "/"};
+        return result;
+    }
+    if (nodes.size() > NativeEllipseMaxValues) {
+        result.admission = {NativeEllipseAdmissionCode::ResourceLimit, "/"};
         return result;
     }
     const auto values = projectValues(document);

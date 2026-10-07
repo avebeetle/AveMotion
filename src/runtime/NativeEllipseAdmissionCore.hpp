@@ -3,6 +3,7 @@
 #include "NativeEllipseInput.hpp"
 #include "OwnPrimitiveInput.hpp"
 
+#include <cstddef>
 #include <cstdint>
 #include <memory>
 #include <span>
@@ -12,6 +13,7 @@ namespace avemotion::runtime::detail {
 
 using NativeEllipseValueId = std::uint32_t;
 inline constexpr NativeEllipseValueId NativeEllipseNoValue = UINT32_MAX;
+inline constexpr std::size_t NativeEllipseMaxValues = 4096;
 enum class NativeEllipseValueKind : std::uint8_t { Null, Boolean, Number, String, Object, Array };
 
 struct NativeEllipseValue final {

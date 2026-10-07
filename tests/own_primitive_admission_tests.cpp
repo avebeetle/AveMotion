@@ -35,6 +35,39 @@ void rejected(std::string_view json, Code code, std::string_view path) {
             + result.admission.path + " expected " + std::string{path});
 }
 
+void widerReaderAdmissionBoundary() {
+    unsigned failures = 0;
+    for (const std::size_t nodeCount : {4096U, 4097U}) {
+        // One root object, one unknown-member array, and nodeCount - 2 scalars.
+        // This authored fixture does not depend on the compiler's private limit.
+        std::string json = "{\"boundaryPadding\":[0";
+        for (std::size_t index = 1; index < nodeCount - 2; ++index)
+            json += ",0";
+        json += "]}";
+        const auto parsed = avemotion::formats::detail::readOwnJson(json, {65536, 32});
+        require(static_cast<bool>(parsed), "wider reader parses boundary fixture");
+        require(parsed.document->nodes().size() == nodeCount,
+                "boundary fixture has the independently requested node count");
+        const auto check = [&](auto decode, std::string_view adapter) {
+            try {
+                const auto result = decode(*parsed.document);
+                const auto code = nodeCount == 4096 ? Code::UnsupportedField : Code::ResourceLimit;
+                const auto path = nodeCount == 4096 ? "/boundaryPadding" : "/";
+                require(!result && !result.input && result.admission.code == code
+                        && result.admission.path == path,
+                        "boundary rejection has expected code, path, and no owner");
+            } catch (const std::exception& error) {
+                ++failures;
+                std::cerr << adapter << " with " << nodeCount << " nodes: "
+                          << error.what() << '\n';
+            }
+        };
+        check(decodeOwnNativeEllipseInput, "own ellipse adapter");
+        check(decodeOwnPrimitiveInput, "own primitive adapter");
+    }
+    require(failures == 0, "wider-reader boundary cases return typed rejections without exceptions");
+}
+
 NativeEllipseDecimal d(bool negative, std::string digits, bool powerNegative = false,
                        std::string power = "0") {
     return {negative, std::move(digits), {powerNegative, std::move(power)}};
@@ -157,6 +190,7 @@ std::string repeatedGroups(std::string source, std::size_t count) {
 
 int main() {
     try {
+        widerReaderAdmissionBoundary();
         const auto parsed = avemotion::formats::detail::readOwnJson(avemotion::test::primitiveFixture());
         require(static_cast<bool>(parsed), "fixture parses");
         const auto baseline = decodeOwnPrimitiveInput(*parsed.document);
