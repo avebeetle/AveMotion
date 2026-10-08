@@ -91,14 +91,48 @@ See `run-duck-regressions.ps1`, `a2-full-scene.log`, the a-3 tool logs and each
 asset's capture log in the evidence directory. These are engine tests, not a
 native UI control or installed-EXE acceptance.
 
-The source correction is not promoted in this checkpoint. Installed
+At the admission checkpoint the correction was not promoted. Installed
 `D:/rvc/c++/DragonianVoice/Avelabs-UI/build/Release/AvelabsUI.exe` still hashes to
 `94DBDE53F2EF59991783C8134C6BC6747719C44AF2D5BA00D4F6A0B3B210B6BA`.
-It still contains the old admission path; do not test Fire there as if the fix
-were installed. A separately verified static host build/promotion is required.
+That frozen O image contained the old admission path, not the fix. The subsequent
+static promotion described below supersedes this installed-image status.
 Raw RED/GREEN, build/test logs and XML remain under
 `out/real-corpus-2026-10-08/boundary-fix/`; the execution ledger and review records
 are in `.superpowers/sdd/primitive-admission-boundary-plan/`.
+
+## Subsequent static delivery and automatic restoration
+
+On 8 October the canonical host package was built from clean engine
+`e589335d37ac89c61752f42427a761bbd891490e` and clean host product
+`08ea99d920b790f74bcd9d4f5eb6a36b5c08b2d7`, including this admission correction.
+The host now remembers the last accepted local file and restores/plays it once
+on effective Voices visibility through the existing worker/Player. Manual
+load stays paused; transport intent supersedes delayed autoplay. This is not
+a catalog or first-launch bundled artwork, and no paths/asset names are compiled
+in. The first successful local choice remains manual.
+
+Promotion was verified `2026-10-08T09:55:56.3456489Z`; installed EXE SHA256
+`5C75BCDAAE89179BE613E764BDC46302B1A15058E06FAEBF4E53E38336C15182`, matched PDB
+`01298EE0D7A48DA46CE270D998CDBD26B998063C2CE5DC748630E393364D232B`.
+Fresh actual static /MT build/smoke, original a-2 smoke, clean source binding,
+119actual /MT target commands, no-reference app link and staged/installed
+package/import/symbol checks pass. All26package files and notices are verified;
+previousO/PDB backup and raw evidence remain in host
+`build/checks/2026-10-08-auto-motion-001`.
+
+Native load/control/restart and Fire rejection in that EXE remain pending.
+Computer Use capture failed twice and observed-button input then failed
+`coordinate input geometry is unavailable`; no blind input or repeated loop.
+The app is left open. QtTest4/4, focused fixture/Duck31/0/0 and original Duck
+page3/0/0 prove host mechanics but not native acceptance; five explicit external
+gate skips in the full /MD suite are disclosed. No Noto playback or speedup claim.
+Final independent stage review approved integration with0Critical/0Important
+and one disclosed test-coverage Minor: cross-drive fixtures did not exercise
+manual relative expansion. The coverage statement is corrected and that test
+is deferred; unsafe saved-relative automatic restoration is tested separately.
+Supplemental actual /MT original a-3 smoke exits0; Fire normal exit2 at the smoke's
+combined preparation/admission check proves neither exact diagnostic nor native
+UI acceptance. No production fix or repeated rebuild is required for this Minor.
 
 ## Telegram ideas applicable to automatic availability
 
@@ -134,8 +168,9 @@ displayed-frame drops require small hooks at existing boundaries; last render
 elapsed time is not thread CPU time. The historical dynamic `/MD` controller
 harness is not proof of current static `/MT` installed-UI performance.
 
-Next order: retain native Duck X3 control confirmation as pending; finish the
-small local catalog/automatic-availability design; use exact corpus failures to
+Next order: retain native current-EXE Duck controls/restart as pending; last-local
+automatic restoration is installed, but a catalog is still a separate step. Use
+exact corpus failures to
 choose general missing features (do not merely strip fields from originals);
 then record uncontended Release 1/4/16 phases at fixed actual size/DPI/visibility.
 Record errors, CPU/memory/counter deltas and raw output before optimizing.

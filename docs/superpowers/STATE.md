@@ -2,7 +2,54 @@
 
 Updated: 2026-10-08 (Moscow local date)
 
-## Current naming migration — local source/build migration checked, 2026-10-08
+## Current checkpoint — local automatic restoration installed, 2026-10-08
+
+The canonical host `D:/rvc/c++/DragonianVoice/Avelabs-UI/build/Release/AvelabsUI.exe`
+now contains clean engine e589335 / clean host product08ea99d. A bounded host
+change uses the existing worker/Player to restore the last successful local
+asset once on effective Voices visibility, then autoplay. Failed replacement
+does not replace the preference; manual load stays paused and Pause/Stop/Seek
+cancel delayed autoplay. No catalog, bundled artwork, renderer switch or
+hardware-GPU claim. First use still needs one local selection.
+
+Independent task review Approved. Functional RED preceded production changes;
+focused fixture and original a-2 each31/0/0, full QtTest4/4, independent root4/4.
+Five existing explicit external-artwork gate skips are disclosed. Separate
+original Duck page capture3/0/0; /MD QtTest is not installed /MT acceptance.
+Fresh VS2022 x64 Release static build and smoke1/1 pass, original a-2 static
+smoke exits0 with distinct frames.119actual /MT commands, clean source identity,
+no-reference app link, staged/installed imports/package/SymChk gates verified.
+Two unrelated CMake CompilerId Debug /MDd probes are separated in provenance.
+Inherited original-UI C4100/C4505 warnings remain, without unrelated cleanup.
+
+Promoted/verified2026-10-08T09:55:56.3456489Z. EXE SHA256
+5C75BCDAAE89179BE613E764BDC46302B1A15058E06FAEBF4E53E38336C15182;
+PDB01298EE0D7A48DA46CE270D998CDBD26B998063C2CE5DC748630E393364D232B.
+26package files/notices preserved; full previousO/PDB backup and all raw evidence
+are in host build/checks/2026-10-08-auto-motion-001. This also delivers the
+previous primitive-admission correction; Noto playback is still unsupported.
+
+Native app PID22544 launched and responding. Capture failed twice with
+FrameArrived/window-capture timeouts; read-only accessibility works, but clicking
+the observed Open JSON/TGS failed `coordinate input geometry is unavailable`.
+Inputs stopped; app left open with No file loaded. Native controls/restart,
+installed Fire error acceptance, visual playback and Release1/4/16 measurements
+remain pending. No claim that QtTest substitutes for these. Host report:
+docs/testing/automatic-local-motion-2026-10-08/REPORT.md; local ledger:
+build/checks/2026-10-08-auto-motion-001/progress.md. Whole-stage review Approved,
+0Critical/0Important/1Minor: manual relative-path expansion was not actually
+exercised across D:cwd/C:fixture, coverage claim corrected and a genuine same-drive
+test deferred. Saved-relative automatic rejection remains separately verified.
+Additional actual /MT a-3 smoke exit0; Fire normal exit2 at its combined preparation
+check, not exact native diagnostic acceptance. Integration receipts follow in
+that ledger. No automation or GitHub rename change.
+
+Next: native current-EXE confirmation, then a small provenance-aware local
+catalog/general corpus-driven capability stage and uncontended actual Release
+1/4/16 measurements. Do not repeat completed lifecycle/naming/admission tasks
+or introduce a new backend merely to emulate Telegram's settings dialog.
+
+## Previous naming checkpoint — local source/build migration checked, 2026-10-08
 
 The physical source checkout is now `C:/Users/USER/Desktop/AveMotion`.
 The controller verified a guarded same-volume transfer of all 21 immediate
@@ -47,8 +94,9 @@ accepted. For final commit/push receipts, consult the current SDD ledger
 The user explicitly deferred the GitHub rename to
 `avebeetle/AveMotion` until later. Retain the existing `AveMotion-.git` origin;
 authentication is not the current blocker for that deferred action.
-The installed EXE and matching PDB are untouched by this source migration;
-no package promotion occurred.
+At the end of this source migration the installed EXE and matching PDB were
+untouched; no package promotion occurred in that checkpoint. The subsequent
+automatic-restoration delivery above supersedes its installed status.
 Earlier checkpoint evidence and raw results remain under
 `out/rename-2026-10-08`. The previously retained generated pycache and pruned
 nonexistent worktree registration are unchanged by these metadata edits.
@@ -76,8 +124,9 @@ Plan/ledger: out/real-corpus-2026-10-08/primitive-admission-boundary-plan.md and
 .superpowers/sdd/primitive-admission-boundary-plan/progress.md; report
 docs/REAL_CORPUS_2026-10-08.md. Raw evidence remains ignored/local.
 
-Installed O EXE remains byte-identical (SHA below); source correction is NOT yet
-promoted to build/Release. Do not claim installed Fire rejection is corrected.
+At this admission checkpoint the O EXE remained byte-identical (SHA below) and
+the source correction was not promoted. The subsequent delivery above includes
+it; installed native Fire rejection has not yet been exercised.
 Noto Fire/Party/Turtle are not supported playback; a-2/a-3 preparation is retained.
 Native Duck X3 controls still pending. Existing property-only comparator rejects
 a-2 repeated semantic roles; it is not changed/made passing. Original regressions
