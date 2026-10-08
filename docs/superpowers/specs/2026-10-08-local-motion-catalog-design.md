@@ -62,6 +62,23 @@ Canonical path checks can race a concurrent reparse swap; SHA256 ensures
 consistency with the declared bytes, not a signed authority. In-root hardlinks
 are not prohibited. No native handle sandbox or security-sensitive system change.
 
+### Windows final path clarification
+
+The retained Qt 6.10 regression shows that QFileInfo canonicalFilePath leaves an
+escaping directory junction unresolved on this machine. On Windows the resolver
+therefore obtains the final root and selected-file names through metadata handles
+using CreateFileW and GetFinalPathNameByHandleW. Normalize DOS paths, reject
+unresolvable paths, close both handles deterministically, and compare the final
+names with the existing separator and case-insensitive containment rule. Other
+platforms keep the Qt canonical-path implementation.
+
+These handles are only for path resolution. The existing worker still reads one
+bounded QByteArray, verifies its declared digest, and prepares that same buffer.
+This does not remove the documented concurrent reparse race or add a hostile
+filesystem sandbox. No dependency, permissions, rendering or fallback change.
+The controller approves this bounded clarification under the existing delegated
+authority; the escaping-junction functional RED must pass without weakening it.
+
 ## Requests and persistence
 
 Add optional digest/root to the existing file load request. File, digest and root

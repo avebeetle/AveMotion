@@ -15,9 +15,14 @@ Spec `docs/superpowers/specs/2026-10-08-local-motion-catalog-design.md` and plan
 under the user's explicit delegation. Initial E c2cd58a / H c6419d2, main;
 spec e42a41a. Follow this plan's ledger at
 `.superpowers/sdd/2026-10-08-local-motion-catalog/progress.md`.
-Task1 bounded metadata/same-buffer verified worker request is interrupted with
-uncommitted host changes, retained RED/GREEN and final junction/gates/review still
-pending. Resume its recorded agent rather than redispatching completed work.
+Task1 bounded metadata/same-buffer verified worker request is complete and
+independently Approved, H8174159. Functional RED preceded implementation;
+final focused catalog83/0/0 and worker13/0/0, full own5/5 CTest
+(178 QtTest passes,5 disclosed external-input skips), reference4/4
+(165 passes,0 skips). Root focused2/2 and exact reviewed diff verified.
+Windows final-path metadata handles correct the demonstrated escaping-junction
+case; no hostile-filesystem sandbox claim. Ordinary H push confirmed8174159.
+Existing UI/vendor/offscreen warnings are disclosed, no new motion warnings.
 Task2 visible selector/success-only restoration and Task3 actual static delivery/
 local development seed are pending. No engine/backend change, external artwork
 distribution or performance claim.
@@ -27,6 +32,10 @@ precede integration. Installed pair remains 5C75BCDA.../01298EE0... .
 User reports both canonical apps exited; fresh process observation also found none.
 Recheck before promotion; never kill user apps. Previous native acceptance limits
 remain unresolved and raw evidence/backups retained. No duplicate restoration task.
+Task3 scoped Qt identity/path probe confirms the app-local manifest location.
+Independent seed audit requires separator/no-overwrite script fixes before any
+seed; no catalog/artwork has yet been published locally. Engine production and
+installed EXE/PDB remain unchanged.
 
 ## Current checkpoint — local automatic restoration installed, 2026-10-08
 
