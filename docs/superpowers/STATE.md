@@ -23,8 +23,15 @@ final focused catalog83/0/0 and worker13/0/0, full own5/5 CTest
 Windows final-path metadata handles correct the demonstrated escaping-junction
 case; no hostile-filesystem sandbox claim. Ordinary H push confirmed8174159.
 Existing UI/vendor/offscreen warnings are disclosed, no new motion warnings.
-Task2 visible selector/success-only restoration and Task3 actual static delivery/
-local development seed are pending. No engine/backend change, external artwork
+Task2 visible selector/success-only restoration is complete, independently
+Approved and ordinarily pushed as H41c2d6be03b4b31c272f5679252429ee880da446.
+Functional feature, hidden-supersession, literal-title and placeholder REDs are
+retained. Final focused22/0/0; own5/5 CTest (197passes/5explicit external skips),
+reference4/4 (184passes/0skips); both originals separately3/0/0 in both modes.
+Root fresh persistence/supersession/placeholder/relative checks7/0/0; exact
+reviewed index byte hash verified before commit. Offscreen warning noise remains
+disclosed, without native acceptance or suppression. Task3 actual static delivery/
+local development seed is next. No engine/backend change, external artwork
 distribution or performance claim.
 Existing a-2/a-3 only, declared provenance/unresolved redistribution, app-local
 metadata outside Git/package. Functional RED/GREEN and independent task reviews
@@ -33,9 +40,10 @@ User reports both canonical apps exited; fresh process observation also found no
 Recheck before promotion; never kill user apps. Previous native acceptance limits
 remain unresolved and raw evidence/backups retained. No duplicate restoration task.
 Task3 scoped Qt identity/path probe confirms the app-local manifest location.
-Independent seed audit requires separator/no-overwrite script fixes before any
-seed; no catalog/artwork has yet been published locally. Engine production and
-installed EXE/PDB remain unchanged.
+Independent seed recheck withdraws the false separator finding on the exact
+unchanged script; only exclusive no-overwrite copying needs correction/re-audit
+before any seed. No catalog/artwork has yet been published locally. Engine
+production and installed EXE/PDB remain unchanged.
 
 ## Current checkpoint — local automatic restoration installed, 2026-10-08
 

@@ -32,6 +32,14 @@ path provides test isolation; an explicitly empty path disables catalog loading.
 The existing constructor delegates to the production default. Tests use only
 temporary injected paths; no developer catalog is read by a test.
 
+The existing MainWindow route test retains installMotionLab unchanged. Because
+that production entry constructs the default page, this one test uses
+QStandardPaths test mode and a unique per-run test application identity derived
+from a QTemporaryDir basename before constructing MainWindow. Assert that its
+default manifest path is isolated and absent. Keep INI settings redirected by the
+existing test helper; every directly constructed page uses a temporary manifest
+or the explicitly empty path. No production entry API or app identity changes.
+
 Read metadata once on first effective visibility. Maximum manifest size is
 65536 bytes, maximum entries 64. Require an object with integer `version: 1`,
 `defaultId` naming one entry and nonempty `assets`. Each entry has unique `id`
@@ -111,6 +119,10 @@ No automatic rendering fallback to reference, including on unknown IDs.
 The selector contains a non-loading placeholder plus catalog entries. Programmatic
 population/selection is signal-blocked. It must not imply success before accepted
 loaded; on failed replacement the error is visible and the saved choice remains.
+Choosing the placeholder cancels a not-yet-submitted hidden catalog selection and
+its pending autoplay. It submits no worker request, does not unload an accepted
+session and changes no saved restoration keys. It does not separately invalidate
+an already submitted worker result; existing request generations still apply.
 Retain canvas, route badge, count/transport/diagnostics and overall page bounds.
 
 ## Local seed and rights
