@@ -30,22 +30,51 @@ retained. Final focused22/0/0; own5/5 CTest (197passes/5explicit external skips)
 reference4/4 (184passes/0skips); both originals separately3/0/0 in both modes.
 Root fresh persistence/supersession/placeholder/relative checks7/0/0; exact
 reviewed index byte hash verified before commit. Offscreen warning noise remains
-disclosed, without native acceptance or suppression. Task3 actual static delivery/
-local development seed is next. No engine/backend change, external artwork
-distribution or performance claim.
-Existing a-2/a-3 only, declared provenance/unresolved redistribution, app-local
-metadata outside Git/package. Functional RED/GREEN and independent task reviews
-precede integration. Installed pair remains 5C75BCDA.../01298EE0... .
-User reports both canonical apps exited; fresh process observation also found none.
-Recheck before promotion; never kill user apps. Previous native acceptance limits
-remain unresolved and raw evidence/backups retained. No duplicate restoration task.
-Task3 scoped Qt identity/path probe confirms the app-local manifest location.
-Independent seed recheck withdraws the false separator finding on the exact
-unchanged script; only exclusive no-overwrite copying needs correction/re-audit
-before any seed. No catalog/artwork has yet been published locally. Engine
-production and installed EXE/PDB remain unchanged.
+disclosed, without native acceptance or suppression.
+Task3 source/delivery/local seed is complete: fresh static /MT build from clean
+H41c2d6b/Eef31eca, 120 actual Release compile commands, no reference app link,
+smoke1/1 and both unchanged original external-vector smokes pass. Candidate and
+installed 26-file/24-notice/import/readiness/EXE-PDB gates pass. Independent task,
+two scoped operational fix reviews and whole-stage review Approved; no remaining
+Critical/Important. Root fresh final sequential full suites own5/5(197/0/5 explicit
+external skips), reference4/4(184/0/0), raw evidence retained.
 
-## Current checkpoint — local automatic restoration installed, 2026-10-08
+Local version1 catalog at
+C:/Users/USER/AppData/Local/Avelabs/AvelabsUI/motion-catalog/manifest.json published
+last at2026-10-08T13:03:23.3973219Z; only unchanged a-2/a-3 with exact source hashes,
+declared b8951c8 provenance and unresolved artwork rights/local-evaluation-only.
+No artwork/catalog entered Git or package and no seed settings edits. Initial
+pre-write hidden-AppData failure retained; independently reviewed seven-byte
+metadata -Force fix accepts hidden ancestors and still refuses actual reparses.
+Original pinned audit/scripts remain immutable. Exact rollback catch RED/GREEN
+separately proves real disposable 26-file/PDB restoration despite logging failure;
+no live failure/rollback or infallible physical restoration is claimed.
+
+Canonical host promoted/verified2026-10-08T13:05:00.7366632Z, zero app processes
+immediately before copy, full previous package/PDB backup preserved at host
+build/checks/2026-10-08-local-catalog-001/delivery/promotion-001/backup.
+EXE SHA25660D16719CAB031EECD5F2A8DA95B9037E4C190A8CD24399133D5516CC8CD6FB9;
+PDB8B8C20D877651BA038DE55047CD1B65584FF985AAFB569ACDC648DBBCF025485.
+Engine production, backend/fallback and notices unchanged. Later docs commits
+are not build identities. Scope and receipts: docs/LOCAL_MOTION_CATALOG_2026-10-08.md.
+
+Native canonical PID28760 responds. Fresh Computer Use screenshot and one recovery
+failed FrameArrived/window-capture timeouts; no click/key/transport/quit inputs
+were made. Read-only accessibility shows Voices, catalog Duck X3, Playing,
+a-2.tgs and advancing position/readbacks, proving textually observed automatic
+own playback without a picker. Visual/transport/both-originals/restart/tray/DPI
+acceptance remains open; app left open for user. No benchmark/GPU/full-coverage
+claim. Exact text and errors are retained in host evidence, not substituted by
+QtTest. Deferred minors: inherited warnings, stale unavailable-saved-ID label after
+successful recovery, blank proof table with complete JSON assertions intact.
+
+Next: user/native current-EXE confirmation, then a small rights/source-known varied
+corpus, general measured capabilities and uncontended actual Release1/4/16 evidence.
+Keep Telegram architectural/reference comparison; do not add hidden reference
+fallback, a new backend or unrelated cleanup. Follow this completed stage's ledger
+for exact commit/push receipts; do not redispatch Tasks1/2/3.
+
+## Previous checkpoint — local automatic restoration installed, 2026-10-08
 
 The canonical host `D:/rvc/c++/DragonianVoice/Avelabs-UI/build/Release/AvelabsUI.exe`
 now contains clean engine e589335 / clean host product08ea99d. A bounded host
