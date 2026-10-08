@@ -1,8 +1,48 @@
 # AveMotion autonomous work state
 
-Updated: 2026-10-08 (Moscow local date)
+Updated: 2026-10-09 (Moscow local date)
 
-## Current checkpoint — Test Animation UI delivered, 2026-10-08
+## Current checkpoint — bounded vector groups and opacity, 2026-10-09
+
+Bounded groups/opacity implementation is complete, task-reviewed Approved with
+0Critical/Important: E f911b1dd962bea075b5716211a36ef318a9c185d. Tests-first RED
+precedes the three compiler edits;3320+30 new ordinary scenes have zero measured
+numeric maxima and45 new WARP rows match exactly under unchanged CPU policy.
+Global budgets, remaining shape grammar, renderer/UI/scheduler/cache/fallback and
+licensing unchanged. Original Party is still unsupported: markers/metadata,
+split position, four alpha matte pairs and a linear gradient remain separate work.
+
+Fresh VS full suites initially exposed a pre-existing source-local unwind flag
+ordering defect, not a group regression. Separately reviewed build-only E
+3339c373276bc8c586295dd7d9b7b71fc68fe97a repairs the API TU for VS; additive patches
+and fingerprints verified byte-for-byte, upstream/license/ordinary-TU flags kept.
+Final sequential gates47/47,95/95,96/96 (8.23/207.80/213.60s), no CTest skips;
+six focused VS/Ninja Debug/Release lifetime configurations pass. Vendor warnings,
+existing oracle complex exclusions/raw variances and no clean-base VS execution
+remain disclosed. No full Samsung or Linux/performance claim.
+
+Root original a2/a3 tests pass again with final binaries:2960/440 canonical scene
+samples,68 exact WARP rows each, CPU pass1/skips0; unchanged input hashes.
+No raw local-path exact-parity claim. Final broad review Approved0Critical/Important;
+ordinary source push confirmed remote mainf911b1d. Root post-source-commit fresh
+rebuild/full47/47,9.59s and vendor verifier all pass. Product bytes are frozen;
+later docs commits are not build identities. Base E9da2e80, host H e02c2eb both main. Recovery
+briefs/ledger: `.superpowers/sdd/2026-10-09-own-vector-groups/`.
+Report: docs/OWN_VECTOR_GROUPS_2026-10-09.md. Host Git/installed EXE unchanged;
+do not repeat completed group, relocation or admission work.
+
+The actual Release1/4/16 attempt collected no data: capture failed twice then
+physical Escape stopped Computer Use; subsequent user resumed development.
+Latest read-only process check found zero AvelabsUI. Do not turn these failures or
+functional tests into UI acceptance/performance evidence. No pending new schedule.
+
+Next: validated exporter metadata/markers and split position, then separately
+designed gradient/matte support before untouched Party acceptance/host delivery.
+Actual Release1/4/16 measurements may independently use existing original Ducks
+when native observation is available. No automatic hardware-output switch or new
+corpus/license decision. Do not rebuild/promote H merely for synthetic admission.
+
+## Previous checkpoint — Test Animation UI delivered, 2026-10-08
 
 The user requested moving the existing animation lab out of Voices into a separate
 Test Animation entry and removing the opaque backing. This bounded host-only

@@ -24,7 +24,8 @@ Telegram changes are explicit:
 - `0004-avemotion-parsed-model-introspection.patch`;
 - `0005-avemotion-source-geometry-binding.patch`;
 - `0006-avemotion-recording-lifecycle.patch`;
-- `0007-avemotion-source-bindings.patch`.
+- `0007-avemotion-source-bindings.patch`;
+- `0008-msvc-recording-unwind-build-only.patch`.
 
 Patch 0004 supplies the read-only parsed-model/easing/property introspection used
 by the standalone evaluator. Patch 0005 carries canonical source Shape/paint
@@ -60,6 +61,17 @@ preprocess. Only its API translation unit enables exception unwinding. Exact
 fresh-ordinary versus retained-recording tests share the unchanged scene
 comparator with Telegram. The two known Samsung Polystar scene/plan golden
 failures are preserved; this seam does not change production Runtime sampling.
+
+Telegram patch `0008-msvc-recording-unwind-build-only.patch` and Samsung patch
+`0003-msvc-recording-unwind-build-only.patch` correct a Visual Studio generator
+ordering defect in the existing recording API exception setting. Apply these
+additive patches after the earlier local patches (their exact preimage is the
+patched vendor CMake file at AveMotion9da2e80). They retain source `/EHsc` and add
+Visual-Studio-only source AdditionalOptions inheriting target options before a
+final `/EHsc`. Only `lottieanimation.cpp` changes its effective VS flags;
+evaluator/raster TUs, the non-VS branch, dependency identities and license text
+remain unchanged. Existing callback-owner, ordinary CPU and fresh-scene tests
+provide the functional gate; see [bounded groups and MSVC evidence](OWN_VECTOR_GROUPS_2026-10-09.md).
 
 ## Part 22 miniz isolation
 
