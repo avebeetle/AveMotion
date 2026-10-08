@@ -12,9 +12,12 @@
       "local_behavior_changes": [
         "patches/samsung/0002-avemotion-recording-lifecycle.patch"
       ],
-      "source_tree_sha256": "77ab5814b88590936f4b33ef09114d3757a1d91dcde349d5e70c4b40926c549f",
+      "build_only_patches": [
+        "patches/samsung/0003-msvc-recording-unwind-build-only.patch"
+      ],
+      "source_tree_sha256": "7e61a155a2472d821de6fbc4d07c43ffa1601dec83851b51e8a37ebee43618db",
       "source_file_count": 322,
-      "source_byte_count": 12196477,
+      "source_byte_count": 12196869,
       "safety_patches": [
         "patches/samsung/0001-fix-arena-null-pointer-arithmetic.patch"
       ],
@@ -38,11 +41,12 @@
         "patches/telegram/0007-avemotion-source-bindings.patch"
       ],
       "build_only_patches": [
-        "patches/telegram/0001-modern-toolchain-build-only.patch"
+        "patches/telegram/0001-modern-toolchain-build-only.patch",
+        "patches/telegram/0008-msvc-recording-unwind-build-only.patch"
       ],
-      "source_tree_sha256": "f3ed8fa6159db389efb4b156bb6d741c1a9b0d3893cff1bab8de9207a8eddc2a",
+      "source_tree_sha256": "d4fe0dfb94108b24dc06f4b05e945ee9d2a490b5fbfbd33a580fab45425d7d8a",
       "source_file_count": 277,
-      "source_byte_count": 13286789,
+      "source_byte_count": 13287181,
       "excluded_archive_artifacts": [
         "src/binding/.lottieplayer.cpp.swp"
       ],

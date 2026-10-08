@@ -78,6 +78,12 @@ endif()
 if(MSVC)
     set_source_files_properties("${CMAKE_CURRENT_LIST_DIR}/src/lottie/lottieanimation.cpp"
         PROPERTIES COMPILE_OPTIONS "/EHsc")
+    if(CMAKE_GENERATOR MATCHES "^Visual Studio")
+        # VS canonicalizes /EHsc before inherited AdditionalOptions. Append the
+        # binding-only override after /EHs-c- so rejected callbacks unwind.
+        set_property(SOURCE "${CMAKE_CURRENT_LIST_DIR}/src/lottie/lottieanimation.cpp"
+            APPEND PROPERTY VS_SETTINGS "AdditionalOptions=%(AdditionalOptions) /EHsc")
+    endif()
 else()
     set_source_files_properties("${CMAKE_CURRENT_LIST_DIR}/src/lottie/lottieanimation.cpp"
         PROPERTIES COMPILE_OPTIONS "-fexceptions;-funwind-tables")
