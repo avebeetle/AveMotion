@@ -58,18 +58,21 @@ PDB8B8C20D877651BA038DE55047CD1B65584FF985AAFB569ACDC648DBBCF025485.
 Engine production, backend/fallback and notices unchanged. Later docs commits
 are not build identities. Scope and receipts: docs/LOCAL_MOTION_CATALOG_2026-10-08.md.
 
-Native canonical PID28760 responds. Fresh Computer Use screenshot and one recovery
-failed FrameArrived/window-capture timeouts; no click/key/transport/quit inputs
-were made. Read-only accessibility shows Voices, catalog Duck X3, Playing,
-a-2.tgs and advancing position/readbacks, proving textually observed automatic
-own playback without a picker. Visual/transport/both-originals/restart/tray/DPI
-acceptance remains open; app left open for user. No benchmark/GPU/full-coverage
-claim. Exact text and errors are retained in host evidence, not substituted by
-QtTest. Deferred minors: inherited warnings, stale unavailable-saved-ID label after
-successful recovery, blank proof table with complete JSON assertions intact.
+Basic installed-UI manual acceptance is closed by the user on2026-10-08:
+"закрывай проверку всё нормально работает", in response to the current EXE
+confirmation step. This is the user's overall acceptance, not a separately
+itemized or instrumented record of every control/asset/count/restart action.
+Installed EXE/PDB hashes freshly match the above accepted pair; no rebuild/change.
+The earlier automated native attempt remains historical: PID28760 responded,
+Computer Use capture and recovery timed out, inputs stopped; read-only accessibility
+observed Duck X3/Playing/a-2.tgs and advancing counters without picker. Raw errors
+and text are preserved, not relabeled as successful automated visual acceptance.
+Stress, docking/tray/DPI coverage, performance1/4/16, GPU/full-coverage claims are
+not established by the manual acceptance. Deferred minors: inherited warnings,
+stale unavailable-saved-ID label after recovery, blank proof table with complete JSON.
 
-Next: user/native current-EXE confirmation, then a small rights/source-known varied
-corpus, general measured capabilities and uncontended actual Release1/4/16 evidence.
+Next: a small rights/source-known varied corpus, general measured capabilities
+and uncontended actual Release1/4/16 evidence. Do not repeat the accepted basic UI step.
 Keep Telegram architectural/reference comparison; do not add hidden reference
 fallback, a new backend or unrelated cleanup. Follow this completed stage's ledger
 for exact commit/push receipts; do not redispatch Tasks1/2/3.

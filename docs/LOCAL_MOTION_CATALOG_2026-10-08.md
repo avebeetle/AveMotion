@@ -26,11 +26,15 @@ No catalog/artwork in package/Git; MIT SDK is not artwork permission. The manife
 is trusted-local metadata, not signed authority or a hostile-filesystem sandbox.
 Only selected same-buffer bytes are prepared; hidden pages do not mass-load.
 
-Canonical native app responds and read-only accessibility shows Duck X3, Playing,
-a-2.tgs and advancing counters without a picker. Two screenshot requests failed
-FrameArrived/window-capture timeouts. Inputs stopped; app left open. Visual pixels,
-transport/count, both originals, restart, docking/tray/DPI remain unaccepted. Own
-WARP is software, not hardware GPU/speedup/full Lottie/SVG/zero-allocation proof.
+Basic manual acceptance of the installed UI is closed by the user on2026-10-08:
+"закрывай проверку всё нормально работает", after the requested UI confirmation
+step. This overall acceptance is not an itemized observation of every control,
+asset, count or restart. Fresh EXE/PDB hashes still match the accepted pair above.
+The earlier automated attempt observed Duck X3/Playing/a-2.tgs through read-only
+accessibility, but both screenshot requests timed out and inputs stopped. Raw
+failures remain unchanged; no successful automated visual test is claimed.
+Stress/docking/tray/DPI/performance remain separate gates. Own WARP is software,
+not hardware GPU/speedup/full Lottie/SVG/zero-allocation proof.
 
 Initial configure guard and hidden-AppData seed failure are preserved. Minimal
 reviewed metadata -Force clone accepts hidden ancestors while refusing reparses;
@@ -47,7 +51,7 @@ Raw/backup/native evidence: host build/checks/2026-10-08-local-catalog-001;
 decision/review/integration ledger: .superpowers/sdd/2026-10-08-local-motion-catalog/progress.md.
 Preserve these; do not redispatch completed tasks or overwrite attempt namespaces.
 
-Next: current installed UI control confirmation, a small rights/source-known varied
-corpus, general reusable capabilities, then actual uncontended Release1/4/16
+Next: a small rights/source-known varied corpus, general reusable capabilities,
+then actual uncontended Release1/4/16
 measurements and optimization of proved bottlenecks. Telegram remains an
 architectural/reference comparator, not hidden own playback dependency.
