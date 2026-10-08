@@ -1,9 +1,15 @@
-# AveMotion — Part 24 private corpus laboratory
+# AveMotion
 
 AveMotion is a standalone embeddable C++ vector-animation SDK developed from a
 pinned Telegram `rlottie` semantic oracle while progressively replacing the
 runtime with AveMotion-owned canonical data, evaluation, geometry, scheduling
 and Direct2D rendering.
+
+The current own vector route is bounded: it supports the admitted primitive,
+Duck and Duck X3 profiles through owned preparation/evaluation and Direct2D WARP,
+with explicit rejection of unsupported assets. This is not full Lottie/SVG
+coverage. The existing Telegram-backed Runtime remains the reference route for
+parsing and comparison; it is distinct from the no-reference own route.
 
 For ordinary lean internal builds and the no-reference installed package, see
 [Module builds and offline package](docs/MODULE_BUILD.md). The Telegram-backed
@@ -18,7 +24,7 @@ Lottie JSON collections. It deliberately adds no new visual family. The goal is
 to choose the next implementation from measured feature frequency, native
 coverage, timing and memory evidence rather than intuition.
 
-## Current pipeline
+## Telegram-backed reference pipeline
 
 ```text
 Lottie JSON or Telegram TGS

@@ -2,6 +2,36 @@
 
 Updated: 2026-10-08 (Moscow local date)
 
+## Current naming migration — partial checkpoint / deferred, 2026-10-08
+
+The target source location is `C:/Users/USER/Desktop/AveMotion`, but relocation
+is blocked by an open-directory lock (Windows sharing violation). The new target
+is absent; the existing working source remains
+`C:/Users/USER/Desktop/AveMotion-CorpusLab-Part24`. Active host path examples,
+build-test constants and operational cache routing retain the old checkout until
+the move succeeds. Fresh relocated configure/build/test acceptance and final
+repository verification remain pending. The desired GitHub name is
+`avebeetle/AveMotion`; rename is pending authentication. Retain the existing
+origin until authenticated rename and repository identity verification succeed.
+The current installed EXE has not been replaced; this metadata update does not
+promote a package or verify the installed EXE/PDB.
+Controller checkpoint evidence: original source exists, new target absent.
+Six generated `.pyc` files (33618 bytes) were retained recoverably under
+`out/archive/2026-10-08-rename/scripts-pycache`. A proven nonexistent detached
+worktree registration was pruned after the exact dry-run match, temporary-folder
+absence and `cda415c` ancestor check; no files were deleted and the commit remains.
+Engine `out/build` and host `own-static` caches were not archived and retain valid
+old-path routing. All 26 installed Release files plus PDB (27 artifacts) have
+unchanged paths, sizes and SHA hashes; before/after JSON is in
+`out/rename-2026-10-08`. Controller's fresh diagnostic unittest gate passed
+15/15 with zero skips; preset listing in both repositories exited 0, 21 relative
+Markdown links resolved and both Git whitespace checks exited 0. Informational
+LF-to-CRLF warnings are retained. No new-root CMake gate is possible while the
+target is absent; Task 1 is partial/deferred, not complete.
+The earlier checkpoints, ZIP baseline and Repository record below are retained
+as historical evidence. See [repository layout](../REPOSITORY_LAYOUT.md) and
+[migration plan](plans/2026-10-08-avemotion-name-migration.md).
+
 ## Current checkpoint — diverse real corpus / primitive boundary correction
 
 The user's 8 October direction supersedes the old "Next only" continuation
