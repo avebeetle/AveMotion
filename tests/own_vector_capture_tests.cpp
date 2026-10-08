@@ -4,6 +4,7 @@
 #include "avemotion/render/RenderPlanner.hpp"
 #include "support/OwnVectorClippingTestData.hpp"
 #include "support/OwnVectorSceneOracle.hpp"
+#include "support/OwnVectorGroupTestData.hpp"
 #include "support/WarpCaptureSurface.hpp"
 #include <array>
 #include <chrono>
@@ -200,7 +201,7 @@ void widthZeroWitness() {
     }
 }
 
-void run(const std::string &json, const fs::path &root, bool rectangles) {
+void run(const std::string &json, const fs::path &root, bool rectangles, bool groups = false) {
     auto parsed = formats::detail::readOwnJson(json, {65536, 32});
     require(bool(parsed), "vector reader");
     auto prepared = render::detail::prepareOwnMotionAsset(*parsed.document);
@@ -229,8 +230,9 @@ void run(const std::string &json, const fs::path &root, bool rectangles) {
         testsupport::CaptureProfile profile{"vector", width, height, width, height, 96, 96};
         ownSurface.configure(profile);
         refSurface.configure(profile);
-        for (const auto frame : {0U, 10U, 15U, 20U, 33U, 34U, 45U, 67U, 68U, 90U, 110U, 127U, 128U,
-                                 135U, 137U, 138U, 179U}) {
+        const std::vector<unsigned> frames = groups ? std::vector<unsigned>{0,50,68,69,100,110,179,68,69} :
+            std::vector<unsigned>{0,10,15,20,33,34,45,67,68,90,110,127,128,135,137,138,179};
+        for (const auto frame : frames) {
             auto own = stream.stream->emit(frame, width, height);
             require(bool(own), own.message);
             auto ref = oracle.freshScene(frame, width, height);
@@ -315,6 +317,8 @@ int main(int argc, char **argv) {
         clippingWitnesses(root);
         run(vectorInput(argc, argv), root, argc == 1);
         if (argc == 1) {
+            fs::create_directories(root / "bounded-groups");
+            run(vectorGroupFixture(), root / "bounded-groups", true, true);
             fs::create_directories(root / "contained-precomp");
             run(clippingPrecomp(clippingShape(56, 56, 72, 72, true)), root / "contained-precomp",
                 true);

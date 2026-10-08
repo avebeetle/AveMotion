@@ -2,6 +2,7 @@
 #include "support/OwnVectorClippingTestData.hpp"
 #include "support/OwnVectorInstanceTestData.hpp"
 #include "support/OwnVectorSceneComparison.hpp"
+#include "support/OwnVectorGroupTestData.hpp"
 #include <chrono>
 #include <iostream>
 using namespace avemotion;
@@ -337,6 +338,58 @@ void outerPaintWitness() {
     vectorRequire(witnessed, "outer stroke mutation exercised");
     std::cout << "outer paint transform mutation witnesses passed\n";
 }
+void boundedGroupOracle() {
+    const auto json = vectorGroupFixture();
+    auto stream = instanceStream(json);
+    const auto compiled = vectorCompile(json);
+    const auto prepared = render::detail::prepareOwnVectorAsset(compiled.prepared);
+    vector_scene::OwnRoles roles(*prepared.prepared);
+    OwnVectorSceneOracle oracle(json);
+    const auto own = stream->emit(69, 128, 128);
+    const auto ref = oracle.freshScene(69, 128, 128);
+    vectorRequire(bool(own) && ref.drawItems.size() == 10,
+                  "fresh ordinary retains ten group paints");
+    vector_scene::compare(ref, oracle, *own.scene, roles);
+    auto changed = *own.scene;
+    changed.drawItems.erase(changed.drawItems.begin());
+    rejects([&] { vector_scene::compare(ref, oracle, changed, roles); }, "omitted sibling group");
+    changed = *own.scene;
+    std::swap(changed.drawItems[0], changed.drawItems[1]);
+    rejects([&] { vector_scene::compare(ref, oracle, changed, roles); }, "reordered sibling group");
+    changed = *own.scene;
+    ++changed.drawItems[2].paint.solid.a;
+    rejects([&] { vector_scene::compare(ref, oracle, changed, roles); }, "wrong group alpha");
+    const auto stale = stream->emit(68, 128, 128);
+    rejects([&] { vector_scene::compare(ref, oracle, *stale.scene, roles); },
+            "stale held group opacity");
+    changed = *stale.scene;
+    changed.drawItems.erase(changed.drawItems.begin() + 2);
+    const auto zeroReference = oracle.freshScene(68, 128, 128);
+    rejects([&] { vector_scene::compare(zeroReference, oracle, changed, roles); },
+            "stale zero-group visibility suppression");
+    for (const auto &opacity :
+         {std::string(R"({"k":0})"), std::string(R"({"k":50})"), std::string(R"({"k":100})"),
+          std::string(R"({"k":0.00005})"), vectorGroupHeldOpacity()}) {
+        const auto outerJson = vectorOuterGroupFixture(opacity);
+        const auto outerCompiled = vectorCompile(outerJson);
+        const auto outerPrepared = render::detail::prepareOwnVectorAsset(outerCompiled.prepared);
+        vector_scene::OwnRoles outerRoles(*outerPrepared.prepared);
+        auto outer = instanceStream(outerJson);
+        OwnVectorSceneOracle outerOracle(outerJson);
+        for (unsigned frame : {0U, 50U, 68U, 69U, 110U, 68U}) {
+            const auto ordinary = outerOracle.freshScene(frame, 128, 128);
+            const auto emitted = outer->emit(frame, 128, 128);
+            vectorRequire(bool(emitted), emitted.message);
+            vectorRequire(ordinary.drawItems.size() == 2 && ordinary.drawItems[0].stroke.enabled &&
+                              ordinary.drawItems[0].paint.solid.a == 127,
+                          "ordinary witness: zero group retains fill and outer stroke layer alpha");
+            vector_scene::compare(ordinary, outerOracle, *emitted.scene, outerRoles);
+        }
+    }
+    std::cout << "bounded group mutations and zero/outer paint publication witnesses passed; "
+                 "samples=30\n";
+    run(json, true, true);
+}
 void strokeScaleWitness() {
     auto leaf = vectorReplace(clippingShape(30, 30, 40, 40, true), "\"ks\":{}",
                               R"("ks":{"p":{"k":[160,280]}})");
@@ -443,6 +496,10 @@ int main(int argc, char **argv) {
             run(opacityOracleFixture());
             return 0;
         }
+        if (argc == 2 && std::string(argv[1]) == "--groups") {
+            boundedGroupOracle();
+            return 0;
+        }
         if (argc == 4 && std::string(argv[3]) == "--diagnostic") {
             vector_scene::collectNumericFailures = true;
             --argc;
@@ -454,6 +511,7 @@ int main(int argc, char **argv) {
         run(input, false, exhaustive);
         if (argc == 1) {
             instanceOracleWitnesses();
+            boundedGroupOracle();
             outerPaintWitness();
             strokeScaleWitness();
             run(repeatedOracleFixture());

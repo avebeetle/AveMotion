@@ -1,5 +1,6 @@
 #include "NativeEllipseAdmissionCore.hpp"
 #include "OwnVectorTestData.hpp"
+#include "support/OwnVectorGroupTestData.hpp"
 #include "avemotion/evaluation/PropertyEvaluator.hpp"
 #include <algorithm>
 #include <cmath>
@@ -15,6 +16,87 @@ using test::vectorShape;
 using test::vectorShapeLayer;
 void near(float got, float expected, const std::string& label) {
     vectorRequire(std::abs(got - expected) <= 0.0001F, label + " got=" + std::to_string(got));
+}
+void boundedGroups() {
+    using namespace test;
+    for (const unsigned count : {3U, 10U, 128U}) {
+        const auto result = vectorCompile(vectorRoot(vectorGroupsLayer(vectorGroups(count))));
+        vectorRequire(bool(result), "sibling groups " + std::to_string(count) + ": " + result.path +
+                                        result.message);
+        vectorRequire(result.prepared->draws.size() == count, "all sibling paints retained");
+        vectorRequire(
+            result.prepared->sources[result.prepared->draws.front().path.index()].jsonPointer ==
+                "/layers/0/shapes/" + std::to_string(count - 1) + "/it/0",
+            "reverse sibling paint order");
+    }
+    const auto reject = [](const std::string &json, const std::string &label) {
+        const auto result = vectorCompile(json);
+        vectorRequire(
+            !result && !result.prepared && !result.path.empty() && !result.message.empty(), label);
+        return result;
+    };
+    const auto items = reject(vectorRoot(vectorGroupsLayer(vectorGroups(129))),
+                              "129 top-level items atomic rejection");
+    vectorRequire(items.path == "/layers/0/shapes", "item budget diagnostic identifies shape list");
+    const auto paths = reject(vectorRoot(vectorGroupsLayer(vectorGroups(64)) + "," +
+                                         vectorGroupsLayer(vectorGroups(65), 2)),
+                              "asset-wide 129 paths");
+    vectorRequire(paths.path == "/layers/1/shapes/64/it/0" &&
+                      paths.message == "path count limit exceeded",
+                  "asset-wide path budget remains enforced");
+}
+void groupOpacity() {
+    using namespace test;
+    const auto reject = [](const std::string &json, const std::string &label) {
+        const auto result = vectorCompile(json);
+        vectorRequire(
+            !result && !result.prepared && !result.path.empty() && !result.message.empty(), label);
+    };
+    for (const auto &opacity :
+         {std::string(""), std::string(R"({"k":0})"), std::string(R"({"k":50})"),
+          std::string(R"({"k":100})"), vectorGroupLinearOpacity(), vectorGroupHeldOpacity()}) {
+        const auto result = vectorCompile(vectorRoot(vectorGroupsLayer(vectorGroup(opacity))));
+        vectorRequire(bool(result),
+                      "group opacity admitted: " + opacity + result.path + result.message);
+        evaluation::PropertyEvaluator evaluator(result.prepared->model);
+        evaluation::PropertyEvaluationWorkspace ws;
+        evaluator.prepare(ws);
+        const auto group = result.prepared->draws[0].group;
+        if (opacity == vectorGroupHeldOpacity()) {
+            for (const auto [frame, expected] :
+                 {std::pair{68., 0.F}, {69., 0.5F}, {110., 1.F}, {68., 0.F}}) {
+                const auto view = evaluator.evaluate(frame, ws);
+                near(view.nodeTransforms[group.index()].worldOpacity, expected,
+                     "held group opacity boundary");
+            }
+        } else {
+            const auto view = evaluator.evaluate(50, ws);
+            const float expected = opacity.empty() || opacity == R"({"k":100})" ? 1.F
+                                   : opacity == R"({"k":0})"                    ? 0.F
+                                                                                : 0.5F;
+            near(view.nodeTransforms[group.index()].worldOpacity, expected,
+                 "literal static/linear group opacity");
+        }
+    }
+    for (const auto &opacity : {R"({"k":-0.000001})", R"({"k":100.000001})",
+                                R"({"a":1,"k":[{"t":0,"s":[0],"h":1},{"t":10,"s":[101]}]})"})
+        reject(vectorRoot(vectorGroupsLayer(vectorGroup(opacity))), "out-of-range group opacity");
+    for (const auto &opacity : {R"({"k":0})", R"({"k":50})",
+                                R"({"a":1,"k":[{"t":0,"s":[100],"h":1},{"t":10,"s":[100]}]})"})
+        reject(vectorReplace(vectorPrecomp(vectorLayer("")), "\"op\":170,\"ks\":{}",
+                             "\"op\":170,\"ks\":{\"o\":" + std::string(opacity) + "}"),
+               "precomp opacity unchanged");
+    const auto stroke = vectorGroup("", 0, true);
+    const auto both =
+        vectorReplace(stroke, "{\"ty\":\"tr\"}", R"({"ty":"fl","c":{"k":[0,1,0,1]}},{"ty":"tr"})");
+    const auto result = vectorCompile(vectorRoot(vectorGroupsLayer(both)));
+    vectorRequire(
+        bool(result) && result.prepared->draws.size() == 2 &&
+            result.prepared->model->sourceNodes[result.prepared->draws[0].paint.index()].kind ==
+                SourceNodeKind::Fill &&
+            result.prepared->model->sourceNodes[result.prepared->draws[1].paint.index()].kind ==
+                SourceNodeKind::Stroke,
+        "fill precedes stroke in emitted paint order");
 }
 void exactAdmission() {
     vectorRequire(runtime::detail::equalOwnNumericTokens("100", "1e2") &&
@@ -307,6 +389,10 @@ void rejects(const std::string& fixture) {
 }
 int main(int argc, char** argv) {
     try {
+        if (argc == 2 && std::string(argv[1]) == "--group-opacity") {
+            groupOpacity();
+            return 0;
+        }
         float numeric = 0;
         vectorRequire(
             runtime::detail::convertOwnNumericToken("12e1", 0, 240, true, false, numeric) &&
@@ -357,6 +443,8 @@ int main(int argc, char** argv) {
                 vectorReplace(vectorReplace(json, "\"ddd\":0,", ""), "\"ddd\":0,", ""));
             vectorRequire(bool(omitted), "omitted ddd defaults to admitted 2D");
             properties();
+            boundedGroups();
+            groupOpacity();
             measuredNumericAdmission();
             measuredScopeRejections();
             morphsAndDefaults();

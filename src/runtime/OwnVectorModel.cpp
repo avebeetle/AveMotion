@@ -156,7 +156,7 @@ private:
         scalar(owner, object, "r", PropertySemantic::TransformRotation, 0,
                group || precomp ? 0 : -32768, group || precomp ? 0 : 32768, !group && !precomp);
         scalar(owner, object, "o", PropertySemantic::TransformOpacity, 100,
-               group || precomp ? 100 : 0, 100, !group && !precomp);
+               precomp ? 100 : 0, 100, !precomp);
         if (group) {
             for (auto field : {"sk", "sa"})
                 if (object.get(field).exists()) {
@@ -205,7 +205,7 @@ private:
         return id;
     }
     void shapes(Value input, SourceNodeId layer) {
-        const auto items = input.array(1, 3);
+        const auto items = input.array(1, 128);
         struct ScopedPath {
             SourceNodeId group, path;
             std::optional<SourceNodeId> trim;
@@ -226,8 +226,6 @@ private:
         for (const auto& item : items) {
             const auto type = item.get("ty").string();
             if (type == "gr") {
-                if (paths.size() >= 2)
-                    item.fail("at most two one-path groups admitted");
                 item.keys({"ty", "nm", "it", "bm", "hd"});
                 item.metadata();
                 const auto group = node(SourceNodeKind::ShapeGroup, layer, item);

@@ -6,9 +6,54 @@
 #include <iostream>
 #include <limits>
 #include <set>
+#include <tuple>
 #include "support/OwnVectorInstanceTestData.hpp"
+#include "support/OwnVectorGroupTestData.hpp"
 using namespace avemotion;
 using namespace avemotion::test;
+void boundedGroupStream() {
+    auto stream = instanceStream(vectorGroupFixture());
+    std::set<std::uint32_t> identities;
+    for (const auto [frame, heldAlpha, linearAlpha] : {std::tuple{0U, 0U, 127U},
+                                                       {50U, 0U, 63U},
+                                                       {68U, 0U, 40U},
+                                                       {69U, 63U, 39U},
+                                                       {100U, 63U, 0U},
+                                                       {110U, 127U, 0U},
+                                                       {68U, 0U, 40U},
+                                                       {69U, 63U, 39U}}) {
+        const auto scene = stream->emit(frame, 128, 128);
+        vectorRequire(bool(scene) && scene.scene->drawItems.size() == 10,
+                      "ten group draws including zero alpha");
+        identities.clear();
+        for (unsigned d = 0; d < 10; ++d) {
+            const auto &draw = scene.scene->drawItems[d];
+            identities.insert(draw.modelNode.value);
+            const unsigned group = 9 - d;
+            vectorRequire(draw.drawOrder == d && draw.paint.solid.a == (group == 9  ? 127U
+                                                                        : group % 2 ? heldAlpha
+                                                                                    : linearAlpha),
+                          "literal reverse group order and inherited alpha frame=" +
+                              std::to_string(frame));
+        }
+        vectorRequire(identities.size() == 10, "unique sibling draw identities");
+    }
+    auto second = instanceStream(vectorGroupFixture());
+    const auto independent = second->emit(69, 256, 128);
+    vectorRequire(bool(independent) && independent.scene->evaluationSequence == 1 &&
+                      independent.scene->drawItems.size() == 10 &&
+                      independent.scene->drawItems[0].paint.solid.a == 127,
+                  "independent group stream and rectangular viewport");
+    for (const auto &opacity : {std::string(R"({"k":0})"), std::string(R"({"k":50})"),
+                                std::string(R"({"k":100})"), std::string(R"({"k":0.00005})")}) {
+        auto outer = instanceStream(vectorOuterGroupFixture(opacity));
+        const auto scene = outer->emit(0, 128, 128);
+        vectorRequire(bool(scene) && scene.scene->drawItems.size() == 2 &&
+                          scene.scene->drawItems[0].stroke.enabled &&
+                          scene.scene->drawItems[0].paint.solid.a == 127,
+                      "outer stroke retains layer alpha when path group fades");
+    }
+}
 void realRectangularProbes(render::detail::OwnNativeEllipseStream &stream) {
     for (const auto [width, height] : {std::pair{512U, 256U}, {256U, 512U}}) {
         const auto first = stream.emit(0, 256, 256);
@@ -366,6 +411,7 @@ int main(int argc, char **argv) {
         std::cout << "vector stream emitted " << scene.scene->drawItems.size() << " draws\n";
         if (argc == 1) {
             instanceContracts();
+            boundedGroupStream();
             clippingEquivalence();
             const auto legacy = vectorRead(std::filesystem::path(AVEMOTION_FIXTURE_DIR) /
                                            "telegram_sticker_basic.json");
