@@ -11,6 +11,9 @@ with explicit rejection of unsupported assets. This is not full Lottie/SVG
 coverage. The existing Telegram-backed Runtime remains the reference route for
 parsing and comparison; it is distinct from the no-reference own route.
 
+For source locations and migration boundaries, see the
+[repository layout guide](docs/REPOSITORY_LAYOUT.md).
+
 For ordinary lean internal builds and the no-reference installed package, see
 [Module builds and offline package](docs/MODULE_BUILD.md). The Telegram-backed
 module remains a build-tree integration; the offline package cannot load

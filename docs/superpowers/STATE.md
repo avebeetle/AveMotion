@@ -2,32 +2,56 @@
 
 Updated: 2026-10-08 (Moscow local date)
 
-## Current naming migration — partial checkpoint / deferred, 2026-10-08
+## Current naming migration — local source/build migration checked, 2026-10-08
 
-The target source location is `C:/Users/USER/Desktop/AveMotion`, but relocation
-is blocked by an open-directory lock (Windows sharing violation). The new target
-is absent; the existing working source remains
-`C:/Users/USER/Desktop/AveMotion-CorpusLab-Part24`. Active host path examples,
-build-test constants and operational cache routing retain the old checkout until
-the move succeeds. Fresh relocated configure/build/test acceptance and final
-repository verification remain pending. The desired GitHub name is
-`avebeetle/AveMotion`; rename is pending authentication. Retain the existing
-origin until authenticated rename and repository identity verification succeed.
-The current installed EXE has not been replaced; this metadata update does not
-promote a package or verify the installed EXE/PDB.
-Controller checkpoint evidence: original source exists, new target absent.
-Six generated `.pyc` files (33618 bytes) were retained recoverably under
-`out/archive/2026-10-08-rename/scripts-pycache`. A proven nonexistent detached
-worktree registration was pruned after the exact dry-run match, temporary-folder
-absence and `cda415c` ancestor check; no files were deleted and the commit remains.
-Engine `out/build` and host `own-static` caches were not archived and retain valid
-old-path routing. All 26 installed Release files plus PDB (27 artifacts) have
-unchanged paths, sizes and SHA hashes; before/after JSON is in
-`out/rename-2026-10-08`. Controller's fresh diagnostic unittest gate passed
-15/15 with zero skips; preset listing in both repositories exited 0, 21 relative
-Markdown links resolved and both Git whitespace checks exited 0. Informational
-LF-to-CRLF warnings are retained. No new-root CMake gate is possible while the
-target is absent; Task 1 is partial/deferred, not complete.
+The physical source checkout is now `C:/Users/USER/Desktop/AveMotion`.
+The controller verified a guarded same-volume transfer of all 21 immediate
+children, including `.git`, preserving HEAD `539de94` and 16 protected hashes.
+The old `C:/Users/USER/Desktop/AveMotion-CorpusLab-Part24` root is empty and
+temporarily remains locked by Windows. This was a ledgered child transfer,
+not an atomic whole-directory rename. Active host source examples and both
+build-test constants now use the new checkout.
+
+Fresh VS 2022 x64 `windows-msvc-direct2d` Debug build with reference mode `none`
+exited 0. Initial CTest passed 46/47: the legacy Ninja fixture could not find CL
+in a plain shell. After reading the existing dev-shell script and initializing
+`Launch-VsDevShell` only in the build process environment, full CTest passed
+47/47 with zero skips. Both `out/rename-2026-10-08/engine-ctest.log` and
+`engine-ctest-devshell.log` are retained.
+Fresh host default `own-static` configure and actual `AvelabsUI` plus
+`avemotion_engine_smoke` Release /MT build exited 0 using the new source,
+reference mode `none` and `VCPKG_MANIFEST_INSTALL=FALSE`. Smoke passed 1/1;
+real own-release configuration/package/wrapper tests passed 5/5, both with
+zero skips. The earlier diagnostic fixture tests passed 15/15.
+Candidate static imports passed the dependency audit; generated
+`AvelabsUI.vcxproj` has no rlottie/avemotion_reference link names. Candidate
+EXE SHA256 is `D501C9344BE102235F1A861A5EB8C2EA64403FAFA3F427EE6C119BD6E7BEB7A8`;
+it is not installed. All 27 installed artifacts retain their paths, sizes and
+SHA hashes; final evidence is host
+`build/checks/2026-10-08-rename/installed-final.json`.
+
+Eight old engine caches are retained under
+`out/archive/2026-10-08-rename/engine-build`, the old host default cache under
+`build/checks/2026-10-08-rename/archive/own-static`, and six generated pycs in
+their archive. Raw private evidence is preserved. Checks passed for 27 Markdown
+links, 16 protected hashes and absence of active old-root paths. Unused CMake
+build-type/overlay warnings and existing C4505/C4100 UI warnings are retained;
+no source cleanup is needed for this rename.
+A guarded nonrecursive removal of the empty old root failed on the OS lock.
+Reopen the Codex project at the new path and remove the empty directory later;
+no foreign process was killed or application database/configuration edited.
+Independent `rename_whole_stage_review` approved integration: PASS, with zero
+Critical, Important or Minor findings. The local source/build migration is
+accepted. For final commit/push receipts, consult the current SDD ledger
+`.superpowers/sdd/2026-10-08-avemotion-name-migration/progress.md`.
+The user explicitly deferred the GitHub rename to
+`avebeetle/AveMotion` until later. Retain the existing `AveMotion-.git` origin;
+authentication is not the current blocker for that deferred action.
+The installed EXE and matching PDB are untouched by this source migration;
+no package promotion occurred.
+Earlier checkpoint evidence and raw results remain under
+`out/rename-2026-10-08`. The previously retained generated pycache and pruned
+nonexistent worktree registration are unchanged by these metadata edits.
 The earlier checkpoints, ZIP baseline and Repository record below are retained
 as historical evidence. See [repository layout](../REPOSITORY_LAYOUT.md) and
 [migration plan](plans/2026-10-08-avemotion-name-migration.md).
