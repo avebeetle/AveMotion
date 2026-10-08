@@ -4,14 +4,23 @@ Updated: 2026-10-08 (Moscow local date)
 
 ## Current execution — bounded local motion catalog, 2026-10-08
 
+Repository naming is now complete on GitHub as `avebeetle/AveMotion`, same
+repository ID 1382597519, public/main/history preserved. Origin is
+`https://github.com/avebeetle/AveMotion.git`. The user's later README/About
+request adds original animated geometric project artwork, not an engine capture
+or external sticker distribution. No licensing policy or installed EXE changes.
+
 Spec `docs/superpowers/specs/2026-10-08-local-motion-catalog-design.md` and plan
 `docs/superpowers/plans/2026-10-08-local-motion-catalog.md` are controller-approved
 under the user's explicit delegation. Initial E c2cd58a / H c6419d2, main;
 spec e42a41a. Follow this plan's ledger at
 `.superpowers/sdd/2026-10-08-local-motion-catalog/progress.md`.
-Task1 bounded metadata/same-buffer verified worker request, Task2 visible selector
-and success-only restoration, Task3 actual static delivery/local development seed
-are pending. No engine/backend change, artwork distribution or performance claim.
+Task1 bounded metadata/same-buffer verified worker request is interrupted with
+uncommitted host changes, retained RED/GREEN and final junction/gates/review still
+pending. Resume its recorded agent rather than redispatching completed work.
+Task2 visible selector/success-only restoration and Task3 actual static delivery/
+local development seed are pending. No engine/backend change, external artwork
+distribution or performance claim.
 Existing a-2/a-3 only, declared provenance/unresolved redistribution, app-local
 metadata outside Git/package. Functional RED/GREEN and independent task reviews
 precede integration. Installed pair remains 5C75BCDA.../01298EE0... .

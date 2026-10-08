@@ -25,10 +25,11 @@ not replace that installed EXE or its matching PDB.
   move; on failure reverse the ledger without overwriting, copying or deleting
   source data. Report a split state if rollback is blocked. The old empty root
   may remain temporarily locked; this is not an atomic whole-repository rename.
-- The desired GitHub name is `avebeetle/AveMotion`. Change `origin` only after
-  the authenticated repository rename succeeds and repository identity is
-  verified; retain the working old URL if authentication is unavailable.
-  The user explicitly deferred the GitHub rename during this migration.
+- GitHub is now [avebeetle/AveMotion](https://github.com/avebeetle/AveMotion).
+  The authenticated rename on 2026-10-08 preserved repository ID 1382597519,
+  public visibility, main and history. The verified local origin is
+  `https://github.com/avebeetle/AveMotion.git`. The earlier source migration
+  deferred this step; the user's later request completed it separately.
 - No dependency installation, Windows settings change, UI behavior change,
   public release, force-push, or history rewrite is part of this migration.
 
@@ -47,4 +48,5 @@ Current execution status and verification are in
 [migration plan](superpowers/plans/2026-10-08-avemotion-name-migration.md)
 records the checks. Older reports retain their original absolute source paths:
 resolve the old source prefix to the new root, and old `out/build` paths to the
-engine-build archive above. GitHub naming remains a separately deferred step.
+engine-build archive above. Historical reports retain the repository name used
+at the time of each run.
