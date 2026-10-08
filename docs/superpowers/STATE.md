@@ -2,7 +2,53 @@
 
 Updated: 2026-10-08 (Moscow local date)
 
-## Current execution — bounded local motion catalog, 2026-10-08
+## Current checkpoint — Test Animation UI delivered, 2026-10-08
+
+The user requested moving the existing animation lab out of Voices into a separate
+Test Animation entry and removing the opaque backing. This bounded host-only
+change is complete: H product59021fd734f875d78f54f502ca781388585335c3 ordinarily
+pushed; engine product is unchanged at16a8cdef33d553ebfeecbe3a9a3a68a063522f89.
+Standing delegation covers the in-chat design/main workflow; no new spec/plan or
+engine/backend/fallback/window/docking/licensing change. The existing page stack
+owns a panel-free fourth page, startup remains Voices, the actual MainWindow
+visibility filter is preserved. Catalog/restore/settings/controls/counts stay
+on the test page; premultiplied frames composite over the ordinary parent background.
+
+Functional RED preceded product code:five correct route/opaque-pixel failures;
+focused GREEN7/0/0. Fresh full own offscreen5/5 CTest(202/0/5 QtTest), reference4/4
+(189/0/0), own Windows5/5(202/0/5), shell3/3(12/0/0), explicit original a-2 Windows
+page3/0/0 and inspected start/middle captures. Five external/pixel-reference
+skips and inherited warning noise remain disclosed. Independent code review
+Approved0Critical/Important; minor separate menu-order assertion deferred, actual
+order code-reviewed and captured. No native static mouse/DPI/performance claim.
+
+Fresh clean static H59021fd/E16a8cde build in host build/cmake/test-animation-static-001:
+120 actual /MT commands (118 product/two smoke), static Qt6.10.0/MSVC19.44.35229.0,
+own-warp/reference none, dependencies OFF. Static CTest1/1 and pinned original
+a-2/a-3 smokes pass. Candidate/installed26-file/24-notice/import/readiness/SymChk
+gates pass. Independent prepared/frozen operational review Approved, no blockers;
+exact source/build/evidence/inventories and unchanged notices checked.
+
+Canonical host promoted/verified2026-10-08T14:11:26.815758Z, zero app processes
+immediately before copy. A prior root precheck stopped before mutation when the
+user reopened a new instance; after the user closed it, guarded delivery succeeded.
+Only EXE/metadata/PDB changed; full old package/PDB backup at host
+build/checks/2026-10-08-test-animation-001/delivery/promotion-001/backup.
+EXE SHA256FC3AEC2BB876BCF4C2F62F441BBD366C5CB728D2F75F14B3684990E52E6D6E4E;
+PDB EA0F35090C20F099B32B98997B26F6723FEBE960A507819FFA7A2688F20AA97B.
+Catalog/artwork/settings were not reseeded or edited. Later docs SHA are not build
+identities. Commands/receipts/limits: host docs/testing/test-animation-2026-10-08/REPORT.md
+and build/checks/2026-10-08-test-animation-001/progress.md.
+
+User acceptance below belongs to the previous Voices layout, not this new layout.
+Next: inspect Test Animation in the installed EXE, then return to the agreed small
+rights/source-known varied corpus and uncontended actual Release1/4/16 evidence.
+Do not repeat completed relocation/catalog tasks, add a renderer switch or rewrite
+window/docking. WARP is software; full Lottie/SVG and artwork redistribution are
+not established. Physical rollback is guarded, not claimed infallible; its
+inherited diagnostic-logging minor remains disclosed in the host report.
+
+## Previous checkpoint — bounded local motion catalog, 2026-10-08
 
 Repository naming is now complete on GitHub as `avebeetle/AveMotion`, same
 repository ID 1382597519, public/main/history preserved. Origin is
