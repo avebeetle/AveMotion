@@ -2,6 +2,21 @@
 
 Updated: 2026-10-11 (Moscow local date)
 
+## Current work — supported own playback and one real UI icon
+
+The user accepted the initial measurement with its limits and authorized a separate
+supported own-engine boundary plus one real Avelabs UI element. Current spec/plan:
+`docs/superpowers/specs/2026-10-11-supported-own-ui-design.md` and
+`docs/superpowers/plans/2026-10-11-supported-own-ui.md`; recovery ledger
+`.superpowers/sdd/2026-10-11-supported-own-ui/progress.md`. Task 0 freezes the existing
+minimal instrument/protocol and original binaries BEFORE product edits. Then opaque
+own API in existing Rendering, host private-header removal, shared current executor
+with independent sessions and own-authored TTS navigation icon, regression/comparison
+and guarded Release handoff. No new scheduler/cache/format/GPU or docking changes.
+Read-only inventories complete, start E ba7cda9/H 2ee237c. Telegram Icon boundary pinned
+at lib_lottie fbb922c; asynchronous ownership/control ideas only, no code copying.
+Product implementation has not started; resume ledger rather than older alpha tasks.
+
 ## Latest checkpoint — initial own UI measurement complete
 
 The user narrowed the next task to an initial baseline only, not API/GPU/format
