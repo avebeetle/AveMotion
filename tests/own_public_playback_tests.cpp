@@ -33,6 +33,15 @@ int run() {
             prepared.asset->metadata().totalFrames == 61 &&
             prepared.asset->metadata().frameRate == 60,
             "public metadata retains authored dimensions and timing");
+    auto tinyRateSource = readFixture("own_vector/parent.json");
+    const std::string rateMarker = "\"fr\":60";
+    const auto rateOffset = tinyRateSource.find(rateMarker);
+    require(rateOffset != std::string::npos, "supported vector fixture frame rate found");
+    tinyRateSource.replace(rateOffset, rateMarker.size(), "\"fr\":1e-307");
+    const auto tinyRate = prepare(tinyRateSource);
+    require(!tinyRate && tinyRate.error.code == render::OwnErrorCode::UnsupportedAsset
+            && tinyRate.error.path == "/fr",
+            "own vector admission rejects rate below finite float representation");
     source.clear();
     source.shrink_to_fit();
     auto created = render::createOwnPlayback(prepared.asset);
