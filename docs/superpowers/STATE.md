@@ -2,6 +2,45 @@
 
 Updated: 2026-10-11 (Moscow local date)
 
+## Latest checkpoint — initial own UI measurement complete
+
+The user narrowed the next task to an initial baseline only, not API/GPU/format
+implementation. This bounded measurement is now complete: original Duck think
+a-3 and Party, 1/4/16, actual per-image256x256, observed DPR1, six serial30s steady
+windows plus load/pause/hidden/resume. No product source, scheduler/cache/format
+change, dependency installation or installed EXE replacement. H report:
+`docs/testing/motion-baseline-2026-10-11/REPORT.md`; raw/harness/derived data in
+H `build/checks/baseline-2026-10-11-001`, binary in matching build/diagnostics path.
+Source heads E2a133b8/Hb78e532, unchanged production trees from installed builds
+E69ebbb1/H69fe01b. Separate same-source static Release probe, NOT literally a
+measurement of the installed executable; callback/buffer overhead included.
+Probe98321C5C...; installed EXE5BE313C9... and catalog/assets hashes unchanged.
+
+Steady each case1800 delivered batches/1800 new Qt paints; diagnostic image/readback
+deltas1800/7200/28800, no steady mailbox drops/skipped deadlines/device recreation.
+All-group first-render-boundary->prepublication p95 Duck16=10.0105ms,
+Party16=10.4645ms; whole-process CPU1.587/1.480 core-equivalents,13.23/12.33% of
+12logical CPUs. Max new-paint gaps22.30/24.79ms, not ideal60FPS/monitor evidence.
+All settled pause/hidden windows about9s: zero new render/publication/readback/ticks;
+automatic pause/resume incrementsN and resumed deliveries observed. Existing
+visible paused UI keeps painting retained images; CPU not zero. One degraded
+GDI/USER sample during Duck16 shutdown outside phase windows retained; no measured
+phase degraded counter. One trailing Party16 render record excluded, not hidden.
+Observer diagnostics fresh34/34; narrow instrument review clean with explicit
+timing/delivery/acknowledgement limitations. No full old product gate replay.
+Independent results review reproduced raw tables/CPU arithmetic,12raw hashes and
+all6PID/creation-time bounds; two report wording errors corrected/rechecked,
+final no Critical/Important/Minor. Detailed evidence retained in the H report.
+
+The user explicitly authorized closing their installed Avelabs process for clean
+measurement; exact PID36236 path/start were checked before closure. Qt measurement
+processes exited themselves; no foreign-process termination. Native window capture
+unavailable, so no native-input or physical-display proof is claimed. No active
+writer/build/test overlapped the series. Do not repeat this baseline or Party
+implementation by reading the older checkpoint below. Next separately scoped
+stage: small supported own-path boundary + real UI element without private headers,
+then bounded hardware experiment; feature combinations later, no implementation yet.
+
 ## Latest checkpoint — Party alpha stage closed with user acceptance
 
 Canonical E `C:/Users/USER/Desktop/AveMotion`, H
