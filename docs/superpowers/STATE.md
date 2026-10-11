@@ -1,6 +1,6 @@
 # AveMotion autonomous work state
 
-Updated: 2026-10-11 (Moscow local date)
+Updated: 2026-10-12 (Moscow local date)
 
 ## Current work — supported own playback and one real UI icon
 
@@ -43,8 +43,29 @@ own6/6, implementer final own6/6/nine original assets, reference4/4/shell3/3,
 isolated static /MT build passed. Retained warning noise and native/live-DPR
 limits are explicit. Installed EXE/PDB5BE313C9/A9C734F6 unchanged. Native capture
 retry failed; only a labeled saved Test Animation capture shown to user.
-Task4 next: final combined gates, frozen-A/candidate-B comparison and guarded
-Release handoff, not a new scheduler/format/GPU. Resume this ledger, not old tasks.
+Task4 complete: fresh preview97/97, public none/install46/46, H own6/6 and
+static2/2 plus9explicit original gates/3smokes. Frozen A/current B use identical
+kit256-square/DPR1; all12steady1800batches, paused/hidden settled no new work.
+Mixed timing/CPU and higher B sampled memory retained, no stable speedup claim.
+Whole-stage strongest review0Critical/Important/3Minor; one report-only fix wave
+and scoped re-review corrected warning target provenance. Public terminal/retry
+documentation/regression and pathological fr1e-37 float-duration overflow remain
+nonblocking follow-ups, not denied/fixed. Earlier underflow-only duration ruling
+was overbroad; do not claim every finite positive float rate gives finite duration.
+Guarded root promotion UTC2026-10-11T21:14:32.9106028Z installed exact compiled
+Efe57343/Hcd49eb0 pair; EXED7B0E8F9.../PDBCF479713...,26files/24unchanged notices.
+Fresh installed package/import/readiness/SymChk passed, semantic/stability complete;
+verified prior full package/PDB in H build/checks/2026-10-11-supported-own-ui-task4/
+promotion-001/backup. Later documentation commits are NOT compilation revisions.
+No new GPU/format/cache/scheduler/docking/license/dependency/Windows work.
+Native new icon/live mixed-monitor DPR acceptance remains unverified; only a
+labeled old Test Animation capture was shown after native timeouts. Test Animation
+stays separate; TTS is only the one small real navigation icon, no TTS workflow.
+H report docs/testing/supported-own-ui-2026-10-12/REPORT.md records comparison,
+exact identities/commands,19ordered rulings/risks and retained limitations.
+Bounded implementation/comparison/handoff complete with stated acceptance limits;
+do not repeat Tasks0–4. Next new scope requires separately defined hardening or
+hardware experiment, not automatic feature expansion. Raw/SDD workspace retained.
 
 ## Latest checkpoint — initial own UI measurement complete
 
