@@ -32,8 +32,19 @@ no new production guard/parser. Root fresh E/H public tests1/1 each. Implementer
 own6/6 Windows/offscreen, reference4/4, shell3/3, nine original Duck/Party gates,
 static no-reference/no-install boundary and isolated static app build passed;
 unique raw logs in H build/checks/2026-10-11-supported-own-ui-task2. Installed
-EXE unchanged. Task3 next: shared existing executor plus TTS button icon, not a
-new scheduler or format. Resume this ledger, not old tasks.
+EXE unchanged. Task3 complete: H7dd3b22 ordinary-pushed after independent
+concurrency spec/quality Approved,0Critical/Important. Shared current executor,
+independent session Player/timer/mailboxes/renderer, queued initialization and
+synchronous owner-thread retirement; only final service release joins. Small
+own-authored navigation icon uses Once/hold-final while hovered, rest on
+Leave/release/Hide. Test Animation remains separate. Functional RED/GREEN for
+sharing, real icon, bounded hover and delayed-completion replay; root fresh
+own6/6, implementer final own6/6/nine original assets, reference4/4/shell3/3,
+isolated static /MT build passed. Retained warning noise and native/live-DPR
+limits are explicit. Installed EXE/PDB5BE313C9/A9C734F6 unchanged. Native capture
+retry failed; only a labeled saved Test Animation capture shown to user.
+Task4 next: final combined gates, frozen-A/candidate-B comparison and guarded
+Release handoff, not a new scheduler/format/GPU. Resume this ledger, not old tasks.
 
 ## Latest checkpoint — initial own UI measurement complete
 
