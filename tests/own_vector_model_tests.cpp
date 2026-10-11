@@ -1,10 +1,12 @@
 #include "NativeEllipseAdmissionCore.hpp"
 #include "OwnVectorTestData.hpp"
 #include "support/OwnVectorGroupTestData.hpp"
+#include "support/OwnVectorMetadataPositionTestData.hpp"
 #include "avemotion/evaluation/PropertyEvaluator.hpp"
 #include <algorithm>
 #include <cmath>
 #include <iostream>
+#include <tuple>
 using namespace avemotion;
 using test::vectorRequire;
 using namespace model;
@@ -16,6 +18,142 @@ using test::vectorShape;
 using test::vectorShapeLayer;
 void near(float got, float expected, const std::string& label) {
     vectorRequire(std::abs(got - expected) <= 0.0001F, label + " got=" + std::to_string(got));
+}
+void exporterMetadata() {
+    using namespace test;
+    const auto plain = vectorRoot(clippingShape(24, 24, 48, 48));
+    const auto annotated = vectorReplace(metadataPositionAnnotate(plain),
+        R"("markers":[{"tm":25.5,"cm":"owned marker","dr":0.25}],)", "");
+    const auto original = vectorCompile(plain), admitted = vectorCompile(annotated);
+    vectorRequire(bool(admitted), "bounded exporter metadata admitted: " + admitted.path + admitted.message);
+    const auto& a = *original.prepared->model;
+    const auto& b = *admitted.prepared->model;
+    vectorRequire(a.sourceNodes.size() == b.sourceNodes.size() && a.properties.size() == b.properties.size() &&
+                  a.tracks.size() == b.tracks.size() && original.prepared->draws.size() == admitted.prepared->draws.size(),
+                  "discarded annotations leave model inventory unchanged");
+    for (const auto& [needle, kind] : std::vector<std::pair<std::string,std::string>>{
+             {R"("ty":"gr")", "group"}, {R"("ty":"sh")", "path"}}) {
+        for (const auto& key : kind == "group" ? std::vector<std::string>{"np","cix","ix"}
+                                             : std::vector<std::string>{"ix"}) {
+            for (const auto& value : {"0", "32768", "3e0"})
+                vectorRequire(bool(vectorCompile(vectorReplace(plain, needle, needle + ",\"" + key + "\":" + value))),
+                              "inclusive exporter index: " + key);
+            for (const auto& value : {"-1", "-0.0000001", "32768.00000001", "0.5", "1.0000000000000001", "true", "\"3\"", "null"})
+                metadataPositionReject(vectorReplace(plain, needle, needle + ",\"" + key + "\":" + value), kind + key + value);
+        }
+    }
+    for (const auto& needle : {R"("ty":"gr")", R"("ty":"sh")", R"("ty":"fl")"}) {
+        vectorRequire(bool(vectorCompile(vectorReplace(plain, needle, std::string(needle) + ",\"mn\":\"" + std::string(1024,'x') + "\""))),
+                      "1024 byte exporter name");
+        for (const auto& value : {std::string("\"") + std::string(1025,'x') + "\"", std::string("7"),std::string("null")})
+            metadataPositionReject(vectorReplace(plain, needle, std::string(needle) + ",\"mn\":" + value), "name bound/type");
+        for (const auto& field : {R"("l2":0)", R"("unwitnessed":0)"})
+            metadataPositionReject(vectorReplace(plain, needle, std::string(needle) + "," + field), "strict unknown shape field");
+    }
+    for (const auto& [needle,field] : std::vector<std::pair<std::string,std::string>>{
+             {R"("fr":60)", R"("mn":"bad")"}, {R"("ty":4)", R"("ix":1)"},
+             {R"("ty":"sh")", R"("np":1)"}, {R"("ty":"fl")", R"("ix":1)"},
+             {R"("ty":"tr")", R"("mn":"bad")"}, {R"("k":[1,0,0,1])",R"("mn":"bad")"},
+             {R"("ty":"gr")", R"("markers":[])"}, {R"("ty":4)",R"("markers":[])"},
+             {R"("ty":"sh")",R"("markers":[])"}, {R"("ty":"tr")",R"("markers":[])"},
+             {R"("k":[1,0,0,1])",R"("markers":[])"}})
+        metadataPositionReject(vectorReplace(plain, needle, needle + "," + field), "wrong metadata context");
+    // Existing property ix domain remains strict, independently of item metadata.
+    metadataPositionReject(vectorRoot(vectorLayer(R"("r":{"k":0,"ix":0.5})")), "property ix unchanged");
+    metadataPositionReject(vectorReplace(vectorRoot(clippingShape(24,24,48,48,true)),
+                           R"("ty":"st")",R"("ty":"st","mn":"wrong context")"),"stroke exporter metadata excluded");
+    metadataPositionReject(vectorReplace(vectorPrecomp(vectorLayer("")),R"("id":"x")",
+                           R"("id":"x","markers":[])"),"asset markers excluded");
+    const auto markers = [&](const std::string& value) {
+        return vectorReplace(plain, R"("fr":60)", "\"markers\":" + value + R"(,"fr":60)");
+    };
+    for (unsigned count : {0U,128U,129U}) {
+        std::string entries;
+        for (unsigned i=0;i<count;++i) { if(i) entries += ','; entries += R"({"tm":-20000,"cm":"","dr":20000})"; }
+        const auto result = vectorCompile(markers("[" + entries + "]"));
+        vectorRequire(bool(result) == (count <= 128) && (count <= 128 || !result.prepared), "marker array budget");
+    }
+    vectorRequire(bool(vectorCompile(markers("[{\"tm\":20000,\"cm\":\"" + std::string(1024,'m') + "\",\"dr\":0}]"))),
+                  "inclusive marker boundaries and byte cap");
+    for (const auto& marker : {R"({"tm":-20000.0001,"cm":"x","dr":0})", R"({"tm":20000.0001,"cm":"x","dr":0})",
+             R"({"tm":0,"cm":"x","dr":-0.0001})", R"({"tm":0,"cm":"x","dr":20000.0001})",
+             R"({"tm":"0","cm":"x","dr":0})", R"({"tm":0,"cm":0,"dr":0})",
+             R"({"tm":0,"cm":"x","dr":true})", R"({"cm":"x","dr":0})", R"({"tm":0,"dr":0})",
+             R"({"tm":0,"cm":"x"})", R"({"tm":0,"cm":"x","dr":0,"unknown":0})",
+             R"({"tm":1e999,"cm":"x","dr":0})",R"({"tm":0,"cm":"x","dr":1e999})", "null"})
+        metadataPositionReject(markers("[" + std::string(marker) + "]"), "malformed marker");
+    metadataPositionReject(markers("[{\"tm\":0,\"cm\":\"" + std::string(1025,'m') + "\",\"dr\":0}]"), "marker name cap");
+    metadataPositionReject(markers("{}"), "marker array type");
+}
+void exporterMarkerAdmission() {
+    using namespace test;
+    const auto result = vectorCompile(vectorReplace(vectorRoot(vectorLayer("")), R"("fr":60)",
+        R"("markers":[{"tm":25.5,"cm":"owned marker","dr":0.25}],"fr":60)"));
+    vectorRequire(bool(result), "bounded root marker admitted: " + result.path + result.message);
+    vectorRequire(result.prepared->model->sourceNodes.size() == 2 && result.prepared->model->properties.size() == 5 &&
+                  result.prepared->model->tracks.empty(), "markers produce no model records");
+}
+void separatedPosition() {
+    using namespace test;
+    const auto position = [&](const std::string& axes) { return vectorRoot(vectorLayer("\"p\":" + axes)); };
+    for (const auto& axes : {std::string(R"({"s":true,"x":{"k":-32768},"y":{"k":32768}})"),
+                             metadataPositionAxes(), std::string(R"({"y":{"k":4},"s":true,"x":{"k":3}})"),
+                             std::string(R"({"x":{"k":3},"y":{"k":4},"s":true})"),
+                             std::string(R"({"s":true,"y":{"k":4},"x":{"k":3}})"),
+                             std::string(R"({"x":{"k":3},"s":true,"y":{"k":4}})"),
+                             std::string(R"({"y":{"k":4},"x":{"k":3},"s":true})")}) {
+        const auto result = vectorCompile(position(axes));
+        vectorRequire(bool(result), "separated layer axes admitted: " + result.path + result.message);
+        const bool animated = axes == metadataPositionAxes();
+        unsigned axesFound = 0;
+        for (const auto& property : result.prepared->model->properties) {
+            vectorRequire(property.semantic != PropertySemantic::TransformPosition, "split emits no combined position");
+            if (property.semantic == PropertySemantic::TransformPositionX || property.semantic == PropertySemantic::TransformPositionY) {
+                ++axesFound;
+                vectorRequire(property.valueType == PropertyValueType::Scalar && property.flags ==
+                              (PropertyFlagSeparatedDimension | (animated ? PropertyFlagAnimated : PropertyFlagStatic)),
+                              "split scalar flags retain animation/static and separated state");
+            }
+        }
+        vectorRequire(axesFound == 2, "exactly two axis records");
+        evaluation::PropertyEvaluator evaluator(result.prepared->model);
+        evaluation::PropertyEvaluationWorkspace ws;
+        evaluator.prepare(ws);
+        if (animated) {
+            for (const auto& sample : std::vector<std::tuple<double,float,float>>{
+                    {-1,0.F,0.F}, {0,0.F,0.F}, {14,7.F,0.F}, {14.5,7.25F,0.F}, {15,7.5F,10.F},
+                    {20,10.F,10.F}, {40,20.F,10.F}, {59,20.F,10.F}, {60,20.F,-5.F}, {179,20.F,-5.F}, {15,7.5F,10.F}, {0,0.F,0.F}}) {
+                const auto [frame,x,y] = sample;
+                const auto view = evaluator.evaluate(frame,ws);
+                vectorRequire(bool(view), "axis evaluation");
+                const auto& matrix = view.nodeTransforms[result.prepared->layers[0].layer.index()].worldMatrix;
+                near(matrix.dx,x,"literal independent X sample"); near(matrix.dy,y,"literal independent Y hold sample");
+            }
+        } else {
+            const auto view = evaluator.evaluate(17,ws);
+            const auto& matrix = view.nodeTransforms[result.prepared->layers[0].layer.index()].worldMatrix;
+            near(matrix.dx, axes.find("-32768") != std::string::npos ? -32768.F : 3.F,"static X");
+            near(matrix.dy, axes.find("-32768") != std::string::npos ? 32768.F : 4.F,"static Y");
+        }
+    }
+    for (const auto& axes : {R"({"s":true,"x":{"k":0}})", R"({"s":true,"y":{"k":0}})",
+             R"({"s":false,"x":{"k":0},"y":{"k":0}})", R"({"s":1,"x":{"k":0},"y":{"k":0}})",
+             R"({"x":{"k":0},"y":{"k":0}})", R"({"s":true,"x":{"k":0},"y":{"k":0},"k":[0,0]})",
+             R"({"s":true,"x":{"k":0},"y":{"k":0},"z":{"k":0}})", R"({"s":true,"x":{"k":0},"y":{"k":0},"other":0})",
+             R"({"s":true,"x":{"k":[0]},"y":{"k":0}})", R"({"s":true,"x":{"k":null},"y":{"k":0}})",
+             R"({"s":true,"x":{"k":-32768.000001},"y":{"k":0}})", R"({"s":true,"x":{"k":0},"y":{"k":32768.000001}})"})
+        metadataPositionReject(position(axes), "split keys/type/domain");
+    for (const auto& [from,to] : std::vector<std::pair<std::string,std::string>>{
+             {R"("t":40)",R"("t":0)"}, {R"("t":40)",R"("t":-1)"}, {R"("t":40)",R"("t":20001)"},
+             {R"("s":[20])",R"("s":[32768.000001])"}, {R"("s":[20])",R"("s":20)"},
+             {R"("t":0,"s":[0],"o":)", R"("t":0,"s":[0],"ti":[0,0],"to":[0,0],"o":)"},
+             {R"("x":1,"y":1)",R"("x":1.01,"y":1)"}})
+        metadataPositionReject(position(vectorReplace(metadataPositionAxes(),from,to)),"split track validation");
+    metadataPositionReject(vectorRoot(vectorLayer("\"p\":" + metadataPositionAxes(),R"(,"ao":1)")),"auto orient unchanged");
+    metadataPositionReject(vectorRoot(vectorReplace(clippingShape(24,24,48,48),R"("ty":"tr")",
+                           R"("ty":"tr","p":)" + metadataPositionAxes())),"group split rejected");
+    metadataPositionReject(vectorReplace(vectorPrecomp(vectorLayer("")),R"("op":170,"ks":{})",
+                           R"("op":170,"ks":{"p":)" + metadataPositionAxes() + "}"),"precomp split rejected");
 }
 void boundedGroups() {
     using namespace test;
@@ -389,6 +527,15 @@ void rejects(const std::string& fixture) {
 }
 int main(int argc, char** argv) {
     try {
+        if (argc == 1) {
+            unsigned failures = 0;
+            for (const auto& [label,test] : std::vector<std::pair<std::string,void(*)()>>{
+                    {"exporter metadata",exporterMetadata},{"root markers",exporterMarkerAdmission},{"separated position",separatedPosition}}) {
+                try { test(); std::cout << "PASS " << label << '\n'; }
+                catch(const std::exception& e) { ++failures; std::cerr << "FAIL " << label << ": " << e.what() << '\n'; }
+            }
+            vectorRequire(!failures,"metadata/position contracts failed=" + std::to_string(failures));
+        }
         if (argc == 2 && std::string(argv[1]) == "--group-opacity") {
             groupOpacity();
             return 0;

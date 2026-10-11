@@ -3,6 +3,7 @@
 #include "support/OwnVectorInstanceTestData.hpp"
 #include "support/OwnVectorSceneComparison.hpp"
 #include "support/OwnVectorGroupTestData.hpp"
+#include "support/OwnVectorMetadataPositionTestData.hpp"
 #include <chrono>
 #include <iostream>
 using namespace avemotion;
@@ -510,6 +511,9 @@ int main(int argc, char **argv) {
         // rectangular rejection probes live in the stream lifecycle test.
         run(input, false, exhaustive);
         if (argc == 1) {
+            run(metadataPositionFixture(), true);
+            run(metadataPositionFixture(true,true), true);
+            run(metadataPositionFixture(false), true);
             instanceOracleWitnesses();
             boundedGroupOracle();
             outerPaintWitness();

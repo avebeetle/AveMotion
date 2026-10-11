@@ -69,6 +69,12 @@ bool Value::boolean() const {
 void Value::metadata() const {
     if (get("nm").exists())
         (void)get("nm").string();
+    // Callers enforce context-specific keys before validating optional metadata.
+    for (auto key : {"np", "cix", "ix"})
+        if (get(key).exists())
+            (void)get(key).number(0, 32768, true);
+    if (get("mn").exists() && get("mn").string().size() > 1024)
+        get("mn").fail("exporter name exceeds byte limit");
     for (auto key : {"bm", "ddd", "ao"})
         if (get(key).exists())
             (void)get(key).number(0, 0, true);

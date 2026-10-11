@@ -21,8 +21,16 @@ public:
     std::vector<OwnVectorSourceBinding> sources;
     std::vector<std::int32_t> propertyFrameOffsets;
     void run() {
-        root_.keys({"v", "nm", "tgs", "ddd", "w", "h", "fr", "ip", "op", "assets", "layers"});
+        root_.keys({"v", "nm", "tgs", "ddd", "w", "h", "fr", "ip", "op", "assets", "layers", "markers"});
         root_.metadata();
+        if (root_.get("markers").exists())
+            for (const auto& marker : root_.get("markers").array(0, 128)) {
+                marker.keys({"tm", "cm", "dr"});
+                (void)marker.get("tm").number(-20000, 20000);
+                (void)marker.get("dr").number(0, 20000);
+                if (marker.get("cm").string().size() > 1024)
+                    marker.get("cm").fail("marker name exceeds byte limit");
+            }
         if (root_.get("v").exists())
             (void)root_.get("v").string();
         if (root_.get("tgs").exists())
@@ -134,8 +142,21 @@ private:
             object.keys({"p", "a", "s", "r", "o"});
         if (group && object.get("nm").exists())
             (void)object.get("nm").string();
-        vec2(owner, object, "p", PropertySemantic::TransformPosition, {}, -32768, 32768,
-             !group && !precomp);
+        const auto position = object.get("p");
+        if (!group && !precomp && position.exists() && position.get("s").exists()) {
+            position.keys({"s", "x", "y"});
+            if (!position.get("s").boolean())
+                position.get("s").fail("separated position requires true");
+            for (const auto& [field, semantic] :
+                 {std::pair{"x", PropertySemantic::TransformPositionX},
+                  std::pair{"y", PropertySemantic::TransformPositionY}}) {
+                const auto id = properties_.add(owner, semantic, position.get(field),
+                                                PropertyValueType::Scalar, -32768, 32768);
+                model->properties[id.index()].flags |= PropertyFlagSeparatedDimension;
+            }
+        } else
+            vec2(owner, object, "p", PropertySemantic::TransformPosition, {}, -32768, 32768,
+                 !group && !precomp);
         vec2(owner, object, "a", PropertySemantic::TransformAnchor, {}, group ? 0 : -32768,
              group ? 0 : 32768, false);
         if (group && object.get("s").exists()) {
@@ -174,7 +195,7 @@ private:
         if (stroke)
             input.keys({"ty", "nm", "c", "o", "w", "lc", "lj", "ml", "bm", "hd"});
         else
-            input.keys({"ty", "nm", "c", "o", "r", "bm", "hd"});
+            input.keys({"ty", "nm", "mn", "c", "o", "r", "bm", "hd"});
         input.metadata();
         const auto id = node(stroke ? SourceNodeKind::Stroke : SourceNodeKind::Fill, scope, input);
         properties_.add(id, stroke ? PropertySemantic::StrokeColor : PropertySemantic::FillColor,
@@ -226,7 +247,7 @@ private:
         for (const auto& item : items) {
             const auto type = item.get("ty").string();
             if (type == "gr") {
-                item.keys({"ty", "nm", "it", "bm", "hd"});
+                item.keys({"ty", "nm", "np", "cix", "ix", "mn", "it", "bm", "hd"});
                 item.metadata();
                 const auto group = node(SourceNodeKind::ShapeGroup, layer, item);
                 const auto contents = item.get("it").array(2, 5);
@@ -234,7 +255,7 @@ private:
                     contents.back().get("ty").string() != "tr")
                     item.get("it").fail("expected one path then paints/trim then transform");
                 const auto pathValue = contents.front();
-                pathValue.keys({"ty", "nm", "ind", "ks", "hd"});
+                pathValue.keys({"ty", "nm", "ix", "mn", "ind", "ks", "hd"});
                 pathValue.metadata();
                 if (pathValue.get("ind").exists())
                     (void)pathValue.get("ind").number(0, 32768, true);

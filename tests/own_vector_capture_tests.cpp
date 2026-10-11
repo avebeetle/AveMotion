@@ -5,6 +5,7 @@
 #include "support/OwnVectorClippingTestData.hpp"
 #include "support/OwnVectorSceneOracle.hpp"
 #include "support/OwnVectorGroupTestData.hpp"
+#include "support/OwnVectorMetadataPositionTestData.hpp"
 #include "support/WarpCaptureSurface.hpp"
 #include <array>
 #include <chrono>
@@ -201,7 +202,8 @@ void widthZeroWitness() {
     }
 }
 
-void run(const std::string &json, const fs::path &root, bool rectangles, bool groups = false) {
+void run(const std::string &json, const fs::path &root, bool rectangles, bool groups = false,
+         bool positions = false) {
     auto parsed = formats::detail::readOwnJson(json, {65536, 32});
     require(bool(parsed), "vector reader");
     auto prepared = render::detail::prepareOwnMotionAsset(*parsed.document);
@@ -230,7 +232,8 @@ void run(const std::string &json, const fs::path &root, bool rectangles, bool gr
         testsupport::CaptureProfile profile{"vector", width, height, width, height, 96, 96};
         ownSurface.configure(profile);
         refSurface.configure(profile);
-        const std::vector<unsigned> frames = groups ? std::vector<unsigned>{0,50,68,69,100,110,179,68,69} :
+        const std::vector<unsigned> frames = positions ? std::vector<unsigned>{0,14,15,20,25,40,59,60,70,179,70,60,59,40,25,20,15,14,0,15,15} :
+            groups ? std::vector<unsigned>{0,50,68,69,100,110,179,68,69} :
             std::vector<unsigned>{0,10,15,20,33,34,45,67,68,90,110,127,128,135,137,138,179};
         for (const auto frame : frames) {
             auto own = stream.stream->emit(frame, width, height);
@@ -317,6 +320,10 @@ int main(int argc, char **argv) {
         clippingWitnesses(root);
         run(vectorInput(argc, argv), root, argc == 1);
         if (argc == 1) {
+            fs::create_directories(root / "metadata-position");
+            run(metadataPositionFixture(), root / "metadata-position", true, false, true);
+            fs::create_directories(root / "metadata-position-occurrences");
+            run(metadataPositionFixture(true,true), root / "metadata-position-occurrences", true, false, true);
             fs::create_directories(root / "bounded-groups");
             run(vectorGroupFixture(), root / "bounded-groups", true, true);
             fs::create_directories(root / "contained-precomp");

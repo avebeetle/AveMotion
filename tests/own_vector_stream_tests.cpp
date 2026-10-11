@@ -9,8 +9,60 @@
 #include <tuple>
 #include "support/OwnVectorInstanceTestData.hpp"
 #include "support/OwnVectorGroupTestData.hpp"
+#include "support/OwnVectorMetadataPositionTestData.hpp"
 using namespace avemotion;
 using namespace avemotion::test;
+void metadataPositionStream() {
+    // Catch ignored split axes, shared axis knots, lost parent transforms, stale
+    // reverse sampling, occurrence clock leakage, and annotation side effects.
+    for (bool occurrences : {false,true}) {
+        auto stream = instanceStream(metadataPositionFixture(true,occurrences));
+        auto plain = instanceStream(metadataPositionFixture(false,occurrences));
+        const std::vector<std::tuple<unsigned,std::vector<model::MotionVec2Value>>> samples = occurrences
+            ? std::vector<std::tuple<unsigned,std::vector<model::MotionVec2Value>>>{
+                {0,{{3,4}}}, {14,{{5,4},{10,4}}}, {15,{{5.5F,4},{10.5F,14}}},
+                {20,{{8,4},{13,14}}}, {25,{{10.5F,14},{15.5F,14}}}, {40,{{18,14},{23,14}}},
+                {60,{{23,14},{23,-1}}}, {70,{{23,-1},{23,-1}}}, {179,{{23,-1},{23,-1}}},
+                {20,{{8,4},{13,14}}}, {0,{{3,4}}}}
+            : std::vector<std::tuple<unsigned,std::vector<model::MotionVec2Value>>>{
+                {0,{{3,4}}}, {14,{{10,4}}}, {15,{{10.5F,14}}}, {20,{{13,14}}},
+                {40,{{23,14}}}, {59,{{23,14}}}, {60,{{23,-1}}}, {179,{{23,-1}}},
+                {15,{{10.5F,14}}}, {0,{{3,4}}}};
+        for (const auto& [frame,expected] : samples) {
+            const auto actual = stream->emit(frame,128,128), unannotated = plain->emit(frame,128,128);
+            vectorRequire(bool(actual) && bool(unannotated),"metadata/position emit");
+            vectorRequire(actual.scene->drawItems.size() == expected.size() &&
+                          actual.scene->fingerprints.scene == unannotated.scene->fingerprints.scene,
+                          "annotations leave sampled scene content unchanged occurrences=" + std::to_string(occurrences) +
+                          " frame=" + std::to_string(frame) + " draws=" + std::to_string(actual.scene->drawItems.size()) +
+                          " expected=" + std::to_string(expected.size()) + " topology=" +
+                          std::to_string(actual.scene->fingerprints.topology) + "/" + std::to_string(unannotated.scene->fingerprints.topology) +
+                          " geometry=" + std::to_string(actual.scene->fingerprints.geometry) + "/" + std::to_string(unannotated.scene->fingerprints.geometry) +
+                          " paint=" + std::to_string(actual.scene->fingerprints.paint) + "/" + std::to_string(unannotated.scene->fingerprints.paint));
+            std::set<std::uint32_t> identities;
+            for(std::size_t i=0;i<expected.size();++i) {
+                const auto& draw = actual.scene->drawItems[i];
+                const auto& other = unannotated.scene->drawItems[i];
+                vectorRequire(std::abs(draw.localToViewport.dx - expected[i].x) < 0.0001F &&
+                              std::abs(draw.localToViewport.dy - expected[i].y) < 0.0001F &&
+                              draw.localToViewport.m11 == 1 && draw.localToViewport.m22 == 1 &&
+                              draw.separatedOpacity == 1 && draw.drawOrder == i,
+                              "literal split/parent/occurrence matrix frame=" + std::to_string(frame));
+                vectorRequire(draw.modelNode == other.modelNode && draw.modelGeometry == other.modelGeometry &&
+                              draw.modelPaint == other.modelPaint && draw.sourcePathNode == other.sourcePathNode &&
+                              draw.sourcePaintNode == other.sourcePaintNode && draw.localPath.verbs == other.localPath.verbs &&
+                              std::equal(draw.localPath.points.begin(),draw.localPath.points.end(),
+                                         other.localPath.points.begin(),other.localPath.points.end(),
+                                         [](const auto& a,const auto& b) { return a.x == b.x && a.y == b.y; }) &&
+                              draw.paint.solid.r == other.paint.solid.r && draw.paint.solid.g == other.paint.solid.g &&
+                              draw.paint.solid.b == other.paint.solid.b && draw.paint.solid.a == other.paint.solid.a &&
+                              identities.insert(draw.modelNode.value).second,
+                              "metadata preserves geometry, paint, source IDs and occurrence identities");
+            }
+        }
+    }
+    std::cout << "PASS metadata/position stream: independent axes, parents, repeated clocks and annotation invariance\n";
+}
 void boundedGroupStream() {
     auto stream = instanceStream(vectorGroupFixture());
     std::set<std::uint32_t> identities;
@@ -410,6 +462,7 @@ int main(int argc, char **argv) {
         }
         std::cout << "vector stream emitted " << scene.scene->drawItems.size() << " draws\n";
         if (argc == 1) {
+            metadataPositionStream();
             instanceContracts();
             boundedGroupStream();
             clippingEquivalence();
