@@ -2,6 +2,26 @@
 
 Updated: 2026-10-11 (Moscow local date)
 
+## Current checkpoint — own alpha mattes and original Party, 2026-10-11
+
+Controller-approved specification `specs/2026-10-11-own-alpha-matte-design.md`,
+plan `plans/2026-10-11-own-alpha-matte.md`, recovery ledger
+`.superpowers/sdd/2026-10-11-own-alpha-matte/progress.md`.
+Base E2fbdb35, H e02c2eb; canonical main, previous gradient stage CLOSED.
+Read-only engine/Party/host audits complete. Four tasks: immutable bounded
+pairing/metadata, existing private Direct2D composition, unchanged original Party
+acceptance, then narrow host wiring/guarded Release delivery. No Task1 product
+work yet; check ledger/live agents before resuming. Root-adjacent one-painted-draw
+Alpha pairs only; both provider/content remain publicly unsupported, no mask art
+leak. Neutral layer vector `l:2` and preserved bottommost-root Difference are
+explicit original-input requirements, not JSON stripping or general blend support.
+Command lists/effect share the current executor; target/transform/outer ownership
+and single common presentation opacity require native evidence. No second renderer,
+scheduler, dependency or automation changes. Installed Release remains unchanged.
+Original Party hash EAB1FD7070BFFD2965C12A80D2D91CFF76683AF65019F142ACF9A553EE877B5C;
+artwork local-evaluation-only, no Git/Release publication. Delivery blocked until
+fresh original/CPU/native/host gates and review pass.
+
 ## Current checkpoint — own static linear gradients, 2026-10-11
 
 Architecture design/plan are controller-approved under standing user delegation:
