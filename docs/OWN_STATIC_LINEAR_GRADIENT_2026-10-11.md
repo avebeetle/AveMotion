@@ -6,8 +6,9 @@ The own model/scene and private Direct2D execution now support bounded static
 RGB linear fills through the existing pipeline. This is a general capability
 motivated by the unchanged Noto Party input, not a per-sticker renderer.
 Both tasks are independently Approved with zero Critical/Important findings.
-Their implementation, fresh gates and scoped product pushes are complete;
-whole-stage review is pending at this checkpoint.
+The strongest-model whole-stage review is also Approved/Ready to merge, with
+no new actionable finding. Implementation, fresh gates, reviews and scoped
+product pushes are complete. The plan is closed without a production fix wave.
 
 Canonical source: `C:/Users/USER/Desktop/AveMotion`, directly on main under the
 user's explicit delegation. Stage base: `4acb7bb28c6cd5d3fc3e622d005cd41b5be007e2`.
@@ -15,6 +16,9 @@ Design/plan: `6e0bf6130e0a79eb4331ae088e7794a760fdbbaf`; model/scene product:
 `4e419ddc981796c1cbb17cf1f58c62195b727d79`; Task1 checkpoint:
 `d7f7ed47ee99f40eb169062a1b8d51405b5ad30d`; private backend product:
 `31d7665581d2f3dd29e592f6833fd6e36a931319`. All are ordinarily pushed.
+The reviewed documentation checkpoint is
+`cd493806cd579d771a26461b5ac48edc7c1ab80d`; subsequent closure documentation
+does not change the tested product bytes.
 
 ## Scope and architecture
 
@@ -124,3 +128,33 @@ No new installed EXE, UI/manual acceptance, Release1/4/16 timing, speedup or
 hardware-GPU claim belongs to this stage. Next capability: separately designed
 alpha mattes for original Party, then unchanged-input acceptance, deliberate
 host wiring and measured Release gates. Party is still unsupported now.
+
+## Controller decisions and their costs
+
+- Keep the static RGB profile and full local affine semantics. Other legitimate
+  gradient variants and final-only plans without a coherent local pair fail.
+- Share the existing executor through a fixed private entry, preserving public
+  policy and cache architecture. Deliberate host wiring and measured optimization
+  remain separate; this block is not installed Party playback or a speedup.
+- Retain corpus/vendor/license/history bytes and all raw development evidence,
+  rather than deleting the local SDD workspace. Cost: retained local artifacts,
+  with no shipping or publication permission implied.
+- Work directly in main as explicitly requested. Cost: a shared checkout rather
+  than isolated worktrees, controlled by one writer and scoped commits/index.
+- Qualify the ordinary reference's missing local/separated gradient seam.
+  Cost: no full-field local-gradient parity promise; own literal assertions and
+  ordinary exported-final assertions remain distinct.
+- Validate all requested draws and actual selected payloads, conservatively
+  rejecting scene-wide compositing. Cost: unused compositing also rejects this
+  private route; unplanned paint is not whole-asset admission.
+- Retain inherited warning noise and unchanged prior raw-local/Unicode/animated
+  opacity concerns without unrelated cleanup. Cost: no warning-free or new
+  coverage claim for those prior concerns.
+- Match independent native authored cubic commands and float color recipe.
+  Cost: exact native equality is narrower than equivalence across all recipes;
+  independent CPU/literal checks remain mandatory, and extra transformed native
+  cases do not establish transformed CPU parity.
+
+Every final-review declined item is retained within these acceptance boundaries,
+not silently dropped. No new authority, vendor edit or expanded feature was
+needed to close the gradient stage.

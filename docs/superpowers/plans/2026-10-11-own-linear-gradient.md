@@ -91,9 +91,14 @@ attribution minor corrected; inherited warnings/raw-local qualifications retaine
 
 ## Final stage handoff
 
-- [ ] Independent strongest-model whole-stage review of a single generated base..HEAD package plus reports, with named outside-diff checks only; no automatic full-suite replay by reviewers.
-- [ ] Resolve all Critical/Important findings together with resumed implementer, fresh covering checks and one scoped re-review. Record every controller ruling/cost in ledger and final response.
-- [ ] Verify exact frozen bytes, scoped clean Git, unchanged installed host and ordinary remote equality. Publish report/STATE with source commit identities, commands, actual counts, qualification of WARP/CPU/raw-local results and remaining matte/host/performance gates.
+- [x] Independent strongest-model whole-stage review of a single generated base..HEAD package plus reports, with named outside-diff checks only; no automatic full-suite replay by reviewers.
+- [x] Resolve all Critical/Important findings together with resumed implementer, fresh covering checks and one scoped re-review. Record every controller ruling/cost in ledger and final response. No Critical/Important or new actionable findings; no fix wave/re-review was needed.
+- [x] Verify exact frozen bytes, scoped clean Git, unchanged installed host and ordinary remote equality. Publish report/STATE with source commit identities, commands, actual counts, qualification of WARP/CPU/raw-local results and remaining matte/host/performance gates.
+
+Stage complete. Both task reviews and whole-stage review Approved; product
+4e419dd/31d7665 and reviewed docs cd49380 pushed. Closure documentation is the
+only subsequent change. Next matte/original/host/performance gates are not part
+of this plan's completion claim.
 
 ## Verification commands
 

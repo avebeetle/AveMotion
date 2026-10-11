@@ -26,9 +26,14 @@ report is finalized. Independent Task2 review Approved,0Critical/Important;
 report-only literal allowance citation corrected, no source changes/replays.
 Product31d7665581d2f3dd29e592f6833fd6e36a931319 is ordinarily pushed and remote
 confirmed equal. All6frozenTask2hashes and275other files are unchanged. Whole-stage
-review is pending. Public report: docs/OWN_STATIC_LINEAR_GRADIENT_2026-10-11.md.
+review is Approved/Ready to merge,0Critical/Important and no new actionable
+finding. Reviewed docs checkpointcd493806cd579d771a26461b5ac48edc7c1ab80d is pushed.
+Plan is closed without a product fix wave; all281product/test hashes remain the
+tested basis. Public report: docs/OWN_STATIC_LINEAR_GRADIENT_2026-10-11.md.
 Check current
 ledger/live agents and do not repeat Task1 or duplicate its successor.
+Do not restart either completed task. Next is separately designed alpha matte
+composition, then unchanged original Party acceptance and deliberate host wiring.
 Full local affine semantics are required, especially nonuniform ancestry;
 world-endpoint projection is not equivalent to pinned Telegram's CPU raster.
 Ordinary gradient reference exports final paint but lacks the local/separated
