@@ -2,7 +2,27 @@
 
 Updated: 2026-10-11 (Moscow local date)
 
-## Current checkpoint — vector metadata and separated position, 2026-10-11
+## Current checkpoint — own static linear gradients, 2026-10-11
+
+Architecture design/plan are controller-approved under standing user delegation:
+`specs/2026-10-11-own-linear-gradient-design.md` and
+`plans/2026-10-11-own-linear-gradient.md`; ledger
+`.superpowers/sdd/2026-10-11-own-linear-gradient/progress.md`.
+Base4acb7bb28c6cd5d3fc3e622d005cd41b5be007e2, canonical main. Two read-only audits
+confirm existing static model/evaluator support but solid-only own scene/backend.
+One writer next: Task1 bounded gradient model/scene, then reviewed Task2 private
+shared Direct2D entry preserving public draw/planner MVP policy. No product edits
+yet. Full local affine semantics are required, especially nonuniform ancestry;
+world-endpoint projection is not equivalent to pinned Telegram's CPU raster.
+
+Static group-local RGB linear fill2..16 stops/4096 asset gradient floats; existing
+budgets unchanged. No radial/keyed/tail/outer fill/matte, no new renderer/scheduler,
+dependency/license/Windows/automation or host delivery. Installed EXE unchanged.
+Original Party remains unsupported until matte plus original/host gates; no
+Release1/4/16 measurement or hardware GPU claim. Do not repeat the closed block
+below. Check ledger and live agents before dispatching a duplicate writer.
+
+## Previous checkpoint — vector metadata and separated position, 2026-10-11
 
 Bounded implementation complete on canonical C:/Users/USER/Desktop/AveMotion
 main: product d4157cae8f2237649d127d139109c5cf5b984765, base
