@@ -162,9 +162,16 @@ lowerOwnVectorProgram(const runtime::detail::OwnVectorModel &owner,
                 if (layer.source == source) return layer.layer.index();
             return runtime::kInvalidSceneIndex;
         };
-        auto& layer = layers[indexOf(binding.layer)];
-        if (binding.matteSource.valid()) layer.matteSourceLayer = indexOf(binding.matteSource);
-        if (binding.matteTarget.valid()) layer.matteTargetLayer = indexOf(binding.matteTarget);
+        const auto index = indexOf(binding.layer);
+        const auto matteSource = indexOf(binding.matteSource);
+        const auto matteTarget = indexOf(binding.matteTarget);
+        if (index == runtime::kInvalidSceneIndex ||
+            (binding.matteSource.valid() && matteSource == runtime::kInvalidSceneIndex) ||
+            (binding.matteTarget.valid() && matteTarget == runtime::kInvalidSceneIndex))
+            return {};
+        auto& layer = layers[index];
+        if (binding.matteSource.valid()) layer.matteSourceLayer = matteSource;
+        if (binding.matteTarget.valid()) layer.matteTargetLayer = matteTarget;
         layer.isolatedBottomDifference = binding.isolatedBottomDifference;
         auto& record = asset.layers[layer.layer.index()];
         if (binding.matteSource.valid()) record.matte = runtime::MatteMode::Alpha;

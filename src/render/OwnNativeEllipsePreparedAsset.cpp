@@ -168,6 +168,9 @@ prepareOwnVectorAsset(std::shared_ptr<const runtime::detail::OwnVectorModel> aut
                 "invalid own vector model"};
     auto asset = std::make_shared<model::MotionAssetModel>(*authored->model);
     auto program = lowerOwnVectorProgram(*authored, *asset);
+    if (!program)
+        return {OwnNativeEllipsePrepareCode::InvalidModel, nullptr, "/",
+                "own vector structural lowering failed"};
     evaluation::PropertyEvaluator evaluator(asset, authored->propertyFrameOffsets);
     evaluation::PropertyEvaluationWorkspace workspace;
     evaluator.prepare(workspace);

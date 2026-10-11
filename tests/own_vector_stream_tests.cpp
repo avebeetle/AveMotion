@@ -497,6 +497,40 @@ void gradientStream() {
     std::cout << "owned static gradient local/final RGB, parent opacity0, full affine, fractional alpha,"
                  " static paint identity, animated parent/path seeks and occurrence clocks verified\n";
 }
+void unreachableStructuralLayerRejected() {
+    // A matching source/binding parent under another layer's ShapeGroup is
+    // acyclic but unreachable by the structural layer-only traversal.
+    const auto compiled = vectorCompile(vectorRoot(matteLayer(1) + "," + matteLayer(2)));
+    vectorRequire(bool(compiled), "structural corruption fixture compiles");
+    auto asset = std::const_pointer_cast<model::MotionAssetModel>(compiled.prepared->model);
+    auto& binding = const_cast<runtime::detail::OwnVectorLayerBinding&>(compiled.prepared->layers[0]);
+    const auto group = compiled.prepared->draws[1].group;
+    asset->sourceNodes[binding.layer.index()].parent = group;
+    binding.structuralParent = group;
+    vectorRequire(!runtime::detail::validateOwnVectorModel(*compiled.prepared),
+                  "unreachable ShapeGroup structural parent rejected before lowering");
+    const auto prepared = render::detail::prepareOwnVectorAsset(compiled.prepared);
+    vectorRequire(!prepared && !prepared.prepared &&
+                      prepared.code == render::detail::OwnNativeEllipsePrepareCode::InvalidModel,
+                  "unreachable structural owner preparation returns InvalidModel");
+    auto loweredAsset = *asset;
+    vectorRequire(!render::detail::lowerOwnVectorProgram(*compiled.prepared, loweredAsset),
+                  "private lowering safely rejects missing own layer lookup");
+}
+void missingRelationshipLookupRejected() {
+    // This bypasses public validation only to exercise the private lowerer's
+    // defense. A missing relationship lookup does not dereference the sentinel.
+    for (bool provider : {false, true}) {
+        const auto compiled = vectorCompile(matteFixture());
+        vectorRequire(bool(compiled), "missing relationship lookup fixture compiles");
+        auto& binding = const_cast<runtime::detail::OwnVectorLayerBinding&>(
+            compiled.prepared->layers[provider ? 1 : 2]);
+        (provider ? binding.matteTarget : binding.matteSource) = model::makeId<model::SourceNodeId>(9999);
+        auto asset = *compiled.prepared->model;
+        vectorRequire(!render::detail::lowerOwnVectorProgram(*compiled.prepared, asset),
+                      "private lowering rejects missing relationship lookup");
+    }
+}
 void matteStream() {
     // Lost role indices, parenting-as-alpha, interval drift and double common
     // alpha all fail these independent literal observations.
@@ -519,7 +553,8 @@ void matteStream() {
                 const auto& d=scene.drawItems[i];
                 vectorRequire(d.layerIndex==i+1 && d.localToViewport.dx==(i?providerX:contentX) &&
                     d.localToViewport.dy==(i?providerY:contentY) && d.localToViewport.m11==1 &&
-                    d.localToViewport.m22==1 && d.separatedOpacity==0.5F, "literal parent matrix and independent fractional alpha");
+                    d.localToViewport.m22==1 && d.localToViewport.m12==0 && d.localToViewport.m21==0 &&
+                    d.separatedOpacity==0.5F, "literal parent matrix and independent fractional alpha");
             }
             render::MotionRenderPlanner planner;
             render::PresentationState p; p.opacity=0.5F;
@@ -574,7 +609,11 @@ void matteStream() {
 }
 int main(int argc, char **argv) {
     try {
-        if (argc==1) matteStream();
+        if (argc==1) {
+            unreachableStructuralLayerRejected();
+            missingRelationshipLookupRejected();
+            matteStream();
+        }
         const auto json = vectorInput(argc, argv);
         const bool second = argc == 3 && std::filesystem::path(argv[2]).filename() == "a-2.tgs";
         lifecycle(json);

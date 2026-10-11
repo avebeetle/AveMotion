@@ -566,6 +566,10 @@ bool validateOwnVectorModel(const OwnVectorModel& owner) {
     evaluation::PropertyEvaluator evaluator(owner.model, owner.propertyFrameOffsets);
     if (!evaluator.valid())
         return false;
+    const auto root = m.compositions.front().rootNode;
+    const auto* rootNode = m.sourceNode(root);
+    if (!rootNode || rootNode->kind != SourceNodeKind::Composition || rootNode->parent.valid())
+        return false;
     std::set<std::uint32_t> layerIds;
     for (std::size_t i=0;i<owner.layers.size();++i) {
         const auto& b=owner.layers[i];
@@ -576,6 +580,19 @@ bool validateOwnVectorModel(const OwnVectorModel& owner) {
             n->matteSource != b.matteSource ||
             n->matteMode != (b.matteSource.valid() ? SourceMatteMode::Alpha : SourceMatteMode::None) ||
             n->blendMode != (b.isolatedBottomDifference ? SourceBlendMode::Difference : SourceBlendMode::Normal))
+            return false;
+        auto parent = b.structuralParent;
+        for (std::size_t depth = 0; parent != root && depth < owner.layers.size(); ++depth) {
+            const auto* ancestor = m.sourceNode(parent);
+            const auto binding = std::find_if(owner.layers.begin(), owner.layers.end(),
+                                             [&](const auto& layer) { return layer.layer == parent; });
+            if (!ancestor || ancestor->kind != SourceNodeKind::Layer ||
+                ancestor->layerKind != SourceLayerKind::Precomposition || binding == owner.layers.end() ||
+                ancestor->parent != binding->structuralParent)
+                return false;
+            parent = binding->structuralParent;
+        }
+        if (parent != root)
             return false;
         const bool provider=b.matteTarget.valid(), content=b.matteSource.valid();
         if (provider || content) {
