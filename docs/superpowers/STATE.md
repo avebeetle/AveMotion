@@ -2,7 +2,47 @@
 
 Updated: 2026-10-11 (Moscow local date)
 
-## Current checkpoint — own alpha mattes and original Party, 2026-10-11
+## Latest checkpoint — Party installed, native UI acceptance pending
+
+Canonical E `C:/Users/USER/Desktop/AveMotion`, H
+`D:/rvc/c++/DragonianVoice/Avelabs-UI`; plan/spec/ledger are the alpha-matte paths
+in the checkpoint below. Tasks1–3 complete; Task4 product, task review, strongest
+whole-stage review, guarded installation and local Party seed are complete.
+Task4 native controls acceptance is PENDING, not full-stage completion.
+Do not repeat implementation/build/delivery: next action is the user's native
+Test Animation -> Party Popper -> play/pause/seek/restart/1/4/16/backdrop check.
+
+Build E69ebbb125e7c84dd4b133bd43dd71101c43e7afd and
+H69fe01b0d06aab3e8d85a9a6c8fe401550c9137a were clean/frozen; product commits
+ordinary-pushed. Later docs HEADs are NOT compilation revisions. Installed
+EXE5BE313C92EF61A4A47994280B05C634B553D7A4ECBD372F5722EB88CAEA288B9,
+PDBA9C734F66F6E59582DD8911354A636C9EC94A2009F71CF25EA4AA0D6E4F3E050.
+Actual120 /MTcompilecommands/reference-none link;26files/24unchanged notices,
+installed package/import/readiness/SymChk passed. Prior26file/PDB backup H/build/
+checks/2026-10-11-own-alpha-matte-001/delivery/promotion-001/backup retained.
+Party/Ducks original hashes unchanged, local-only artwork outside Git/Release.
+Seed preserved twoDuck entries/defaultId/saved selection; PartyPopper added.
+
+Final engine47/95/96,hostown5/5twice(203/0/6explicitopt-in skips),reference4/4
+(189/0/0),shell3/3(12/0/0),separate originalrenderer/worker/page gates passed.
+Task4 and strongest combined review0Critical/Important;3335boundrecords and
+78packagefiles/PDBs independently checked. Retained minor warningnoise/rollback
+diagnostic weakness explicitly nonblocking. Exact residual/ordinaryfield/CPU/
+native/WARP limitations remain in OWN_ALPHA_MATTE_2026-10-11.md and ledger.
+
+Own canonical app was launched (PID36236,UTC2026-10-11T15:39:36.142638Z), unique
+returned window1050972. Screenshot/accessibility capture first failed with
+FrameArrived timeout, then refreshedselection/activation failed with window
+capture timeout. Inputs stopped per computer-use recovery policy; app leftopen
+for user check, no foreign-process termination or Windows/security changes.
+Manual controls/transparency/1/4/16 acceptance NOT observed; async user check
+requested. HardwareGPU/DPI/performance/livefailedrollback not claimed.
+All product writers/reviewers finished; no duplicate active executor. Detailed
+raw/commands/receipts in H/build/checks/2026-10-11-own-alpha-matte-001. Tracked
+handoff docs follow guarded delivery; no source rebuild for documentation.
+The following checkpoint is the retained pre-delivery record, not a new task.
+
+## Pre-delivery checkpoint — own alpha mattes and original Party, 2026-10-11
 
 Controller-approved specification `specs/2026-10-11-own-alpha-matte-design.md`,
 plan `plans/2026-10-11-own-alpha-matte.md`, recovery ledger

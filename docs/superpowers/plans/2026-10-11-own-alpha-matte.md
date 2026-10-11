@@ -10,6 +10,11 @@
 
 **Spec:** `docs/superpowers/specs/2026-10-11-own-alpha-matte-design.md`.
 
+Checkpoint 2026-10-11: Tasks1–3 complete. Task4 implementation/reviews and guarded
+Release installation/local seed complete; installed native control acceptance
+pending after two Windows capture timeouts. No repeated build is required to
+obtain the user's Test Animation -> Party Popper manual receipt.
+
 ## Global Constraints
 
 - Canonical E is `C:/Users/USER/Desktop/AveMotion`; H is `D:/rvc/c++/DragonianVoice/Avelabs-UI`. Work directly in main; scoped commits and ordinary push only.
@@ -89,13 +94,14 @@
 
 **Interfaces:** Consumes reviewed original acceptance and AlphaMatteBackendAccess; returns existing owned premultiplied QImage path. Worker/canvas/playback APIs and scheduling remain unchanged.
 
-- [ ] Read H maintenance/roadmap and current delivery provenance. Test-first original Party renderer acceptance using a separate opt-in external Party frame-zero slot and Task3 fresh CPU BGRA under the unchanged engine PixelComparison default policy. Keep the existing Duck external slot, exact-byte fit oracle and its one-byte-negative assertion intact; do not reinterpret it as a tolerance test. Retain generic JSON/TGS/unsupported errors, owned buffer/lifetime, fit/transparency and zero skipped-item checks. Watch functional RED before renderer/CMake edits. The CPU frame-zero host gate proves one-frame independent parity, not mask coverage by itself; Task2/3 own the kernel and multi-frame evidence.
-- [ ] Wire the fixed private entry with target-private include path and strict feature validation; never blanket-ignore unsupportedFeatureItemCount. Fresh own/reference host harnesses verify renderer, transport/hidden lifetime/replacement,1/4/16 and transparent parent.
-- [ ] Add local-evaluation-only pinned Party via contained/hash-checked catalog; preserve prior saved/default selection. Do not commit artwork. Original Party worker/page gates use generic92-frame metadata; do not use Duck179-frame boundary environment.
-- [ ] Stage a fresh variant-none `/MT` candidate through existing static build and Runtime-only install path; verify native smoke/original/tests/imports/readiness/SymChk and exact source/build provenance. Avoid Symbols install's absolute canonical destination until guarded promotion. Preserve current EXE/PDB until verified candidate and zero installed processes.
-- [ ] Independent host task review and strongest combined-stage review of frozen packages/reports. Fix all Critical/Important findings with covering tests; maintain scoped commits/ordinary pushes in each repository after remote checks.
-- [ ] Back up26-file Release plus matching PDB, guarded promotion, installed hashes/provenance and smoke. Native original playback/pause/seek/restart/1/4/16/transparent backdrop validation is a separate gate; describe unavailable manual/DPI/GPU evidence honestly. Matched Release performance work only after correctness and no competing workers; no unmeasured optimization/speedup claims.
-- [ ] Finish report/STATE/ledger with E/H SHAs, commands/counts/native/CPU/UI coverage, retained warning/raw limitations, every ruling and costs, installed provenance and next measured bottleneck. Retain recovery/evidence artifacts; no automation changes.
+- [x] Read H maintenance/roadmap and current delivery provenance. Test-first original Party renderer acceptance using a separate opt-in external Party frame-zero slot and Task3 fresh CPU BGRA under the unchanged engine PixelComparison default policy. Keep the existing Duck external slot, exact-byte fit oracle and its one-byte-negative assertion intact; do not reinterpret it as a tolerance test. Retain generic JSON/TGS/unsupported errors, owned buffer/lifetime, fit/transparency and zero skipped-item checks. Watch functional RED before renderer/CMake edits. The CPU frame-zero host gate proves one-frame independent parity, not mask coverage by itself; Task2/3 own the kernel and multi-frame evidence.
+- [x] Wire the fixed private entry with target-private include path and strict feature validation; never blanket-ignore unsupportedFeatureItemCount. Fresh own/reference host harnesses verify renderer, transport/hidden lifetime/replacement,1/4/16 and transparent parent.
+- [x] Add local-evaluation-only pinned Party via contained/hash-checked catalog; preserve prior saved/default selection. Do not commit artwork. Original Party worker/page gates use generic92-frame metadata; do not use Duck179-frame boundary environment.
+- [x] Stage a fresh variant-none `/MT` candidate through existing static build and Runtime-only install path; verify native smoke/original/tests/imports/readiness/SymChk and exact source/build provenance. Avoid Symbols install's absolute canonical destination until guarded promotion. Preserve current EXE/PDB until verified candidate and zero installed processes.
+- [x] Independent host task review and strongest combined-stage review of frozen packages/reports. Fix all Critical/Important findings with covering tests; maintain scoped commits/ordinary pushes in each repository after remote checks.
+- [x] Back up26-file Release plus matching PDB, guarded promotion, installed hashes/provenance and launch smoke. Full package/PDB and installed readiness/SymChk verified; actual launch returned the own window. Matched Release performance remains a separate stage; no unmeasured optimization/speedup claims.
+- [ ] Native original playback/pause/seek/restart/1/4/16/transparent backdrop validation. Two capture timeouts prevented observation after refreshed selection/activation; user check requested. No UI/API-harness substitution, alternate manual/DPI/GPU acceptance or fake completion. Do not rebuild/reimplement solely for this pending receipt.
+- [x] Finish report/STATE/ledger with E/H build SHAs, commands/counts/native/CPU/UI coverage, retained warning/raw limitations, every ruling and costs, installed provenance and next step. Delivery handoff explicitly leaves native user acceptance and later measurements open. Retain recovery/evidence artifacts; no automation changes.
 
 ## Verification commands
 
