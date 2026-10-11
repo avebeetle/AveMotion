@@ -25,8 +25,15 @@ projection follows existing Player contract, not an emission receipt. Root fresh
 no-reference46/46, installed boundary audit/consumer exit0, focused preview3/3;
 implementer preview97/97 reported, original full output only in tool transcript.
 One public completion-documentation/regression Minor deferred to final review.
-Task 2 sole writer /root/host_public_consumer_implementer migrates H from c5a1b2c
-to public API, no shared-thread/icon changes yet. Resume this ledger, not old tasks.
+Task 2 complete: H46d2baa public-only renderer/worker/smoke/consumer, E32c2778
+rejection characterization, ordinary-pushed. Independent review Approved after a
+duration concern was withdrawn against both finite-nonzero-float admission paths;
+no new production guard/parser. Root fresh E/H public tests1/1 each. Implementer
+own6/6 Windows/offscreen, reference4/4, shell3/3, nine original Duck/Party gates,
+static no-reference/no-install boundary and isolated static app build passed;
+unique raw logs in H build/checks/2026-10-11-supported-own-ui-task2. Installed
+EXE unchanged. Task3 next: shared existing executor plus TTS button icon, not a
+new scheduler or format. Resume this ledger, not old tasks.
 
 ## Latest checkpoint — initial own UI measurement complete
 
