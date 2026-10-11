@@ -10,10 +10,22 @@ Architecture design/plan are controller-approved under standing user delegation:
 `.superpowers/sdd/2026-10-11-own-linear-gradient/progress.md`.
 Base4acb7bb28c6cd5d3fc3e622d005cd41b5be007e2, canonical main. Two read-only audits
 confirm existing static model/evaluator support but solid-only own scene/backend.
-One writer next: Task1 bounded gradient model/scene, then reviewed Task2 private
-shared Direct2D entry preserving public draw/planner MVP policy. No product edits
-yet. Full local affine semantics are required, especially nonuniform ancestry;
+Design/plan commit6e0bf613 and Task1 product4e419ddc981796c1cbb17cf1f58c62195b727d79
+are pushed; remote main confirmed equal. Task1 bounded model/scene is complete,
+independently Approved with0Critical/Important. Fresh MSVC full suites47/47,
+95/95,96/96 and six original Duck checks pass;280frozen source hashes unchanged.
+Ordinary gradient differential216new scenes/config is qualified as below;60
+contextual rejection cases and4096boundary/overflow are covered. Inherited vendor
+C4251 warnings remain; report citation corrected without source edits/replays.
+Next sole writer: Task2 private shared Direct2D entry, preserving public draw/
+planner MVP policy. Check current ledger/live agents; do not repeat Task1.
+Full local affine semantics are required, especially nonuniform ancestry;
 world-endpoint projection is not equivalent to pinned Telegram's CPU raster.
+Ordinary gradient reference exports final paint but lacks the local/separated
+paint seam: compare exported fields, prove own local identity with literal tests,
+retain existing solid strictness and do not claim full-field local parity.
+Original Ducks retain preexisting raw-local residual-map qualifications; both
+2960scene/68capture rows pass, exact WARP pixels and unchanged CPU raster policy.
 
 Static group-local RGB linear fill2..16 stops/4096 asset gradient floats; existing
 budgets unchanged. No radial/keyed/tail/outer fill/matte, no new renderer/scheduler,

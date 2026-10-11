@@ -33,6 +33,13 @@ enough to recover that raster operation under nonuniform scale. Preserve local
 gradient data and the full existing geometry/paint-scope affine transform.
 Byte colors use truncation of `255*channel`; opacity composition and final scene
 alpha must match the ordinary pinned reference, not a second arbitrary rounding.
+The ordinary bridge exports gradient final endpoints/stops but no gradient local
+paint or separated-opacity seam. Differential gradient assertions compare those
+exported final fields and existing geometry/order/visibility/identity fields;
+owned literal assertions prove local/full-affine/static paint identity separately.
+Do not describe those local fields as full-field ordinary-reference parity or
+weaken the existing solid comparator. Final alpha uses unquantized fill opacity
+times inherited content alpha, then one byte truncation; local alpha is fill-only.
 No upstream code, vendor version or license changes are part of this feature.
 
 ## Approaches and selected boundary
@@ -103,6 +110,26 @@ and no unsupported feature bits. Never infer eligibility from a claimed source.
 Unsupported private plans return `UnsupportedFeature` before any draw call;
 invalid references return `InvalidPlan`. Ordinary public draw keeps its old skip
 contract, including its existing gradient rejection test.
+
+Preflight is whole-plan drawing validation, not an independent whole-asset
+admission API. Validate every referenced draw/layer index, finite presentation
+and geometry matrices, and effective opacity0..1 before native resource/draw
+work. Reconstruct feature bits from the executor's actual selected paint/stroke
+and require agreement with the plan; cleared bits cannot hide unsupported data.
+Reject nonempty dash arrays even on disabled strokes. Conservatively reject any
+source masks or layer mask/matte/clip content, including clip points without
+verbs; cost: even unplanned compositing in a scene rejects this private route.
+Unplanned paint items are not a whole-asset acceptance guarantee.
+
+Frozen static payload selection must agree with the canonical aliases used by
+the planner; absent/mismatched aliases or incomplete local pairing are invalid,
+not a reason to substitute final-space data. Gradient plans require their exact
+source localToViewport matrix; final-space solid plans require identity geometry
+transform. Validate selected cached payloads before lookup: supported finite
+stroke parameters, uniform stop alpha (RGB-only fill opacity), ordered bounded
+gradient stops, neutral inactive fields and finite distinct endpoints. Bad
+references/coherence/matrices/opacity return `InvalidPlan`; unsupported actual
+content or feature-bit disagreement returns `UnsupportedFeature` with zero draws.
 
 Use local endpoints and the full existing geometry transform followed by
 presentation and saved host transform exactly once. Create a pad/clamp gradient

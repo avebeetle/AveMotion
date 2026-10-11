@@ -29,6 +29,11 @@
 
 ## Task 1 Own gradient model and scene
 
+Completed and independently Approved,0Critical/Important. Product
+4e419ddc981796c1cbb17cf1f58c62195b727d79 ordinarily pushed; actual full gates
+47/47,95/95,96/96 and both original Duck regressions pass on frozen bytes.
+Report/qualified oracle and retained warning evidence are in the current ledger.
+
 **Files:**
 
 - Modify `src/runtime/OwnVectorModel.cpp` for group-local gf admission, validation and gradient statistics.
@@ -44,14 +49,14 @@
 - Produces `PropertyCompiler::staticGradient(SourceNodeId owner, Value property, std::size_t stopCount) -> PropertyId`, existing GradientStops semantics/tables, and internal gradient bindings on OwnSceneDraw.
 - Task2 consumes static canonical local paint, coherent local geometry/paint space, full geometry transform and separated inherited opacity.
 
-- [ ] Write independent model/stream tests before production edits. Base owned fill has local start(2,3), end(18,3), stops0/0.5/1 and middle RGB(0.5,0.25,0.125), expected bytes(127,63,31). Assert GradientFill/Linear, static property flags, exact packed ranges/statistics, no FillColor, canonical local endpoints/stops and neutral inactive fields.
-- [ ] Add malformed/range/type/order/cap tests: p1/17/fractional, count mismatch/tail, keyed k despite a0, nonzero/false/type-invalid a, wrong scalar types, duplicate/descending/out-of-range offsets/channels, unknown gf/g/property fields, t2/0/3, gs/outer gf, hidden/blend/highlights, coincident endpoints, 4096-float boundary/overflow. Rejection has no asset and a contextual path/message; existing solids remain valid.
-- [ ] Add literal ancestry test: parent position(5,7), scale(200,50), opacity0; group translation(2,4), scale(150,150); child own opacity100. At identity viewport, expected final start(15,11.25), end(63,11.25), one visible gradient. Add fractional fill/group/layer opacity tables using explicit pinned float-operation expectations, animated parent/shape forward/reverse/repeat, precomp occurrence clocks and presentation/static paint identity checks.
-- [ ] Build and run model/stream tests against unchanged production. Retain successful build and functional rejection at gf as RED; compiler/test-authoring failures are not RED. Existing MSVC cache commands below, capture exact exits/output in a new task-date evidence directory.
-- [ ] Implement the bounded compiler/staticGradient writer, bind/sample gradient properties and final scene projection. Preserve full local canonical paint; final endpoint export uses the paint-scope affine and final alpha follows pinned composition. Do not alter scalar temporal tracks or parent-opacity rules. Enforce aggregate budget before append.
-- [ ] Add fresh ordinary-reference scene differential fixture cases with explicit gradient comparisons and mutations of endpoint, stop position/color/alpha and inherited opacity. Record any representation/raw-local qualification; do not weaken existing comparator/tolerances or use stripped Party as acceptance.
-- [ ] Run focused GREEN, then fresh full no-reference, Telegram and explicit preview suites on frozen product bytes. Existing capture cases remain unchanged in Task1. Recheck original Ducks with the existing external model/full-scene/capture commands, preserving hashes.
-- [ ] Self-review/report hashes, actual commands/results/iterations/limits; controller independent task review, STATE/ledger, scoped commit and ordinary push. Model/scene success is not private rendering or Party/UI acceptance.
+- [x] Write independent model/stream tests before production edits. Base owned fill has local start(2,3), end(18,3), stops0/0.5/1 and middle RGB(0.5,0.25,0.125), expected bytes(127,63,31). Assert GradientFill/Linear, static property flags, exact packed ranges/statistics, no FillColor, canonical local endpoints/stops and neutral inactive fields.
+- [x] Add malformed/range/type/order/cap tests: p1/17/fractional, count mismatch/tail, keyed k despite a0, nonzero/false/type-invalid a, wrong scalar types, duplicate/descending/out-of-range offsets/channels, unknown gf/g/property fields, t2/0/3, gs/outer gf, hidden/blend/highlights, coincident endpoints, 4096-float boundary/overflow. Rejection has no asset and a contextual path/message; existing solids remain valid.
+- [x] Add literal ancestry test: parent position(5,7), scale(200,50), opacity0; group translation(2,4), scale(150,150); child own opacity100. At identity viewport, expected final start(15,11.25), end(63,11.25), one visible gradient. Add fractional fill/group/layer opacity tables using explicit pinned float-operation expectations, animated parent/shape forward/reverse/repeat, precomp occurrence clocks and presentation/static paint identity checks.
+- [x] Build and run model/stream tests against unchanged production. Retain successful build and functional rejection at gf as RED; compiler/test-authoring failures are not RED. Existing MSVC cache commands below, capture exact exits/output in a new task-date evidence directory.
+- [x] Implement the bounded compiler/staticGradient writer, bind/sample gradient properties and final scene projection. Preserve full local canonical paint; final endpoint export uses the paint-scope affine and final alpha follows pinned composition. Do not alter scalar temporal tracks or parent-opacity rules. Enforce aggregate budget before append.
+- [x] Add fresh ordinary-reference scene differential fixture cases with explicit gradient comparisons and mutations of endpoint, stop position/color/alpha and inherited opacity. Record any representation/raw-local qualification; do not weaken existing comparator/tolerances or use stripped Party as acceptance.
+- [x] Run focused GREEN, then fresh full no-reference, Telegram and explicit preview suites on frozen product bytes. Existing capture cases remain unchanged in Task1. Recheck original Ducks with the existing external model/full-scene/capture commands, preserving hashes.
+- [x] Self-review/report hashes, actual commands/results/iterations/limits; controller independent task review, STATE/ledger, scoped commit and ordinary push. Model/scene success is not private rendering or Party/UI acceptance.
 
 ## Task 2 Private Direct2D linear fill execution
 
