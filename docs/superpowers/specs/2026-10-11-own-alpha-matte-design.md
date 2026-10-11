@@ -154,3 +154,42 @@ verify provenance/imports/symbols/tests, back up current Release+matching PDB,
 and promote only with no running installed instance. Installed original playback,
 pause/seek/restart and1/4/16 are separate UI acceptance gates. Report any unavailable
 manual/DPI/GPU observation honestly. No speedup claims before matched Release measurements.
+
+## Execution addendum — original native raster evidence, 2026-10-11
+
+Controller-approved after the independent precision/root-cause audit. The first
+Task3 instrument provisionally required every original-image channel difference
+to be <=3. That stronger condition fails on six rectangular captures, even at
+frame0 where no matte is active. The specification's <=3 condition applies to
+owned/literal interior pixels; full-image comparison uses the unchanged
+`PixelComparisonPolicy`. Neither that policy nor existing goldens are changed.
+
+The differing code paths associate float32 matrices across the viewport boundary
+as own `(G * (L * P)) * V`, pinned vendor `G * ((L * P) * V)`. An independent
+general-affine calculation using the same authored group/layer/parent operands
+reproduces final dy63.633758544921875 versus63.63375473022461. This is a sufficient
+numeric reproduction, not proof that every actual intermediate vendor and own
+coefficient is bit-identical: a VMatrix world-first probe gives an additional ULP.
+Independently rasterizing the same vendor-local path and color
+while changing only that coefficient reproduces maximum20 at a curved edge:
+ten isolated pixels exceed3, seven after ordinary overdraw. This establishes
+coordinate sensitivity, not an unproven Direct2D tessellation mechanism or a
+matte/gradient defect. Raw failed full-image <=3 runs remain evidence.
+
+For original Party, gate independent-native and fresh pinned-CPU images
+separately under the existing default image policy at all twenty captures.
+Retain maximum/channel error counts and the matrix-only witness; never label the
+original native result pixel-exact or <=3 parity. Keep every existing owned
+literal/kernel <=3 check, add independently authored original opaque interior
+and transparent pixels, preserve source epsilon and unchanged original hashes,
+require zero skips, and retain the qualified all-frame field comparisons.
+
+No production transform correction is part of this stage. Exact vendor float32
+association would require coordinated viewport-resolved transform traversal for
+geometry, paint and clips, plus parent/group/precomp and retained-resource
+regressions. Scalar rounding, double precision, vendor matrix substitution or a
+Party-specific translation adjustment is not an equivalent bounded fix. If a
+later requirement needs that precision change, design it separately and keep
+existing golden tests unchanged. The cost of this ruling being wrong is reopening
+native acceptance and withholding/reverting host delivery; it does not authorize
+relaxing an existing test or hiding the diagnosed residual.

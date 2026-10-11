@@ -27,12 +27,30 @@ addressed in06af392 with functional cold/warm RED and narrow alpha-only guard.
 Scoped re-review clean, no new Critical/Important/Minor; fresh final47/47/allthree
 contracts and native528/396per owningcache on exact final backend/capture bytes.
 Controller fresh finalcontract1/1 and523source/68raw checks pass. Task2 complete;
-product8513ced/06af392 ordinarily pushed, origin main confirmed06af392. No live
-product writer; docs checkpoint then Task3 next. Prior full95/96/Ducks are pre-fix;
-final combined fullthree remains required before Release. Controller523file freeze recorded.
+product8513ced/06af392 and docs checkpointc415df7 ordinarily pushed, origin confirmed
+c415df7. Task3 sole writer /root/party_alpha_acceptance_implementer is running from
+that clean base. Original Party552qualified scene samples and20independent-native/
+20fresh-CPU captures now pass unchanged image policy; original authored interiors
+and existing owned/kernel allowance<=3 are unchanged. A diagnosed1-ULP curved-edge
+residual(max20,7full-frame pixels in six rectangular captures) remains explicitly
+retained, not pixel-exact parity. Written precision execution addendum corrects
+the new provisional whole-image<=3 instrument, not existing thresholds/production.
+Independent authored reassociation reproduces final values; actual vendor
+intermediate bit equality is not claimed. Fresh CPU BGRA66,564bytes available.
+Controller verifies40policy decisions/zero skips and freezes523source files;
+only five test/helper paths changed. Final combined sequential fullthree passes
+47/47(8.91s),95/95(240.89s),96/96(240.54s),all exits0/no CTest skips. Both
+reference caches separately pass552scenes and20native+20CPU Party captures.
+Final CPU BGRA03593C7B.../provenance24A80C96... exported. Controller fresh
+Party20+20/privatecontract1/1 and523source/114selectedraw hashes pass.
+Task3 independently Approved,0Critical/Important; inherited vendor warning
+retained for finaltriage. Local product6d7a45f plus report-untracking correction
+cc8dcbd preserves history, final aggregate six-file diff. Controller checkpoint/
+ordinary publication follows ledger; Task4 narrow host wiring/delivery is next.
+Prior full95/96 were pre-fix, not substituted for the now-completed final gate.
 Independent native fractional-mask input/product witness restored (allowance<=3),
 with the earlier wrong intersection expectation retained as raw evidence.
-Task3/4 remain pending. Root-adjacent one-painted-draw
+Task4 remains pending; Task3 acceptance is complete/reviewed. Root-adjacent one-painted-draw
 Alpha pairs only; both provider/content remain publicly unsupported, no mask art
 leak. Neutral layer vector `l:2` and preserved bottommost-root Difference are
 explicit original-input requirements, not JSON stripping or general blend support.
