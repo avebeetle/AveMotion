@@ -17,8 +17,18 @@ independently Approved with0Critical/Important. Fresh MSVC full suites47/47,
 Ordinary gradient differential216new scenes/config is qualified as below;60
 contextual rejection cases and4096boundary/overflow are covered. Inherited vendor
 C4251 warnings remain; report citation corrected without source edits/replays.
-Next sole writer: Task2 private shared Direct2D entry, preserving public draw/
-planner MVP policy. Check current ledger/live agents; do not repeat Task1.
+Task2 sole writer /root/linear_gradient_backend_implementer completed from
+BASEd7f7ed47ee99f40eb169062a1b8d51405b5ad30d: private shared Direct2D entry,
+preserving public draw/planner MVP policy. Functional RED, private contract GREEN,
+280independent native/CPU capture rows and literal affine/gamma pixels pass.
+Fresh full47/47,95/95and96/96pass; both original Duck regressions pass and the
+report is finalized. Independent Task2 review Approved,0Critical/Important;
+report-only literal allowance citation corrected, no source changes/replays.
+Product31d7665581d2f3dd29e592f6833fd6e36a931319 is ordinarily pushed and remote
+confirmed equal. All6frozenTask2hashes and275other files are unchanged. Whole-stage
+review is pending. Public report: docs/OWN_STATIC_LINEAR_GRADIENT_2026-10-11.md.
+Check current
+ledger/live agents and do not repeat Task1 or duplicate its successor.
 Full local affine semantics are required, especially nonuniform ancestry;
 world-endpoint projection is not equivalent to pinned Telegram's CPU raster.
 Ordinary gradient reference exports final paint but lacks the local/separated

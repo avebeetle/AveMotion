@@ -140,6 +140,14 @@ distinguishes these interpolation spaces. This does not promise exact byte
 identity with rlottie's integer lookup table; unchanged CPU-reference capture
 thresholds are the raster acceptance gate.
 
+Independent native expected pixels use the authored literal path command stream
+(including zero-handle cubics, not an equivalent line tessellation), and literal
+byte colors multiplied by one single-precision reciprocal of255, the unchanged
+Direct2D color conversion recipe. They must not call the backend or read own
+sampled values. Cost: exact native equality proves this matched construction,
+not all equivalent path tessellations/float recipes; independent CPU policy and
+literal affine/gamma pixel bounds remain mandatory and unchanged.
+
 Cache stop collection/brush by existing paint slot/content/revision; keep opacity
 and transforms outside static stop resources. Clear gradient resources on domain,
 generation, factory or device-context change and Backend clear/invalidation.

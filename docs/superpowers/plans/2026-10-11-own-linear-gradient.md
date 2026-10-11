@@ -60,6 +60,11 @@ Report/qualified oracle and retained warning evidence are in the current ledger.
 
 ## Task 2 Private Direct2D linear fill execution
 
+Completed and independently Approved,0Critical/Important. Product
+31d7665581d2f3dd29e592f6833fd6e36a931319 ordinarily pushed; frozen full gates
+47/47,95/95,96/96 and six original Duck checks pass. Report-only allowance
+attribution minor corrected; inherited warnings/raw-local qualifications retained.
+
 **Files:**
 
 - Create `backends/direct2d/LinearGradientBackendAccess.hpp` with fixed build-tree-only access class.
@@ -74,15 +79,15 @@ Report/qualified oracle and retained warning evidence are in the current ledger.
 - Produces `backends::direct2d::detail::LinearGradientBackendAccess::draw(Backend&, const render::MotionRenderPlan&, const RenderSession&) -> DrawResult`.
 - Ordinary `Backend::draw` delegates to the shared executor with linear fill disabled; private access preflights its fixed support profile and enables it. No mutable global/per-backend public mode or claimed-own provenance gate.
 
-- [ ] Write behavioral tests first: a valid linear fill must draw once; current executor draws0/skips1. Because the new entry does not exist yet, a test-only dispatch shim uses the current public executor for this baseline. Record this exact seam migration; after the private entry exists, the shim must call that entry unconditionally. This is not a production fallback or evidence that a missing API existed during RED.
-- [ ] Run the compiled behavioral RED and retain output/exits. Independently retain ordinary public gradient skip test. Do not call compile errors functional RED or change expected draw/skip counts when switching the test dispatch to the new entry.
-- [ ] Implement fixed private preflight plus shared executor. Reject unsupported/invalid content before any item draw, including valid-prefix plus radial/matte/dash/missing-local/corrupt-reference plans. Preserve ordinary public draw skip behavior and planner unsupported accounting; do not blanket-ignore unsupportedFeatureItemCount in a host.
-- [ ] Implement cached clamp/GAMMA2_2 stop collection and linear brush by existing paint slot/hash/revision. Static stop/endpoints are local; use existing geometry/presentation/host transform once and inherited opacity outside static resources. Share geometry/stroke/host/domain ownership; gradient draws do not increment solidItemsDrawn.
-- [ ] Extend contract fakes to actual base-brush signatures. Test repeated/presentation/opacity draws reuse resources, changed paint content replaces them, equal-content distinct identities don't corrupt resources, domain/generation/factory/context changes and clear/invalidate recreate, gradient resource creation failures return errors and restore saved transform. No new public diagnostic fields.
-- [ ] Run focused GREEN. Add private WARP cases for 2/3/16 stops, fractional opacity, draw order/fill rules, animation/reverse/repeat, rectangular viewports and rotated/nonuniform ancestry. Require zero skipped admitted items. Existing cases retain public entry and unchanged evidence policy.
-- [ ] Add independent literal/native rectangle: black-white diagonal local(0,0)→(20,20), ancestry scale(2,0.5); compare an interior pixel against inverse-local projection, not transformed-endpoint projection (quantization allowance <=3 channels). Also black-white horizontal midpoint distinguishes encoded-space interpolation from linear-light gamma. Use independent pinned CPU render with unchanged capture thresholds; same-backend equality alone is insufficient.
-- [ ] If ordinary-reference plans lack coherent local space, preserve the failure/evidence; do not graft own fields or rewrite oracle provenance. An independently authored native expected matrix/brush may supply exact WARP evidence, but label its scope and retain CPU proof. Any unresolved affine/CPU parity blocks rendering completion.
-- [ ] Freeze product/test bytes. Run all three full gates and original Ducks; retain real cache/build/source provenance and preview resize/device recreation. Controller task review, STATE/ledger, scoped commit and ordinary push.
+- [x] Write behavioral tests first: a valid linear fill must draw once; current executor draws0/skips1. Because the new entry does not exist yet, a test-only dispatch shim uses the current public executor for this baseline. Record this exact seam migration; after the private entry exists, the shim must call that entry unconditionally. This is not a production fallback or evidence that a missing API existed during RED.
+- [x] Run the compiled behavioral RED and retain output/exits. Independently retain ordinary public gradient skip test. Do not call compile errors functional RED or change expected draw/skip counts when switching the test dispatch to the new entry.
+- [x] Implement fixed private preflight plus shared executor. Reject unsupported/invalid content before any item draw, including valid-prefix plus radial/matte/dash/missing-local/corrupt-reference plans. Preserve ordinary public draw skip behavior and planner unsupported accounting; do not blanket-ignore unsupportedFeatureItemCount in a host.
+- [x] Implement cached clamp/GAMMA2_2 stop collection and linear brush by existing paint slot/hash/revision. Static stop/endpoints are local; use existing geometry/presentation/host transform once and inherited opacity outside static resources. Share geometry/stroke/host/domain ownership; gradient draws do not increment solidItemsDrawn.
+- [x] Extend contract fakes to actual base-brush signatures. Test repeated/presentation/opacity draws reuse resources, changed paint content replaces them, equal-content distinct identities don't corrupt resources, domain/generation/factory/context changes and clear/invalidate recreate, gradient resource creation failures return errors and restore saved transform. No new public diagnostic fields.
+- [x] Run focused GREEN. Add private WARP cases for 2/3/16 stops, fractional opacity, draw order/fill rules, animation/reverse/repeat, rectangular viewports and rotated/nonuniform ancestry. Require zero skipped admitted items. Existing cases retain public entry and unchanged evidence policy.
+- [x] Add independent literal/native rectangle: black-white diagonal local(0,0)→(20,20), ancestry scale(2,0.5); compare an interior pixel against inverse-local projection, not transformed-endpoint projection (quantization allowance <=3 channels). Also black-white horizontal midpoint distinguishes encoded-space interpolation from linear-light gamma. Use independent pinned CPU render with unchanged capture thresholds; same-backend equality alone is insufficient.
+- [x] If ordinary-reference plans lack coherent local space, preserve the failure/evidence; do not graft own fields or rewrite oracle provenance. An independently authored native expected matrix/brush may supply exact WARP evidence, but label its scope and retain CPU proof. Any unresolved affine/CPU parity blocks rendering completion.
+- [x] Freeze product/test bytes. Run all three full gates and original Ducks; retain real cache/build/source provenance and preview resize/device recreation. Controller task review, STATE/ledger, scoped commit and ordinary push.
 
 ## Final stage handoff
 
