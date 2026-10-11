@@ -1,6 +1,6 @@
 # Unchanged original Party: own alpha-matte evidence
 
-Status: original acceptance and final frozen combined suites pass under the written precision execution addendum. Task3, the host task and strongest whole-stage reviews are approved with no Critical/Important findings. The own host is installed; on 2026-10-11 the user confirmed Party animation, Play/Pause, seek and 1/4/16. Native restart/backdrop remain separately pending. No production changes, asset normalization, golden edits or existing tolerance edits were made by Task3.
+Status: this bounded alpha stage is closed. Original acceptance and final frozen combined suites pass under the written precision execution addendum. Task3, the host task and strongest whole-stage reviews are approved with no Critical/Important findings. The own host is installed; on 2026-10-11 the user confirmed Party animation, Play/Pause, seek and 1/4/16, then restart and transparent backdrop. No production changes, asset normalization, golden edits or existing tolerance edits were made by Task3.
 
 The original local Party remains 67875 bytes, SHA256 `EAB1FD7070BFFD2965C12A80D2D91CFF76683AF65019F142ACF9A553EE877B5C`, 1024x1024,60fps,92frames. Its four literal authored alpha pairs are 2->3 on [20,31), and 4->5,6->7,8->9 on [20,82). The original two Duck hashes also remain unchanged. Artwork and raw captures are local-only under ignored `out/`.
 
@@ -54,8 +54,10 @@ selection/activation `window capture timed out: timed out waiting on channel`.
 Inputs stopped, with no fallback/system change. On 2026-10-11 the user answered
 "работают" to the installed Test Animation -> Party Popper question covering
 animation, Play/Pause, seek and 1/4/16. Those controls are manually accepted by
-the user, not observed by the controller. Stop->Play/restart and transparent
-backdrop were not in that question and remain a separate manual gate; launch/
-harness evidence is not substituted. No hardware-GPU/speedup or new licensing/
-publication claim. The remaining action is those two observations, not another
-engine rewrite. [Host installation report](https://github.com/avebeetle/Avelabs-UI/blob/main/docs/testing/party-alpha-matte-2026-10-11/REPORT.md).
+the user, not observed by the controller. The user subsequently confirmed the
+supplemental Stop->Play/restart and transparent-backdrop question with
+"Подтверждаю всё норм". Those two user receipts complete installed native
+acceptance; launch/harness evidence is not substituted for them. No hardware-GPU/
+speedup or new licensing/publication claim. Next development is a separately
+scoped matched Release measurement, not another engine rewrite.
+[Host installation report](https://github.com/avebeetle/Avelabs-UI/blob/main/docs/testing/party-alpha-matte-2026-10-11/REPORT.md).
