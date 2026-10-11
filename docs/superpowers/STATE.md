@@ -19,7 +19,20 @@ Critical/Important. Fresh fix no-reference full47/47 and Telegram/preview owning
 hash/283freeze evidence explicitly pre-fix, not coverage of changed bytes.
 Product0018b57/a6781d9 ordinarily pushed; origin main verifieda6781d9.
 Task2 must run complete three-cache gates on combined final bytes. Check ledger/live agents; do not repeat this
-implementation or gates. Task2/3/4 remain pending. Root-adjacent one-painted-draw
+implementation or gates. Task2 sole writer /root/alpha_matte_backend_implementer
+completed local product8513ced from pushed docs717c869. Frozen fullthree47/95/96,
+8originalDuck checks and controller fresh2/2 pass;523source and133raw hashes match.
+Independent Task2 review found one Important frozen canonical-alias bypass,
+addressed in06af392 with functional cold/warm RED and narrow alpha-only guard.
+Scoped re-review clean, no new Critical/Important/Minor; fresh final47/47/allthree
+contracts and native528/396per owningcache on exact final backend/capture bytes.
+Controller fresh finalcontract1/1 and523source/68raw checks pass. Task2 complete;
+product8513ced/06af392 ordinarily pushed, origin main confirmed06af392. No live
+product writer; docs checkpoint then Task3 next. Prior full95/96/Ducks are pre-fix;
+final combined fullthree remains required before Release. Controller523file freeze recorded.
+Independent native fractional-mask input/product witness restored (allowance<=3),
+with the earlier wrong intersection expectation retained as raw evidence.
+Task3/4 remain pending. Root-adjacent one-painted-draw
 Alpha pairs only; both provider/content remain publicly unsupported, no mask art
 leak. Neutral layer vector `l:2` and preserved bottommost-root Difference are
 explicit original-input requirements, not JSON stripping or general blend support.
