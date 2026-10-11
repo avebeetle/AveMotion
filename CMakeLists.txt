@@ -201,6 +201,7 @@ target_link_libraries(avemotion_player PUBLIC AveMotion::Runtime)
 avemotion_set_warnings(avemotion_player)
 
 add_library(avemotion_rendering STATIC
+    src/render/OwnPlayback.cpp
     src/render/RenderPlanner.cpp
     src/render/PrimitivePathGenerator.cpp
     src/render/NativeEllipsePathMaterializer.cpp
@@ -600,6 +601,13 @@ if(BUILD_TESTING)
 
     add_executable(avemotion_own_native_ellipse_playback_tests
         tests/own_native_ellipse_playback_tests.cpp)
+    add_executable(avemotion_own_public_playback_tests tests/own_public_playback_tests.cpp)
+    target_link_libraries(avemotion_own_public_playback_tests PRIVATE AveMotion::Rendering AveMotion::Player)
+    target_compile_definitions(avemotion_own_public_playback_tests PRIVATE
+        AVEMOTION_FIXTURE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures"
+        AVEMOTION_TGS_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests/compatibility/tgs")
+    avemotion_set_warnings(avemotion_own_public_playback_tests)
+    add_test(NAME avemotion.own_public_playback COMMAND avemotion_own_public_playback_tests)
     target_include_directories(avemotion_own_native_ellipse_playback_tests PRIVATE
         "${CMAKE_CURRENT_SOURCE_DIR}/src/render"
         "${CMAKE_CURRENT_SOURCE_DIR}/src/runtime"

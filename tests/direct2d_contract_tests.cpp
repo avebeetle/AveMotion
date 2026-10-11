@@ -612,7 +612,7 @@ avemotion::backends::direct2d::DrawResult drawAlpha(
     avemotion::backends::direct2d::Backend& backend,
     const avemotion::render::MotionRenderPlan& plan,
     const avemotion::backends::direct2d::RenderSession& session) {
-    return avemotion::backends::direct2d::detail::AlphaMatteBackendAccess::draw(backend, plan, session);
+    return backend.drawFixedOwnProfile(plan, session);
 }
 
 avemotion::render::MotionRenderPlan alphaPlan() {

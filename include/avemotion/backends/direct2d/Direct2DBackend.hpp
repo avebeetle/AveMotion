@@ -76,6 +76,13 @@ public:
         const render::MotionRenderPlan& plan,
         const RenderSession& session);
 
+    // Explicit fixed own profile: gradients, alpha mattes and admitted blend
+    // modes. The host owns BeginDraw/EndDraw and the target; calls remain
+    // serial on its render thread. Generic draw() keeps its conservative policy.
+    [[nodiscard]] DrawResult drawFixedOwnProfile(
+        const render::MotionRenderPlan& plan,
+        const RenderSession& session);
+
     void invalidateGraphicsDomain(
         std::uint64_t graphicsDomainId,
         std::uint64_t graphicsGeneration) noexcept;

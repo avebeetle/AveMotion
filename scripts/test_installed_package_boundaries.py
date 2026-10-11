@@ -14,7 +14,8 @@ ARCHIVES = {"avemotion_formats", "avemotion_core", "avemotion_model", "avemotion
             "avemotion_evaluation", "avemotion_runtime", "avemotion_player", "avemotion_rendering"}
 HEADERS = {"formats/Tgs.hpp", "core/Hash.hpp", "model/AssetModel.hpp",
            "validation/AssetValidator.hpp", "evaluation/PropertyEvaluator.hpp",
-           "runtime/Runtime.hpp", "player/Player.hpp", "render/RenderPlan.hpp"}
+           "runtime/Runtime.hpp", "player/Player.hpp", "render/RenderPlan.hpp",
+           "render/OwnPlayback.hpp"}
 
 
 def require(ok: bool, message: str) -> None:

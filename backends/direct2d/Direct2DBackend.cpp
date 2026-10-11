@@ -720,6 +720,12 @@ DrawResult Backend::draw(
     return execute(plan, session, false);
 }
 
+DrawResult Backend::drawFixedOwnProfile(
+    const render::MotionRenderPlan& plan,
+    const RenderSession& session) {
+    return detail::AlphaMatteBackendAccess::draw(*this, plan, session);
+}
+
 DrawResult detail::LinearGradientBackendAccess::draw(Backend& backend,
     const render::MotionRenderPlan& plan, const RenderSession& session) {
     return backend.execute(plan, session, true);
