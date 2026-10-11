@@ -15,7 +15,18 @@ with independent sessions and own-authored TTS navigation icon, regression/compa
 and guarded Release handoff. No new scheduler/cache/format/GPU or docking changes.
 Read-only inventories complete, start E ba7cda9/H 2ee237c. Telegram Icon boundary pinned
 at lib_lottie fbb922c; asynchronous ownership/control ideas only, no code copying.
-Product implementation has not started; resume ledger rather than older alpha tasks.
+Task 0 complete: H c5a1b2c preserves the exact five-file instrument/protocol and
+repeat guards; nine frozen copies match originals, diagnostics34/34, independent
+review clean after two documentation fixes. Original EXE/PDB/raw data unchanged.
+Task 1 complete: product E916fbe6 ordinary-pushed. Opaque public own asset/playback,
+Player ownership/typed lookup, integer target fitting and named fixed Direct2D route;
+legacy Runtime/generic draw unchanged. Independent review Approved; completion
+projection follows existing Player contract, not an emission receipt. Root fresh
+no-reference46/46, installed boundary audit/consumer exit0, focused preview3/3;
+implementer preview97/97 reported, original full output only in tool transcript.
+One public completion-documentation/regression Minor deferred to final review.
+Task 2 sole writer /root/host_public_consumer_implementer migrates H from c5a1b2c
+to public API, no shared-thread/icon changes yet. Resume this ledger, not old tasks.
 
 ## Latest checkpoint — initial own UI measurement complete
 
