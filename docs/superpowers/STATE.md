@@ -1,8 +1,42 @@
 # AveMotion autonomous work state
 
-Updated: 2026-10-09 (Moscow local date)
+Updated: 2026-10-11 (Moscow local date)
 
-## Current checkpoint — bounded vector groups and opacity, 2026-10-09
+## Current checkpoint — vector metadata and separated position, 2026-10-11
+
+Bounded implementation complete on canonical C:/Users/USER/Desktop/AveMotion
+main: product d4157cae8f2237649d127d139109c5cf5b984765, base
+e287396f95a2ce345afd0eae03913bcc0d03edb4. All three fresh correctness gates pass
+on frozen product/test bytes. Independent task and whole-stage reviews are
+Approved, 0 Critical/Important. The minor ASCII-only string-cap
+coverage description is corrected and the absent multibyte/escaped regression
+is disclosed; final review accepts that disposition with no required fix.
+Documentation commits are not installed build identities. Host/EXE delivery is
+not part of this block. Do not restart the completed product task.
+Brief/ledger: `.superpowers/sdd/2026-10-11-own-vector-metadata-position/`;
+report: docs/OWN_VECTOR_METADATA_POSITION_2026-10-11.md.
+
+Scope: witnessed context-specific exporter metadata, validated/discarded root
+markers, non-precomp shape/null layer scalar X/Y tracks through the existing
+model/evaluator. Unknown fields, group/precomp restrictions, gradients/mattes,
+renderer/scheduler/backend/fallback and licensing remain unchanged. Functional
+RED, independent expectations and ordinary scene/WARP comparisons are recorded.
+Fresh MSVC suites pass 47/47, 95/95 and explicit preview 96/96, build/test exits0,
+no CTest skips. Both unchanged original Ducks pass 2960 scene samples and 68
+exact same-backend WARP rows each under the unchanged CPU-reference policy;
+raw-local limitations are retained. These are not UI/performance gates.
+Original Party remains unsupported.
+
+Installed host SHA256 FC3AEC2BB876BCF4C2F62F441BBD366C5CB728D2F75F14B3684990E52E6D6E4E
+is unchanged. New Release1/4/16 attempt collected no data: native capture failed
+twice, click lacked capture geometry; only the exact owned test process was
+stopped after path/creation verification. No GUI acceptance/performance claim.
+Foreign AveVoice tests were left running and also preclude uncontended timings.
+Next after this block: separately design gradient/matte support before original
+Party acceptance/host delivery; actual Release measurements when observation
+and uncontended conditions are available. Do not repeat completed group work.
+
+## Previous checkpoint — bounded vector groups and opacity, 2026-10-09
 
 Bounded groups/opacity implementation is complete, task-reviewed Approved with
 0Critical/Important: E f911b1dd962bea075b5716211a36ef318a9c185d. Tests-first RED
