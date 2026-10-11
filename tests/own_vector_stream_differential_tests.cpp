@@ -1,4 +1,5 @@
 #include "OwnNativeEllipseStream.hpp"
+#include "support/OwnVectorGradientTestData.hpp"
 #include "support/OwnVectorClippingTestData.hpp"
 #include "support/OwnVectorInstanceTestData.hpp"
 #include "support/OwnVectorSceneComparison.hpp"
@@ -6,6 +7,7 @@
 #include "support/OwnVectorMetadataPositionTestData.hpp"
 #include <chrono>
 #include <iostream>
+#include <tuple>
 using namespace avemotion;
 using namespace avemotion::test;
 template <class F> void rejects(F operation, const std::string &reason) {
@@ -474,6 +476,56 @@ void costs(const std::string &json) {
         }
     }
 }
+void gradientOracle() {
+    const auto check = [](const std::string &json) {
+        const auto compiled = vectorCompile(json);
+        vectorRequire(bool(compiled), "gradient differential compiles: " + compiled.path + compiled.message);
+        const auto prepared = render::detail::prepareOwnVectorAsset(compiled.prepared);
+        vectorRequire(bool(prepared), "gradient differential prepares: " + prepared.message);
+        auto stream = render::detail::OwnNativeEllipseStream::create(prepared.prepared);
+        OwnVectorSceneOracle oracle(json);
+        vector_scene::OwnRoles roles(*prepared.prepared);
+        std::size_t samples = 0;
+        for (auto frame : {0U,10U,90U,179U,90U,10U,0U,10U})
+            for (auto viewport : {std::pair{128U,128U}, {256U,256U}, {256U,128U}}) {
+                const auto own = stream.stream->emit(frame,viewport.first,viewport.second);
+                vectorRequire(bool(own), "gradient differential emits: " + own.message);
+                const auto ref = oracle.freshScene(frame,viewport.first,viewport.second);
+                vector_scene::compare(ref,oracle,*own.scene,roles);
+                ++samples;
+                if (own.scene->drawItems.empty()) continue;
+                auto changed = *own.scene;
+                changed.drawItems[0].paint.gradient.start.x += 1;
+                rejects([&] { vector_scene::compare(ref,oracle,changed,roles); }, "gradient endpoint");
+                changed = *own.scene;
+                changed.drawItems[0].paint.gradient.stops[1].position += 0.1F;
+                rejects([&] { vector_scene::compare(ref,oracle,changed,roles); }, "gradient stop position");
+                changed = *own.scene;
+                changed.drawItems[0].paint.gradient.stops[1].color.g ^= 1;
+                rejects([&] { vector_scene::compare(ref,oracle,changed,roles); }, "gradient stop RGB");
+                changed = *own.scene;
+                changed.drawItems[0].paint.gradient.stops[1].color.a ^= 1;
+                rejects([&] { vector_scene::compare(ref,oracle,changed,roles); }, "gradient stop alpha");
+            }
+        std::cout << "qualified ordinary gradient scene samples=" << samples << " final paint corruption witnesses passed\n";
+    };
+    check(gradientFixture());
+    check(gradientParentFixture());
+    for (const auto &c : {std::tuple{"50.5","50.5","50.5"}, {"33.3","66.7","99.9"},
+                          {"99.9","99.9","99.9"}, {"1.1","75.3","80.2"}}) {
+        const auto &[fill,group,layer] = c;
+        check(gradientFixture(vectorReplace(gradientFill(), "\"k\":100", "\"k\":" + std::string(fill)),
+                              ",\"o\":{\"k\":" + std::string(group) + "}",
+                              "\"o\":{\"k\":" + std::string(layer) + "}"));
+    }
+    auto affine = gradientFixture(gradientFill(), R"(,"p":{"k":[2,4]},"s":{"k":[150,150]})",
+                                   R"("p":{"k":[40,50]},"s":{"k":[200,50]},"r":{"k":30})");
+    check(affine);
+    check(gradientAnimatedFixture());
+    check(gradientOccurrencesFixture());
+    authoredMutation(gradientFixture(gradientFill(), R"(,"o":{"k":50})"),
+                     gradientFixture(gradientFill(), R"(,"o":{"k":75})"), "gradient inherited opacity");
+}
 int main(int argc, char **argv) {
     try {
         if (argc == 4 && std::string(argv[3]) == "--costs") {
@@ -511,6 +563,7 @@ int main(int argc, char **argv) {
         // rectangular rejection probes live in the stream lifecycle test.
         run(input, false, exhaustive);
         if (argc == 1) {
+            gradientOracle();
             run(metadataPositionFixture(), true);
             run(metadataPositionFixture(true,true), true);
             run(metadataPositionFixture(false), true);

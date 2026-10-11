@@ -1,4 +1,5 @@
 #include "OwnNativeEllipsePlayback.hpp"
+#include "support/OwnVectorGradientTestData.hpp"
 #include "OwnNativeEllipseStream.hpp"
 #include "avemotion/render/RenderPlanner.hpp"
 #include "support/OwnVectorClippingTestData.hpp"
@@ -405,6 +406,94 @@ void measuredShapeScopeAndWidth() {
                       std::abs(outer.drawItems[0].path.points.back().x - 27.5153F) < 0.02F,
                   "outer stroke paints first in layer width over scaled group path");
 }
+void gradientStream() {
+    const auto compiled = vectorCompile(gradientParentFixture());
+    vectorRequire(bool(compiled), "gradient stream admission: " + compiled.path + " " + compiled.message);
+    const auto prepared = render::detail::prepareOwnVectorAsset(compiled.prepared);
+    vectorRequire(bool(prepared), "gradient prepares: " + prepared.path + " " + prepared.message);
+    auto stream = render::detail::OwnNativeEllipseStream::create(prepared.prepared);
+    vectorRequire(bool(stream), "gradient stream created");
+    const auto first = stream.stream->emit(0, 128, 128);
+    vectorRequire(bool(first) && first.scene->drawItems.size() == 1, "transform-parent opacity0 preserves child gradient");
+    const auto &d = first.scene->drawItems[0];
+    vectorRequire(d.paint.kind == runtime::PaintKind::Gradient && d.paint.gradient.kind == runtime::GradientKind::Linear &&
+                      d.paint.gradient.start.x == 15 && d.paint.gradient.start.y == 11.25F &&
+                      d.paint.gradient.end.x == 63 && d.paint.gradient.end.y == 11.25F, "literal final gradient endpoints");
+    vectorRequire(d.localPaintAvailable && d.localPaintStaticCandidate && d.opacitySeparated && d.separatedOpacity == 1 &&
+                      d.localPaint.gradient.start.x == 2 && d.localPaint.gradient.start.y == 3 &&
+                      d.localPaint.gradient.end.x == 18 && d.localPaint.gradient.end.y == 3 &&
+                      d.localToViewport.m11 == 3 && d.localToViewport.m22 == 0.75F &&
+                      d.localToViewport.dx == 9 && d.localToViewport.dy == 9, "canonical local paint and full affine separated");
+    vectorRequire(d.localPaint.gradient.stops.size() == 3 && d.localPaint.gradient.stops[1].position == 0.5F &&
+                      d.localPaint.gradient.stops[1].color.r == 127 && d.localPaint.gradient.stops[1].color.g == 63 &&
+                      d.localPaint.gradient.stops[1].color.b == 31 && d.localPaint.gradient.stops[1].color.a == 255,
+                  "literal middle RGB byte truncation");
+    vectorRequire(d.paint.solid.a == 0 && d.paint.solid.r == 0 && !d.paint.image.present &&
+                      d.paint.gradient.center.x == 0 && d.paint.gradient.focal.y == 0 &&
+                      d.paint.gradient.centerRadius == 0 && d.paint.gradient.focalRadius == 0,
+                  "neutral inactive gradient fields");
+    vectorRequire(first.scene->statistics.gradientPaintCount == 1 && first.scene->statistics.gradientStopCount == 3 &&
+                      first.scene->statistics.solidPaintCount == 0, "accurate gradient scene counts");
+    for (const auto f : {179U, 10U, 0U, 10U}) {
+        const auto scene = stream.stream->emit(f, 256, 256);
+        vectorRequire(bool(scene), "gradient repeated seek");
+        const auto &next = scene.scene->drawItems[0];
+        vectorRequire(next.canonicalPaint == d.canonicalPaint && next.localPaint.gradient.start.x == 2 &&
+                          next.paint.gradient.start.x == 30 && next.paint.gradient.end.x == 126,
+                      "presentation preserves canonical static paint identity");
+    }
+    // Reference composes float fill alpha with inherited float alpha before truncating once.
+    struct AlphaCase { const char *fill, *group, *layer; unsigned local, final; };
+    for (const auto &c : {AlphaCase{"50.5","50.5","50.5",128,32}, {"33.3","66.7","99.9",84,56},
+                          {"99.9","99.9","99.9",254,254}, {"1.1","75.3","80.2",2,1}}) {
+        const auto fill = vectorReplace(gradientFill(), "\"k\":100", "\"k\":" + std::string(c.fill));
+        auto m = vectorCompile(gradientFixture(fill, ",\"o\":{\"k\":" + std::string(c.group) + "}",
+                                                 "\"o\":{\"k\":" + std::string(c.layer) + "}"));
+        vectorRequire(bool(m), "fractional gradient admission");
+        const auto p = render::detail::prepareOwnVectorAsset(m.prepared);
+        vectorRequire(bool(p), "fractional gradient preparation");
+        auto s = render::detail::OwnNativeEllipseStream::create(p.prepared);
+        const auto v = s.stream->emit(0,128,128);
+        vectorRequire(bool(v) && v.scene->drawItems[0].localPaint.gradient.stops[0].color.a == c.local &&
+                          v.scene->drawItems[0].paint.gradient.stops[0].color.a == c.final,
+                      "pinned fractional fill/group/layer alpha=" + std::to_string(c.final));
+    }
+    auto moving = instanceStream(gradientAnimatedFixture());
+    std::shared_ptr<const runtime::CanonicalPaint> canonical;
+    for (const auto &[f,x,y,point] : {std::tuple{0U,15.F,11.25F,0.F}, {10U,19.F,15.25F,2.F},
+                                     {90U,15.F,11.25F,0.F}, {179U,15.F,11.25F,0.F},
+                                     {10U,19.F,15.25F,2.F}, {0U,15.F,11.25F,0.F}}) {
+        const auto scene = moving->emit(f,128,128);
+        vectorRequire(bool(scene) && scene.scene->drawItems.size() == 1, "animated gradient parent/path emits");
+        const auto &draw = scene.scene->drawItems[0];
+        vectorRequire(draw.paint.gradient.start.x == x && draw.paint.gradient.start.y == y &&
+                          draw.localPath.points[0].x == point && !draw.localGeometryStaticCandidate &&
+                          draw.localPaintStaticCandidate && draw.localPaint.gradient.start.x == 2,
+                      "literal animated parent/path forward/reverse/repeat frame=" + std::to_string(f));
+        if (!canonical) canonical = draw.canonicalPaint;
+        vectorRequire(canonical && draw.canonicalPaint == canonical,
+                      "geometry animation preserves asset-static gradient paint");
+    }
+    auto occurrences = instanceStream(gradientOccurrencesFixture());
+    for (const auto &[f,positions] : std::vector<std::pair<unsigned,std::vector<float>>>{
+            {0,{22}}, {10,{22,32}}, {20,{32,32}}, {179,{32,32}}, {10,{22,32}}, {0,{22}}}) {
+        const auto scene = occurrences->emit(f,128,128);
+        vectorRequire(bool(scene), "gradient occurrence emits: " + scene.message);
+        std::vector<float> actual;
+        std::set<std::uint64_t> identities;
+        for (const auto &draw : scene.scene->drawItems) {
+            actual.push_back(draw.paint.gradient.start.x);
+            identities.insert(draw.sourcePaintId);
+            vectorRequire(draw.localPaint.gradient.start.x == 2 && draw.localPaintStaticCandidate,
+                          "occurrence canonical paint stays local");
+        }
+        std::sort(actual.begin(),actual.end());
+        vectorRequire(actual == positions && identities.size() == actual.size(),
+                      "literal occurrence clocks/identity frame=" + std::to_string(f));
+    }
+    std::cout << "owned static gradient local/final RGB, parent opacity0, full affine, fractional alpha,"
+                 " static paint identity, animated parent/path seeks and occurrence clocks verified\n";
+}
 int main(int argc, char **argv) {
     try {
         const auto json = vectorInput(argc, argv);
@@ -441,6 +530,7 @@ int main(int argc, char **argv) {
             std::cout << "a-2 forward/reverse all 180 frames emitted at 128/129/256/512 square\n";
         }
         if (argc == 1) {
+            gradientStream();
             measuredShapeScopeAndWidth();
             const auto &fill = scene.scene->drawItems[0];
             const auto &stroke = scene.scene->drawItems[1];

@@ -36,6 +36,8 @@ public:
                              float value);
     model::PropertyId vec2(model::SourceNodeId owner, model::PropertySemantic semantic,
                            model::MotionVec2Value value);
+    model::PropertyId staticGradient(model::SourceNodeId owner, Value property,
+                                     std::size_t stopCount);
 
 private:
     model::MotionAssetModel& model_;

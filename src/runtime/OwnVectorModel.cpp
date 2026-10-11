@@ -192,6 +192,45 @@ private:
         }
     }
     SourceNodeId paint(Value input, SourceNodeId scope, bool stroke) {
+        if (!stroke && input.get("ty").string() == "gf") {
+            input.keys({"ty", "nm", "mn", "o", "r", "bm", "hd", "g", "s", "e", "t", "h", "a"});
+            input.metadata();
+            (void)input.get("t").number(1, 1, true);
+            const auto id = node(SourceNodeKind::GradientFill, scope, input);
+            auto& n = model->sourceNodes[id.index()];
+            n.gradientType = SourceGradientType::Linear;
+            const auto rule = input.get("r").exists() ? input.get("r").number(1, 2, true) : 1;
+            n.fillRule = rule == 1 ? SourceFillRule::Winding : SourceFillRule::EvenOdd;
+            const auto gradient = input.get("g");
+            gradient.keys({"p", "k"});
+            n.gradientColorPointCount = static_cast<int>(gradient.get("p").number(2, 16, true));
+            properties_.staticGradient(id, gradient.get("k"), n.gradientColorPointCount);
+            MotionVec2Value endpoints[2];
+            unsigned index = 0;
+            for (const auto& [field, semantic] :
+                 {std::pair{"s", PropertySemantic::GradientStart},
+                  std::pair{"e", PropertySemantic::GradientEnd}}) {
+                const auto p = input.get(field);
+                p.keys({"a", "k", "ix"});
+                if (p.get("a").exists())
+                    (void)p.get("a").number(0, 0, true);
+                const auto xy = p.get("k").array(2, 2);
+                endpoints[index++] = {xy[0].number(-32768, 32768), xy[1].number(-32768, 32768)};
+                properties_.add(id, semantic, p, PropertyValueType::Vec2, -32768, 32768, false);
+            }
+            if (endpoints[0] == endpoints[1])
+                input.get("e").fail("gradient endpoints must be distinct after conversion");
+            scalar(id, input, "o", PropertySemantic::GradientOpacity, 100, 0, 100, false);
+            for (const auto field : {"h", "a"}) {
+                const auto p = input.get(field);
+                if (!p.exists()) continue;
+                p.keys({"a", "k", "ix"});
+                if (p.get("a").exists()) (void)p.get("a").number(0, 0, true);
+                if (p.get("ix").exists()) (void)p.get("ix").number(0, 32768, true);
+                (void)p.get("k").number(0, 0);
+            }
+            return id;
+        }
         if (stroke)
             input.keys({"ty", "nm", "c", "o", "w", "lc", "lj", "ml", "bm", "hd"});
         else
@@ -275,7 +314,7 @@ private:
                         authored.push_back({layer, group, group, path,
                                             paint(contents[n], group, true), {}});
                         sawStroke = true;
-                    } else if (innerType == "fl" && !sawFill) {
+                    } else if ((innerType == "fl" || innerType == "gf") && !sawFill) {
                         authored.push_back({layer, group, group, path,
                                             paint(contents[n], group, false), {}});
                         sawFill = true;
@@ -448,6 +487,7 @@ private:
         s.vec2ValueCount = model->vec2Values.size();
         s.colorValueCount = model->colorValues.size();
         s.shapeValueCount = model->shapeValues.size();
+        s.gradientValueCount = model->gradientValues.size();
         model->revision = 1;
         model->sourceAssetHash = core::fnv1a64(std::as_bytes(std::span(root_.document->source())));
         core::Fnv1a64 hash;
@@ -487,7 +527,7 @@ bool validateOwnVectorModel(const OwnVectorModel& owner) {
         return false;
     const auto& m = *owner.model;
     if (m.compositions.size() != 1 || m.properties.size() > 4096 || m.segments.size() > 8192 ||
-        m.shapePoints.size() > 65536)
+        m.shapePoints.size() > 65536 || m.gradientFloats.size() > 4096)
         return false;
     if (owner.sources.size() != m.sourceNodes.size() ||
         owner.propertyFrameOffsets.size() != m.properties.size())
@@ -512,7 +552,8 @@ bool validateOwnVectorModel(const OwnVectorModel& owner) {
             p->kind != model::SourceNodeKind::Shape || p->parent != g->id ||
             (s->id != g->id && s->id != l->id) || paint->parent != s->id ||
             (paint->kind != model::SourceNodeKind::Fill &&
-             paint->kind != model::SourceNodeKind::Stroke))
+             paint->kind != model::SourceNodeKind::Stroke &&
+             paint->kind != model::SourceNodeKind::GradientFill))
             return false;
         if (b.trim) {
             const auto* t = m.sourceNode(*b.trim);

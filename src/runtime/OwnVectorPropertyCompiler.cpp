@@ -306,4 +306,31 @@ PropertyId PropertyCompiler::add(SourceNodeId owner, PropertySemantic semantic, 
     model_.tracks.push_back(track);
     return id;
 }
+PropertyId PropertyCompiler::staticGradient(SourceNodeId owner, Value property,
+                                            std::size_t stopCount) {
+    property.keys({"a", "k", "ix"});
+    if (property.get("a").exists())
+        (void)property.get("a").number(0, 0, true);
+    if (property.get("ix").exists())
+        (void)property.get("ix").number(0, 32768, true);
+    if (stopCount < 2 || stopCount > 16)
+        property.fail("gradient stop count outside bounded domain");
+    const auto count = stopCount * 4;
+    const auto entries = property.get("k").array(count, count);
+    if (model_.gradientFloats.size() > 4096 - count)
+        property.fail("asset gradient float limit exceeded");
+    std::vector<float> packed;
+    packed.reserve(count);
+    for (std::size_t i = 0; i < count; ++i) {
+        const auto value = entries[i].number(0, 1);
+        if (i >= 4 && i % 4 == 0 && value <= packed[i - 4])
+            entries[i].fail("gradient offsets must be strictly increasing");
+        packed.push_back(value);
+    }
+    const auto first = static_cast<std::uint32_t>(model_.gradientFloats.size());
+    const auto index = static_cast<std::uint32_t>(model_.gradientValues.size());
+    model_.gradientFloats.insert(model_.gradientFloats.end(), packed.begin(), packed.end());
+    model_.gradientValues.push_back({{first, static_cast<std::uint32_t>(count)}});
+    return append(owner, PropertySemantic::GradientStops, {PropertyValueType::Gradient, index});
+}
 } // namespace avemotion::runtime::detail::vector_compile

@@ -22,6 +22,7 @@ struct OwnSceneDraw final {
     model::NodeId node;
     model::PropertyId shape, position, size, roundness, trimStart, trimEnd, trimOffset;
     model::PropertyId paintColor, paintOpacity, strokeWidth;
+    model::PropertyId gradientStart, gradientEnd, gradientStops;
     runtime::FillRule fillRule = runtime::FillRule::Winding;
     model::ResourceClass geometryClass = model::ResourceClass::InstanceEvaluated;
     model::ResourceClass paintClass = model::ResourceClass::AssetStatic;

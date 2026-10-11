@@ -127,6 +127,33 @@ inline void path(const runtime::EvaluatedPath &ref, const runtime::EvaluatedPath
 }
 inline void paint(const runtime::EvaluatedPaint &ref, const runtime::EvaluatedPaint &own,
                   const std::string &context) {
+    if (ref.kind == runtime::PaintKind::Gradient) {
+        vectorRequire(own.kind == ref.kind && ref.gradient.kind == runtime::GradientKind::Linear &&
+                          own.gradient.kind == ref.gradient.kind && ref.gradient.stops.size() == own.gradient.stops.size(),
+                      context + " linear gradient type/count");
+        near(ref.gradient.start.x, own.gradient.start.x, "gradientStartX", context);
+        near(ref.gradient.start.y, own.gradient.start.y, "gradientStartY", context);
+        near(ref.gradient.end.x, own.gradient.end.x, "gradientEndX", context);
+        near(ref.gradient.end.y, own.gradient.end.y, "gradientEndY", context);
+        for (std::size_t i = 0; i < ref.gradient.stops.size(); ++i) {
+            const auto &a = ref.gradient.stops[i];
+            const auto &b = own.gradient.stops[i];
+            near(a.position, b.position, "gradientStopPosition", context);
+            vectorRequire(a.color.r == b.color.r && a.color.g == b.color.g && a.color.b == b.color.b && a.color.a == b.color.a,
+                          context + " exact gradient stop RGBA index=" + std::to_string(i));
+        }
+        vectorRequire(!ref.image.present && !own.image.present &&
+                          ref.solid.r == 0 && ref.solid.g == 0 && ref.solid.b == 0 && ref.solid.a == 0 &&
+                          own.solid.r == 0 && own.solid.g == 0 && own.solid.b == 0 && own.solid.a == 0 &&
+                          ref.gradient.center.x == 0 && ref.gradient.center.y == 0 &&
+                          own.gradient.center.x == 0 && own.gradient.center.y == 0 &&
+                          ref.gradient.focal.x == 0 && ref.gradient.focal.y == 0 &&
+                          own.gradient.focal.x == 0 && own.gradient.focal.y == 0 &&
+                          ref.gradient.centerRadius == 0 && ref.gradient.focalRadius == 0 &&
+                          own.gradient.centerRadius == 0 && own.gradient.focalRadius == 0,
+                      context + " neutral inactive linear gradient fields");
+        return;
+    }
     vectorRequire(ref.kind == runtime::PaintKind::Solid && own.kind == ref.kind &&
                       ref.solid.r == own.solid.r && ref.solid.g == own.solid.g &&
                       ref.solid.b == own.solid.b && ref.solid.a == own.solid.a,
@@ -250,10 +277,18 @@ inline void compare(const runtime::EvaluatedScene &ref, const OwnVectorSceneOrac
         vectorRequire(a.sourcePathCount == b.sourcePathCount &&
                           a.sourcePathModifierFree == b.sourcePathModifierFree,
                       context + " path bindings/modifier");
-        vectorRequire(a.localGeometryAvailable == b.localGeometryAvailable &&
-                          a.localPaintAvailable == b.localPaintAvailable &&
-                          a.opacitySeparated == b.opacitySeparated,
-                      context + " available local/opacity seams");
+        if (a.paint.kind == runtime::PaintKind::Gradient) {
+            // Ordinary Telegram exports final gradients only. Local paint and separated
+            // opacity have independent owned literal tests, not reference parity.
+            vectorRequire(a.localGeometryAvailable == b.localGeometryAvailable &&
+                              !a.localPaintAvailable && !a.opacitySeparated &&
+                              b.localPaintAvailable && b.opacitySeparated,
+                          context + " qualified gradient reference seams");
+        } else
+            vectorRequire(a.localGeometryAvailable == b.localGeometryAvailable &&
+                              a.localPaintAvailable == b.localPaintAvailable &&
+                              a.opacitySeparated == b.opacitySeparated,
+                          context + " available local/opacity seams");
         path(a.path, b.path, "finalPath", context);
         vectorRequire(a.sourcePathCount == 1, context + " single-path applicability");
         const auto &m = oracle.matrices().at(a.modelNode.value);
@@ -280,14 +315,15 @@ inline void compare(const runtime::EvaluatedScene &ref, const OwnVectorSceneOrac
         near(group.m_22(), b.localToViewport.m22, "matrix", context);
         near(group.m_tx(), b.localToViewport.dx, "matrix", context);
         near(group.m_ty(), b.localToViewport.dy, "matrix", context);
-        near(a.separatedOpacity, b.separatedOpacity, "separatedOpacity", context);
+        if (a.paint.kind != runtime::PaintKind::Gradient)
+            near(a.separatedOpacity, b.separatedOpacity, "separatedOpacity", context);
         paint(a.paint, b.paint, context + " final");
         if (ownRoles.omittedMiter(b.sourcePaintNode))
             permittedInactiveMiter.insert(key);
         stroke(a.stroke, b.stroke, key, context, true);
         if (a.localPaintAvailable)
             paint(a.localPaint, b.localPaint, context + " local");
-        else
+        else if (a.paint.kind != runtime::PaintKind::Gradient)
             vectorRequire(a.localPaint.kind == b.localPaint.kind,
                           context + " inactive local paint");
         stroke(a.localStroke, b.localStroke, key, context + " local", false);

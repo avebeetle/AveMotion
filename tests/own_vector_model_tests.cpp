@@ -1,4 +1,5 @@
 #include "NativeEllipseAdmissionCore.hpp"
+#include "support/OwnVectorGradientTestData.hpp"
 #include "OwnVectorTestData.hpp"
 #include "support/OwnVectorGroupTestData.hpp"
 #include "support/OwnVectorMetadataPositionTestData.hpp"
@@ -525,9 +526,99 @@ void rejects(const std::string& fixture) {
     }
     reject(vectorRoot(many), "8193+ total segments rejected");
 }
+void gradientModel() {
+    using namespace avemotion::test;
+    // Missing gradient admission, wrong packed ranges, or FillColor substitution must fail.
+    const auto result = vectorCompile(gradientFixture());
+    vectorRequire(bool(result), "owned static gradient admission: " + result.path + " " + result.message);
+    const auto &m = *result.prepared->model;
+    const auto &n = m.sourceNodes[result.prepared->draws[0].paint.index()];
+    vectorRequire(n.kind == SourceNodeKind::GradientFill && n.gradientType == SourceGradientType::Linear &&
+                      n.gradientColorPointCount == 3, "canonical linear gradient source");
+    vectorRequire(m.gradientValues.size() == 1 && m.gradientFloats.size() == 12 &&
+                      m.statistics.gradientValueCount == 1 && m.colorValues.empty(), "packed gradient statistics");
+    vectorRequire(m.gradientValues[0].values.first == 0 && m.gradientValues[0].values.count == 12 &&
+                      m.gradientFloats == std::vector<float>{0,1,0,0,0.5F,0.5F,0.25F,0.125F,1,0,0,1},
+                  "literal ordered packed RGB values");
+    unsigned paintProperties = 0;
+    for (const auto &p : m.properties) if (p.owner == n.id) {
+        ++paintProperties;
+        vectorRequire(p.flags == PropertyFlagStatic && !p.track.valid() &&
+                          p.semantic != PropertySemantic::FillColor, "gradient genuinely static properties");
+        if (p.semantic == PropertySemantic::GradientStops)
+            vectorRequire(p.valueType == PropertyValueType::Gradient && p.staticValue.index == 0,
+                          "gradient static value reference");
+    }
+    vectorRequire(paintProperties == 4, "start/end/opacity/stops bindings only");
+    unsigned rejected = 0;
+    const auto reject = [&](const std::string &json, const std::string &label) {
+        const auto r = vectorCompile(json);
+        vectorRequire(!r && !r.prepared && r.path.starts_with("/layers/") && !r.message.empty(), "gradient rejection: " + label);
+        ++rejected;
+    };
+    const auto fill = gradientFill();
+    for (const auto &p : {"1", "17", "2.5", "true", "\"3\""})
+        reject(gradientFixture(vectorReplace(fill, "\"p\":3", "\"p\":" + std::string(p))), "stop count " + std::string(p));
+    for (const auto &t : {"0", "2", "3", "1.5", "false"})
+        reject(gradientFixture(vectorReplace(fill, "\"t\":1", "\"t\":" + std::string(t))), "type " + std::string(t));
+    const std::string packed = "[0,1,0,0,0.5,0.5,0.25,0.125,1,0,0,1]";
+    for (const auto &k : {"[0,1,0,0,1,0,0,1]", "[0,1,0,0,0.5,0.5,0.25,0.125,1,0,0,1,0,1]",
+                          "[{\"t\":0,\"s\":[0,1,0,0]}]", "[0,1,0,0,0,0.5,0.25,0.125,1,0,0,1]",
+                          "[0,1,0,0,0.8,0.5,0.25,0.125,0.7,0,0,1]", "[-0.1,1,0,0,0.5,0.5,0.25,0.125,1,0,0,1]",
+                          "[0,1.1,0,0,0.5,0.5,0.25,0.125,1,0,0,1]", "[0,true,0,0,0.5,0.5,0.25,0.125,1,0,0,1]"})
+        reject(gradientFixture(vectorReplace(fill, packed, k)), "packed mismatch/order/range/type");
+    for (const auto &a : {"1", "false", "\"0\"", "0.1"}) {
+        auto bad = vectorReplace(fill, "\"g\":{\"p\":3,\"k\":{\"a\":0", "\"g\":{\"p\":3,\"k\":{\"a\":" + std::string(a));
+        reject(gradientFixture(bad), "stops animation flag");
+        for (const auto &field : {"s", "e", "o"}) {
+            const std::string prefix = "\"" + std::string(field) + "\":{\"a\":0";
+            reject(gradientFixture(vectorReplace(fill,prefix,"\"" + std::string(field) + "\":{\"a\":" + a)),
+                   "endpoint/opacity animation flag");
+        }
+    }
+    for (const auto &change : {
+             std::pair{std::string("\"ty\":\"gf\""), std::string("\"ty\":\"gs\"")},
+             {"\"t\":1", "\"t\":1,\"unknown\":0"}, {"\"p\":3", "\"p\":3,\"unknown\":0"},
+             {"\"k\":" + packed, "\"unknown\":0,\"k\":" + packed},
+             {"\"t\":1", "\"t\":1,\"hd\":true"}, {"\"t\":1", "\"t\":1,\"bm\":1"},
+             {"\"t\":1", "\"t\":1,\"h\":{\"a\":0,\"k\":1}"},
+             {"\"t\":1", "\"t\":1,\"a\":{\"a\":1,\"k\":[{\"t\":0,\"s\":[0]},{\"t\":10,\"s\":[0]}]}"},
+             {"[18,3]", "[2,3]"}, {"[18,3]", "[32769,3]"}, {"[18,3]", "[18,3,0]"},
+             {"\"o\":{\"a\":0,\"k\":100}", "\"o\":{\"a\":0,\"k\":true}"},
+             {"\"s\":{\"a\":0,\"k\":[2,3]}", "\"s\":{\"a\":0,\"k\":[{\"t\":0,\"s\":[2,3]}]}"}})
+        reject(gradientFixture(vectorReplace(fill, change.first, change.second)), "operative/static fields");
+    reject(vectorRoot(vectorGroupsLayer(gradientGroup(R"({"ty":"fl","c":{"k":[1,0,0,1]}})") + "," + fill)), "outer gradient");
+    reject(gradientFixture(vectorReplace(fill,"\"ty\":\"gf\"","\"ty\":\"gf\",\"a\":{\"a\":0,\"k\":1}")),
+           "nonzero highlight angle");
+    reject(gradientFixture(vectorReplace(fill,"\"t\":1,","")),"required linear type");
+    reject(gradientFixture(vectorReplace(fill,"\"p\":3,","")),"required stop count");
+    reject(gradientFixture(vectorReplace(fill,"\"g\":{\"p\":3","\"g\":{\"p\":3,\"unknown\":true")),"unknown gradient fields");
+    reject(gradientFixture(vectorReplace(fill,"\"s\":{\"a\":0","\"s\":{\"unknown\":0,\"a\":0")),"unknown endpoint property field");
+    reject(gradientFixture(vectorReplace(fill,"\"g\":{\"p\":3,\"k\":{\"a\":0",
+        "\"g\":{\"p\":3,\"k\":{\"ix\":false,\"a\":0")),"invalid stop property index");
+    reject(gradientFixture(vectorReplace(fill,packed,"[0,-0.1,0,0,0.5,0.5,0.25,0.125,1,0,0,1]")),"negative RGB channel");
+    reject(gradientFixture(vectorReplace(fill,packed,"[0,1,0,0,0.5,0.5,0.25,0.125,1.1,0,0,1]")),"offset above one");
+    reject(gradientFixture(vectorReplace(fill,"[18,3]","[2.00000000000000001,3]")),"coincident converted endpoints");
+    reject(gradientFixture(vectorReplace(fill,"\"o\":{\"a\":0,\"k\":100}",
+        "\"o\":{\"a\":0,\"k\":[{\"t\":0,\"s\":[100]}]}")),"keyed opacity despite a0");
+    reject(vectorRoot(vectorGroupsLayer(gradientGroup(fill + "," + R"({"ty":"fl","c":{"k":[1,0,0,1]}})"))),"one-fill ordering");
+    const auto neutral = vectorCompile(gradientFixture(vectorReplace(fill,"\"t\":1,\"r\":1,\"o\":{\"a\":0,\"k\":100},",
+        "\"t\":1,\"h\":{\"k\":0},\"a\":{\"k\":0},")));
+    vectorRequire(bool(neutral), "absent rule/opacity defaults and neutral highlights admitted");
+    std::string groups;
+    for (unsigned i = 0; i < 64; ++i) { if (i) groups += ","; groups += gradientGroup(gradientPacked(16)); }
+    const auto boundary = vectorCompile(vectorRoot(vectorGroupsLayer(groups)));
+    vectorRequire(bool(boundary) && boundary.prepared->model->gradientFloats.size() == 4096,
+                  "4096 gradient float boundary admitted");
+    reject(vectorRoot(vectorGroupsLayer(groups + "," + gradientGroup(gradientPacked(2)))), "aggregate float cap before append");
+    vectorRequire(bool(vectorCompile(gradientFixture(R"({"ty":"fl","c":{"k":[1,0,0,1]}})"))), "solid remains admissible");
+    std::cout << "owned static gradient: packed/statics/defaults; contextual rejections=" << rejected
+              << "; aggregate boundary4096/overflow verified\n";
+}
 int main(int argc, char** argv) {
     try {
         if (argc == 1) {
+            gradientModel();
             unsigned failures = 0;
             for (const auto& [label,test] : std::vector<std::pair<std::string,void(*)()>>{
                     {"exporter metadata",exporterMetadata},{"root markers",exporterMarkerAdmission},{"separated position",separatedPosition}}) {

@@ -276,8 +276,23 @@ OwnNativeEllipseFrameResult OwnNativeEllipseStream::emit(std::size_t frame, std:
             item.localToViewport = *transform;
             item.paint = localPaint;
             item.stroke = localStroke;
-            item.paint.solid.a = static_cast<std::uint8_t>(static_cast<float>(item.paint.solid.a) *
-                                                           paintScope.worldOpacity);
+            if (localPaint.kind == runtime::PaintKind::Gradient) {
+                const auto map = [&](runtime::Vec2 p) -> runtime::Vec2 {
+                    return {p.x * paintTransform->m11 + p.y * paintTransform->m21 + paintTransform->dx,
+                            p.x * paintTransform->m12 + p.y * paintTransform->m22 + paintTransform->dy};
+                };
+                item.paint.gradient.start = map(localPaint.gradient.start);
+                item.paint.gradient.end = map(localPaint.gradient.end);
+                const auto *opacity = model.property(binding.paintOpacity);
+                const auto alpha = static_cast<std::uint8_t>(255.0F *
+                    ((model.scalarValues[opacity->staticValue.index] / 100.0F) * paintScope.worldOpacity));
+                for (auto &stop : item.paint.gradient.stops) stop.color.a = alpha;
+                if (!std::isfinite(item.paint.gradient.start.x) || !std::isfinite(item.paint.gradient.start.y) ||
+                    !std::isfinite(item.paint.gradient.end.x) || !std::isfinite(item.paint.gradient.end.y))
+                    return {OwnNativeEllipseFrameCode::UnsupportedNumericOutput, "non-finite gradient endpoints", std::nullopt};
+            } else
+                item.paint.solid.a = static_cast<std::uint8_t>(static_cast<float>(item.paint.solid.a) *
+                                                               paintScope.worldOpacity);
             if (item.stroke.enabled) {
                 // Match the existing final-space stroke route. Nonuniform matrices
                 // use Telegram's diagonal scale, not a transformed local pen.
@@ -331,7 +346,11 @@ OwnNativeEllipseFrameResult OwnNativeEllipseStream::emit(std::size_t frame, std:
             }
             ++scene.layers.back().drawItemCount;
             ++scene.statistics.drawItemCount;
-            ++scene.statistics.solidPaintCount;
+            if (item.paint.kind == runtime::PaintKind::Gradient) {
+                ++scene.statistics.gradientPaintCount;
+                scene.statistics.gradientStopCount += item.paint.gradient.stops.size();
+            } else
+                ++scene.statistics.solidPaintCount;
             scene.statistics.pathVerbCount += item.path.verbs.size();
             scene.statistics.pathPointCount += item.path.points.size();
             const auto &bounds = item.path.controlBounds;

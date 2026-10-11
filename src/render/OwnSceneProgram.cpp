@@ -98,12 +98,19 @@ lowerOwnVectorProgram(const runtime::detail::OwnVectorModel &owner,
             d.node = model::makeId<model::NodeId>(draws.size());
             d.shape = property(asset, d.path, model::PropertySemantic::ShapePath);
             const bool stroke = asset.sourceNode(d.paint)->kind == model::SourceNodeKind::Stroke;
+            const bool gradient = asset.sourceNode(d.paint)->kind == model::SourceNodeKind::GradientFill;
             d.paintColor = property(asset, d.paint,
                                     stroke ? model::PropertySemantic::StrokeColor
                                            : model::PropertySemantic::FillColor);
             d.paintOpacity = property(asset, d.paint,
                                       stroke ? model::PropertySemantic::StrokeOpacity
-                                             : model::PropertySemantic::FillOpacity);
+                                      : gradient ? model::PropertySemantic::GradientOpacity
+                                                 : model::PropertySemantic::FillOpacity);
+            if (gradient) {
+                d.gradientStart = property(asset, d.paint, model::PropertySemantic::GradientStart);
+                d.gradientEnd = property(asset, d.paint, model::PropertySemantic::GradientEnd);
+                d.gradientStops = property(asset, d.paint, model::PropertySemantic::GradientStops);
+            }
             if (stroke)
                 d.strokeWidth = property(asset, d.paint, model::PropertySemantic::StrokeWidth);
             d.fillRule = asset.sourceNode(d.paint)->fillRule == model::SourceFillRule::EvenOdd
@@ -199,6 +206,34 @@ bool materializeOwnScenePath(const model::MotionAssetModel &asset, const OwnScen
 bool sampleOwnScenePaint(const model::MotionAssetModel &asset, const OwnSceneDraw &draw,
                          const evaluation::PropertyEvaluationView &view,
                          runtime::EvaluatedStroke &stroke, runtime::EvaluatedPaint &paint) {
+    if (draw.gradientStops.valid()) {
+        const auto *stops = asset.property(draw.gradientStops);
+        const auto *opacity = asset.property(draw.paintOpacity);
+        model::MotionVec2Value start, end;
+        if (!stops || stops->staticValue.type != model::PropertyValueType::Gradient ||
+            stops->staticValue.index >= asset.gradientValues.size() || !opacity ||
+            opacity->staticValue.index >= asset.scalarValues.size() ||
+            !resolveNativeEllipseVec2(asset, view, draw.gradientStart, start) ||
+            !resolveNativeEllipseVec2(asset, view, draw.gradientEnd, end))
+            return false;
+        const auto range = asset.gradientValues[stops->staticValue.index].values;
+        if (range.count < 8 || range.count > 64 || range.count % 4 ||
+            range.first > asset.gradientFloats.size() || range.count > asset.gradientFloats.size() - range.first)
+            return false;
+        paint = {};
+        stroke = {};
+        paint.kind = runtime::PaintKind::Gradient;
+        paint.gradient.kind = runtime::GradientKind::Linear;
+        paint.gradient.start = {start.x, start.y};
+        paint.gradient.end = {end.x, end.y};
+        const auto alpha = static_cast<std::uint8_t>(255.0F * (asset.scalarValues[opacity->staticValue.index] / 100.0F));
+        for (std::uint32_t i = 0; i < range.count; i += 4) {
+            const auto *v = &asset.gradientFloats[range.first + i];
+            paint.gradient.stops.push_back({v[0], {static_cast<std::uint8_t>(255.0F * v[1]),
+                static_cast<std::uint8_t>(255.0F * v[2]), static_cast<std::uint8_t>(255.0F * v[3]), alpha}});
+        }
+        return true;
+    }
     if (!draw.paintColor.valid()) {
         const auto &record = asset.paints[asset.nodes[draw.node.index()].paint.index()];
         if (!record.staticValue)
