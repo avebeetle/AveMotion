@@ -7,7 +7,9 @@
 #include "support/OwnVectorGroupTestData.hpp"
 #include "support/OwnVectorMetadataPositionTestData.hpp"
 #include "support/OwnVectorGradientTestData.hpp"
+#include "support/OwnVectorMatteTestData.hpp"
 #include "../backends/direct2d/LinearGradientBackendAccess.hpp"
+#include "../backends/direct2d/AlphaMatteBackendAccess.hpp"
 #include "support/WarpCaptureSurface.hpp"
 #include <array>
 #include <chrono>
@@ -157,6 +159,188 @@ void rawPixels(const fs::path& path,const std::vector<PixelBGRA>& pixels) {
     std::ofstream output(path,std::ios::binary);
     output.write(reinterpret_cast<const char*>(pixels.data()),static_cast<std::streamsize>(pixels.size()*sizeof(PixelBGRA)));
     require(bool(output),"raw gradient pixels written");
+}
+
+struct LiteralMatteRect final { D2D1_RECT_F rect; D2D1_COLOR_F color; };
+// This independent raster realizes the rectangle intersection and alpha product
+// directly. It consumes authored literals only, never an own scene or backend.
+std::vector<PixelBGRA> literalMatteRaster(WarpCaptureSurface& surface,
+    const std::vector<LiteralMatteRect>& rects,const D2D1::Matrix3x2F& transform,
+    bool opaqueHost,bool clip) {
+    surface.begin(); auto* context=surface.context();
+    if(opaqueHost) context->Clear(D2D1::ColorF(0,0,1,1));
+    if(clip) context->PushAxisAlignedClip({0,0,64,256},D2D1_ANTIALIAS_MODE_ALIASED);
+    context->SetTransform(transform);
+    Microsoft::WRL::ComPtr<ID2D1SolidColorBrush> brush;
+    require(SUCCEEDED(context->CreateSolidColorBrush({0,0,0,0},&brush)),"literal matte brush");
+    for(const auto& rect:rects) { brush->SetColor(rect.color);context->FillRectangle(rect.rect,brush.Get()); }
+    if(clip) context->PopAxisAlignedClip();
+    surface.end();return surface.readPixels();
+}
+std::vector<PixelBGRA> renderAlphaPlan(WarpCaptureSurface& surface,backends::direct2d::Backend& backend,
+    const render::MotionRenderPlan& plan,const D2D1::Matrix3x2F& host,bool opaqueHost,bool clip,
+    std::uint64_t generation) {
+    surface.begin();auto* context=surface.context();
+    if(opaqueHost) context->Clear(D2D1::ColorF(0,0,1,1));
+    if(clip) context->PushAxisAlignedClip({0,0,64,256},D2D1_ANTIALIAS_MODE_ALIASED);
+    context->SetTransform(host);
+    Microsoft::WRL::ComPtr<ID2D1Image> target,restoredTarget;
+    context->GetTarget(&target);
+    const auto drawn=backends::direct2d::detail::AlphaMatteBackendAccess::draw(backend,plan,
+        {.deviceContext=context,.graphicsDomainId=81,.graphicsGeneration=generation});
+    require(bool(drawn),"owned alpha WARP: "+drawn.error.message);
+    require(drawn.itemsDrawn==plan.drawItems.size() && drawn.itemsSkipped==0,"owned alpha source primitive coverage");
+    context->GetTarget(&restoredTarget);D2D1_MATRIX_3X2_F restored;context->GetTransform(&restored);
+    require(target.Get()==restoredTarget.Get() && restored.m11==host.m11 && restored.m12==host.m12 &&
+        restored.m21==host.m21 && restored.m22==host.m22 && restored.dx==host.dx && restored.dy==host.dy,
+        "native alpha restores original host target/transform");
+    if(clip) context->PopAxisAlignedClip();
+    surface.end();return surface.readPixels();
+}
+void alphaCaptures(const fs::path& root) {
+    fs::create_directories(root);
+    const auto shape=[](int id,int right,const std::string& color,const std::string& role,
+                        const std::string& opacity) {
+        auto json=clippingShape(24,24,right,72);
+        json=vectorReplace(json,"\"ind\":1","\"ind\":"+std::to_string(id));
+        json=vectorReplace(json,"\"ks\":{}","\"ks\":{\"o\":{\"k\":"+opacity+"}}");
+        json=vectorReplace(json,"[1,0,0,1]",color);
+        return vectorReplace(json,"\"ty\":4","\"ty\":4"+role);
+    };
+    const auto fixture=[&](const std::string& rgb,const std::string& contentOpacity="100",bool lower=false,bool difference=false) {
+        const auto provider=shape(1,64,rgb,",\"td\":1","50");
+        const auto content=shape(2,72,"[1,0,0,1]",",\"tt\":1",contentOpacity);
+        const auto bottom=shape(3,88,"[0,0,1,1]",difference?",\"bm\":10":"","100");
+        return vectorReplace(vectorRoot(provider+","+content+(lower?","+bottom:"")),"{\"fr\":","{\"v\":\"5.5.2\",\"fr\":");
+    };
+    auto inactive=fixture("[0,1,0,1]");
+    inactive=vectorReplace(inactive,"\"ind\":1,\"ip\":0,\"op\":180",
+        "\"ind\":1,\"ip\":20,\"op\":31");
+    auto animated=fixture("[0,1,0,1]");
+    const std::string path=R"({"i":[[0,0],[0,0],[0,0],[0,0]],"o":[[0,0],[0,0],[0,0],[0,0]],"v":[[24,24],[64,24],[64,72],[24,72]],"c":true})";
+    const auto shifted=vectorReplace(path,"[[24,24],[64,24],[64,72],[24,72]]","[[34,24],[74,24],[74,72],[34,72]]");
+    animated=vectorReplace(animated,"\"ks\":{\"k\":"+path+"}","\"ks\":{\"a\":1,\"k\":[{\"t\":0,\"s\":["+path+"] ,\"h\":1},{\"t\":20,\"s\":["+shifted+"],\"h\":1},{\"t\":31,\"s\":["+path+"]}]}" );
+    auto repeated=fixture("[0,1,0,1]");
+    const auto second=shape(4,64,"[1,1,0,1]",",\"td\":1","50")+","+
+        shape(5,72,"[0,0,1,1]",",\"tt\":1","100");
+    repeated=vectorReplace(repeated,"\"layers\":[","\"layers\":["+second+",");
+    const auto zero=vectorReplace(fixture("[0,1,0,1]"),"\"o\":{\"k\":50}","\"o\":{\"k\":0}");
+    const auto staticLinear=vectorReplace(fixture("[0,1,0,1]"),
+        R"({"ty":"fl","c":{"k":[1,0,0,1]},"o":{"k":100}})",
+        R"({"ty":"gf","t":1,"r":1,"o":{"k":100},"s":{"k":[24,24]},"e":{"k":[72,72]},"g":{"p":2,"k":{"k":[0,1,0,0,1,1,0,0]}}})");
+    const auto stroke=vectorReplace(fixture("[0,1,0,1]"),
+        R"({"ty":"fl","c":{"k":[1,0,0,1]},"o":{"k":100}})",
+        R"({"ty":"st","c":{"k":[1,0,0,1]},"o":{"k":100},"w":{"k":12},"lc":1,"lj":1,"ml":4})");
+    struct Case { std::string name,json;unsigned mode; };
+    const std::vector<Case> cases{{"half-provider-green",fixture("[0,1,0,1]"),0},
+        {"half-provider-blue",fixture("[0,0,1,1]"),0},
+        {"half-content",fixture("[0,1,0,1]","50"),1},
+        {"lower-artwork",fixture("[0,1,0,1]","100",true),2},
+        {"bottom-Difference",fixture("[0,1,0,1]","100",true,true),2},
+        {"provider-inactive",inactive,3},{"animated-provider-geometry",animated,4},
+        {"source-parent-to-content",vectorReplace(matteFixture(),"{\"fr\":","{\"v\":\"5.5.2\",\"fr\":"),5},
+        {"distinct-pair-effects",repeated,6},
+        {"presentation-half",fixture("[0,1,0,1]"),7},
+        {"host-and-presentation",fixture("[0,1,0,1]"),8},
+        {"opaque-host",fixture("[0,1,0,1]","100",true,true),9},
+        {"caller-clip",fixture("[0,1,0,1]"),10},{"provider-alpha0",zero,11},
+        {"static-linear-content",staticLinear,0},{"solid-stroke-content",stroke,12}};
+    std::ofstream metrics(root/"metrics.tsv");metrics<<"case\twidth\theight\tframe\tnative_max\tcpu_pass\tiou\talpha\tmean\n";
+    std::size_t captures=0,cpuCaptures=0;
+    std::vector<PixelBGRA> greenPixels;
+    for(const auto& c:cases) {
+        std::ofstream fixtureFile(root/(c.name+".json"),std::ios::binary);fixtureFile<<c.json;
+        require(bool(fixtureFile),"retained owned alpha fixture");
+        const auto compiled=vectorCompile(c.json);require(bool(compiled),c.name+" compile: "+compiled.path+compiled.message);
+        const auto prepared=render::detail::prepareOwnVectorAsset(compiled.prepared);require(bool(prepared),c.name+" prepare");
+        auto stream=render::detail::OwnNativeEllipseStream::create(prepared.prepared);require(bool(stream),c.name+" stream");
+        render::MotionRenderPlanner planner;backends::direct2d::Backend backend;
+        WarpCaptureSurface actualSurface,expectedSurface,providerSurface;
+        for(const auto [width,height]:{std::pair{128U,128U},{256U,128U},{128U,256U}}) {
+            testsupport::CaptureProfile profile{"alpha",width,height,width,height,96,96};
+            actualSurface.configure(profile);expectedSurface.configure(profile);providerSurface.configure(profile);
+            const D2D1::Matrix3x2F viewport(1,0,0,1,width>height?64.F:0.F,height>width?64.F:0.F);
+            for(const auto frame:{0U,19U,20U,25U,30U,31U,179U,31U,20U,0U,0U}) {
+                auto emitted=stream.stream->emit(frame,width,height);require(bool(emitted),c.name+" emit");
+                render::PresentationState presentation;
+                if(c.mode==7) presentation.opacity=.5F;
+                if(c.mode==8) presentation.transform={1,0,0,1,3,5};
+                auto plan=planner.build(std::move(*emitted.scene),presentation);require(bool(plan),c.name+" plan");
+                const auto host=c.mode==8?D2D1::Matrix3x2F(1.25F,0,0,1.5F,10,6):D2D1::Matrix3x2F::Identity();
+                const auto matrix=viewport*D2D1::Matrix3x2F(presentation.transform.m11,presentation.transform.m12,
+                    presentation.transform.m21,presentation.transform.m22,presentation.transform.dx,presentation.transform.dy)*host;
+                std::vector<LiteralMatteRect> rects;
+                if(c.mode==2 || c.mode==9) rects.push_back({{24,24,88,72},{0,0,1,1}});
+                const bool active=c.mode!=11 && ((c.mode!=3 && c.mode!=5) || (frame>=20 && frame<31));
+                if(active) {
+                    D2D1_RECT_F intersection{24,24,64,72};float alpha=c.mode==1 || c.mode==5 || c.mode==7?.25F:.5F;
+                    if(c.mode==4 && frame>=20 && frame<31) intersection={34,24,72,72};
+                    if(c.mode==5) intersection={41,55,87,99};
+                    rects.push_back({intersection,{1,0,0,alpha}});
+                    if(c.mode==12) rects={{{24,24,30,72},{1,0,0,.5F}},
+                        {{30,24,64,30},{1,0,0,.5F}},{{30,66,64,72},{1,0,0,.5F}}};
+                    if(c.mode==6) rects.push_back({intersection,{0,0,1,.5F}});
+                }
+                const auto actual=renderAlphaPlan(actualSurface,backend,plan.plan,host,c.mode==9,c.mode==10,
+                    frame==179?2:1);
+                auto expected=literalMatteRaster(expectedSurface,rects,matrix,c.mode==9,c.mode==10);
+                const auto label=c.name+"-"+std::to_string(width)+"x"+std::to_string(height)+"-f"+std::to_string(frame)+"-n"+std::to_string(captures++);
+                if(c.mode==8) {
+                    // The earlier single-intersection oracle differs by32 on
+                    // coincident fractional AA edges. Capture each authored
+                    // input independently, then derive premultiplied C×Aprovider.
+                    // No own scene, plan, effect or backend computes this oracle.
+                    rawPixels(root/(label+"-old-intersection.bgra"),expected);
+                    const auto old=testsupport::comparePixels(expected,actual,width,height);
+                    const auto contentPixels=literalMatteRaster(expectedSurface,
+                        {{{24,24,72,72},{1,0,0,1}}},matrix,false,false);
+                    const auto providerPixels=literalMatteRaster(providerSurface,
+                        {{{24,24,64,72},{0,1,0,.5F}}},matrix,false,false);
+                    expected=contentPixels;
+                    for(std::size_t i=0;i<expected.size();++i) {
+                        const auto multiply=[alpha=unsigned(providerPixels[i].a)](std::uint8_t value) {
+                            return static_cast<std::uint8_t>((unsigned(value)*alpha+127)/255);
+                        };
+                        expected[i]={multiply(contentPixels[i].b),multiply(contentPixels[i].g),
+                            multiply(contentPixels[i].r),multiply(contentPixels[i].a)};
+                    }
+                    rawPixels(root/(label+"-independent-content.bgra"),contentPixels);
+                    rawPixels(root/(label+"-independent-provider.bgra"),providerPixels);
+                    std::cout<<label<<" old_intersection_max="<<unsigned(old.maxChannelDifference)
+                        <<" independent_per_input_product=1\n";
+                }
+                rawPixels(root/(label+"-own.bgra"),actual);rawPixels(root/(label+"-literal.bgra"),expected);
+                const auto native=testsupport::comparePixels(expected,actual,width,height);
+                require(native.maxChannelDifference<=3,c.name+" independent literal native alpha raster max="+std::to_string(native.maxChannelDifference));
+                bool cpuPassed=true;testsupport::PixelComparisonMetrics cpuMetrics;
+                const bool independentCpu=c.mode<=6 || c.mode==11 || c.mode==12;
+                if(independentCpu) {
+                    auto cpu=rlottie::Animation::loadFromData(c.json,"fresh-alpha-cpu-"+label,{},false);
+                    require(bool(cpu),"fresh pinned alpha CPU parse");
+                    const auto cpuPixels=ordinaryCpuPixels(*cpu,frame,profile);
+                    cpuMetrics=testsupport::comparePixels(cpuPixels,actual,width,height);
+                    const auto decision=testsupport::evaluateComparison(cpuMetrics,{});cpuPassed=decision.passed;++cpuCaptures;
+                    for(const auto& reason:decision.failures) std::cout<<"alpha CPU failure: "<<reason<<'\n';
+                    rawPixels(root/(label+"-cpu.bgra"),cpuPixels);
+                    require(cpuPassed,c.name+" fresh pinned CPU unchanged policy");
+                }
+                metrics<<c.name<<'\t'<<width<<'\t'<<height<<'\t'<<frame<<'\t'<<unsigned(native.maxChannelDifference)<<'\t'
+                    <<cpuPassed<<'\t'<<cpuMetrics.activeIoU<<'\t'<<cpuMetrics.alphaRelativeError<<'\t'<<cpuMetrics.meanAbsoluteDifferenceAll<<'\n';
+                std::cout<<label<<" native_max="<<unsigned(native.maxChannelDifference)<<" cpu="<<(independentCpu?"fresh":"out-of-scope")
+                    <<" drawn="<<plan.plan.drawItems.size()<<" skips=0\n";
+                if(width==128 && height==128 && frame==0 && c.name=="half-provider-green") greenPixels=actual;
+                if(width==128 && height==128 && frame==0 && c.name=="half-provider-blue")
+                    require(actual==greenPixels,"provider RGB has no effect at every pixel");
+                if(width==128 && height==128 && frame==0 && (c.mode==0 || c.mode==1 || c.mode==7)) {
+                    const auto pixel=actual[48*width+48];const int wanted=c.mode==0?128:64;
+                    require(std::abs(int(pixel.r)-wanted)<=3 && pixel.g==0 && pixel.b==0 && std::abs(int(pixel.a)-wanted)<=3,
+                        "literal interior RGBA red alpha product with allowance3");
+                    std::cout<<c.name<<" interior="<<unsigned(pixel.r)<<",0,0,"<<unsigned(pixel.a)<<" expected="<<wanted<<",0,0,"<<wanted<<" allowance=3\n";
+                }
+            }
+        }
+    }
+    std::cout<<"alpha native captures="<<captures<<" fresh pinned CPU="<<cpuCaptures<<" max allowance=3\n";
 }
 void gradientCaptures(const fs::path& root) {
     fs::create_directories(root);
@@ -495,11 +679,15 @@ int main(int argc, char **argv) {
     try {
         fs::create_directories(root);
         std::cout << "captures=" << root.string() << '\n';
+        if(argc==2 && std::string(argv[1])=="--alpha-matte") {
+            alphaCaptures(root/"own-alpha-matte"); return 0;
+        }
         if (argc == 1)
             widthZeroWitness();
         clippingWitnesses(root);
         run(vectorInput(argc, argv), root, argc == 1);
         if (argc == 1) {
+            alphaCaptures(root / "own-alpha-matte");
             gradientCaptures(root / "static-linear-gradient");
             fs::create_directories(root / "metadata-position");
             run(metadataPositionFixture(), root / "metadata-position", true, false, true);

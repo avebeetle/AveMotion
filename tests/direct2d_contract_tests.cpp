@@ -1,8 +1,11 @@
 #include "avemotion/backends/direct2d/Direct2DBackend.hpp"
 #include "avemotion/model/AssetModel.hpp"
+#include "avemotion/render/RenderPlanner.hpp"
 #include "../backends/direct2d/LinearGradientBackendAccess.hpp"
+#include "../backends/direct2d/AlphaMatteBackendAccess.hpp"
 
 #include <d2d1_1.h>
+#include <d2d1effects.h>
 
 #include <cmath>
 #include <cstdint>
@@ -246,6 +249,50 @@ struct FakeDrawRecord final {
     std::vector<D2D1_GRADIENT_STOP> stops;
 };
 
+class FakeImage final : public ID2D1Image, private RefCounted {
+public:
+    ULONG AddRef() noexcept override { return addRef(); }
+    ULONG Release() noexcept override { return release(this); }
+};
+class FakeCommandList final : public ID2D1CommandList, private RefCounted {
+public:
+    FakeCommandList(ID2D1Image** target, HRESULT failure) : target_(target), failure_(failure) {}
+    ULONG AddRef() noexcept override { return addRef(); }
+    ULONG Release() noexcept override { return release(this); }
+    HRESULT Close() noexcept override {
+        require(*target_ != this, "production detaches command list before Close");
+        require(!closed, "production closes each command list once");
+        closed = true;
+        return failure_;
+    }
+    bool closed = false;
+private:
+    ID2D1Image** target_;
+    HRESULT failure_;
+};
+class FakeEffect final : public ID2D1Effect, private RefCounted {
+public:
+    explicit FakeEffect(HRESULT failure) : failure_(failure) {}
+    ~FakeEffect() override { for(auto* input : inputs) if(input) input->Release(); }
+    ULONG AddRef() noexcept override { return addRef(); }
+    ULONG Release() noexcept override { return release(this); }
+    void SetInput(UINT32 index, ID2D1Image* image) noexcept override {
+        require(index<2 && image && dynamic_cast<FakeCommandList*>(image)->closed,
+                "production binds closed content/provider lists");
+        if(inputs[index]) inputs[index]->Release();
+        inputs[index]=image; image->AddRef();
+    }
+    HRESULT SetValue(UINT32 property, D2D1_COMPOSITE_MODE value) noexcept override {
+        require(property == D2D1_COMPOSITE_PROP_MODE && value == D2D1_COMPOSITE_MODE_DESTINATION_IN,
+                "production requests destination-in");
+        configured=SUCCEEDED(failure_); return failure_;
+    }
+    ID2D1Image* inputs[2]{};
+    bool configured=false;
+private:
+    HRESULT failure_;
+};
+
 class FakeDeviceContext final
     : public ID2D1DeviceContext,
       private RefCounted {
@@ -256,8 +303,54 @@ public:
     }
 
     ~FakeDeviceContext() override {
+        SetTarget(nullptr);
         factory_->Release();
     }
+
+    void GetTarget(ID2D1Image** image) noexcept override {
+        *image=target; if(target) target->AddRef();
+    }
+    void SetTarget(ID2D1Image* image) noexcept override {
+        if(image) image->AddRef();
+        if(target) target->Release();
+        target=image;
+    }
+    HRESULT CreateCommandList(ID2D1CommandList** list) noexcept override {
+        ++listCreations;
+        if(listCreations==failListAt) return nativeFailure;
+        *list=new FakeCommandList(&target,listCreations==failCloseAt?nativeFailure:S_OK);
+        return S_OK;
+    }
+    HRESULT CreateEffect(int effect,ID2D1Effect** value) noexcept override {
+        require(effect==CLSID_D2D1Composite,"production uses native Composite");
+        ++effectCreations;
+        if(failEffect) return nativeFailure;
+        *value=new FakeEffect(failProperty?nativeFailure:S_OK); return S_OK;
+    }
+    void DrawImage(ID2D1Image* image,const D2D1_POINT_2F*,const void*,
+        D2D1_INTERPOLATION_MODE,D2D1_COMPOSITE_MODE mode) noexcept override {
+        require(dynamic_cast<FakeCommandList*>(image)->closed && mode==D2D1_COMPOSITE_MODE_SOURCE_OVER,
+                "production replays closed frame source-over");
+        require(sameIdentity(),"frame replay uses identity after captured transforms");
+        ++frameReplays;
+    }
+    void DrawImage(ID2D1Effect* effect,const D2D1_POINT_2F*,const void*,
+        D2D1_INTERPOLATION_MODE,D2D1_COMPOSITE_MODE mode) noexcept override {
+        const auto* value=dynamic_cast<FakeEffect*>(effect);
+        require(value->configured && value->inputs[0] && value->inputs[1] &&
+                value->inputs[0]!=value->inputs[1] && mode==D2D1_COMPOSITE_MODE_SOURCE_OVER,
+                "production replays distinct configured content/provider inputs");
+        require(sameIdentity(),"pair replay uses identity"); ++pairReplays;
+    }
+    bool sameIdentity() const noexcept {
+        return transform_.m11==1 && transform_.m12==0 && transform_.m21==0 &&
+            transform_.m22==1 && transform_.dx==0 && transform_.dy==0;
+    }
+    ID2D1Image* target=nullptr;
+    unsigned listCreations=0,effectCreations=0,frameReplays=0,pairReplays=0;
+    unsigned failListAt=0,failCloseAt=0;
+    bool failEffect=false,failProperty=false;
+    HRESULT nativeFailure=E_FAIL;
 
     ULONG AddRef() noexcept override { return addRef(); }
     ULONG Release() noexcept override { return release(this); }
@@ -513,10 +606,205 @@ avemotion::render::MotionRenderPlan linearPlan() {
     return plan;
 }
 
+// Switched only this seam after the recorded public-route functional RED.
+avemotion::backends::direct2d::DrawResult drawAlpha(
+    avemotion::backends::direct2d::Backend& backend,
+    const avemotion::render::MotionRenderPlan& plan,
+    const avemotion::backends::direct2d::RenderSession& session) {
+    return avemotion::backends::direct2d::detail::AlphaMatteBackendAccess::draw(backend, plan, session);
+}
+
+avemotion::render::MotionRenderPlan alphaPlan() {
+    using namespace avemotion;
+    runtime::EvaluatedScene scene;
+    scene.sourceAssetHash = 17; scene.instanceId = 19;
+    // The synthetic root is followed by root artwork in bottom-up order.
+    scene.layers.resize(4);
+    for (unsigned i=1; i<4; ++i) {
+        scene.layers[i].visible = true; scene.layers[i].drawItemCount = 1;
+        scene.layers[i].parentLayer = 0;
+    }
+    scene.layers[3].matteTargetLayer = 2;
+    scene.layers[2].matteSourceLayer = 3;
+    scene.layers[2].matte = runtime::MatteMode::Alpha;
+    scene.layers[1].isolatedBottomDifference = true;
+    for (unsigned layer : {1U, 2U, 3U}) {
+        auto item = sourceItem(layer == 3 ? runtime::Color8{0,255,0,128}
+                                         : runtime::Color8{255,0,0,255}, false);
+        item.layerIndex = layer;
+        scene.layers[layer].firstDrawItem = static_cast<std::uint32_t>(scene.drawItems.size());
+        scene.drawItems.push_back(item);
+    }
+    render::MotionRenderPlanner planner;
+    auto plan = planner.build(std::move(scene));
+    require(bool(plan), "owned alpha contract planner");
+    return std::move(plan.plan);
+}
+
+avemotion::render::MotionRenderPlan frozenAlphaPlan() {
+    using namespace avemotion;
+    auto scene=std::make_shared<runtime::EvaluatedScene>(*alphaPlan().sourceScene);
+    auto frozen=std::make_shared<model::MotionAssetModel>();frozen->sourceAssetHash=scene->sourceAssetHash;
+    for(unsigned i=0;i<scene->layers.size();++i) {
+        auto& layer=scene->layers[i];layer.modelLayer={i};
+        model::MotionLayerRecord record;record.present=true;record.id={i};record.parent=layer.parentLayer==runtime::kInvalidSceneIndex
+            ?model::LayerId{}:model::LayerId{layer.parentLayer};record.nodes={layer.firstDrawItem,layer.drawItemCount};record.matte=layer.matte;
+        if(layer.matteSourceLayer!=runtime::kInvalidSceneIndex || layer.matteTargetLayer!=runtime::kInvalidSceneIndex)
+            record.dependencyBits=model::StaticDependencyMatte;
+        frozen->layers.push_back(record);
+    }
+    for(unsigned i=0;i<scene->drawItems.size();++i) {
+        auto& item=scene->drawItems[i];item.modelDrawItem={i};item.modelNode={i};item.modelGeometry={i};item.modelPaint={i};
+        item.sourceGeometryId=i+1;item.sourcePaintId=i+1;
+        frozen->nodes.push_back({true,{i},{i},{item.layerIndex},{i},{i},i});
+        model::MotionGeometryRecord geometry;geometry.present=true;geometry.id={i};geometry.resourceClass=model::ResourceClass::InstanceEvaluated;
+        frozen->geometries.push_back(geometry);
+        model::MotionPaintRecord paint;paint.present=true;paint.id={i};paint.resourceClass=model::ResourceClass::InstanceEvaluated;
+        frozen->paints.push_back(paint);
+    }
+    scene->assetModel=frozen;scene->assetModelApplied=true;
+    render::MotionRenderPlanner planner;auto plan=planner.build(scene);require(bool(plan),"frozen alpha fixture plan");return std::move(plan.plan);
+}
+
+void alphaContracts() {
+    using namespace avemotion;
+    using Error = backends::direct2d::BackendErrorCode;
+    auto* factory=new FakeFactory;
+    auto* context=new FakeDeviceContext(factory);
+    auto* host=new FakeImage;
+    context->SetTarget(host);
+    const D2D1_MATRIX_3X2_F transform{1.25F,.1F,.2F,1.5F,10,6};
+    context->SetTransform(transform);
+    backends::direct2d::Backend backend;
+    backends::direct2d::RenderSession session{context,99,1};
+    const auto plan=alphaPlan();
+    auto result=drawAlpha(backend,plan,session);
+    require(bool(result) && result.itemsDrawn==3 && result.itemsSkipped==0 &&
+        context->listCreations==3 && context->effectCreations==1 && context->pairReplays==1 && context->frameReplays==1,
+        "alpha records each primitive, suppresses provider, replays one isolated frame");
+    require(context->target==host && sameMatrix(context->transform(),transform),"alpha restores host target and transform");
+    result=backend.draw(plan,session);
+    require(bool(result) && result.itemsDrawn==0 && result.itemsSkipped==3,"public skips both matte roles and Difference");
+    auto partial=plan; partial.drawItems.resize(1);
+    result=backend.draw(partial,session);
+    require(bool(result) && result.itemsDrawn==0 && result.itemsSkipped==1,"public valid prefix keeps skip contract");
+    auto solid=plan;
+    auto solidScene=std::make_shared<runtime::EvaluatedScene>(*plan.sourceScene);
+    for(auto& layer:solidScene->layers) { layer.matte=runtime::MatteMode::None;
+        layer.matteSourceLayer=layer.matteTargetLayer=runtime::kInvalidSceneIndex;layer.isolatedBottomDifference=false; }
+    render::MotionRenderPlanner planner;
+    solid=planner.build(solidScene).plan;
+    const auto lists=context->listCreations,effects=context->effectCreations;
+    require(bool(drawAlpha(backend,solid,session)) && context->listCreations==lists && context->effectCreations==effects,
+        "private no-pair no-Difference route creates zero lists/effects");
+    std::size_t rejected=0;
+    const auto reject=[&](const std::string& name,auto mutate) {
+        auto bad=plan; auto source=std::make_shared<runtime::EvaluatedScene>(*plan.sourceScene);
+        bad.sourceScene=source; mutate(*source,bad);
+        const auto draws=context->records.size();
+        const auto resources=context->listCreations+context->effectCreations+context->solidBrushCreations+
+            context->stopCreations+context->linearBrushCreations+factory->pathGeometryCreations;
+        const auto failed=drawAlpha(backend,bad,session);
+        require(!failed && failed.itemsDrawn==0 && failed.itemsSkipped==0,name+" whole-plan error before valid prefix");
+        require(context->records.size()==draws && resources==context->listCreations+context->effectCreations+
+            context->solidBrushCreations+context->stopCreations+context->linearBrushCreations+factory->pathGeometryCreations,
+            name+" rejection precedes native resources/draws");
+        require(context->target==host && sameMatrix(context->transform(),transform),name+" preserves host state");
+        ++rejected;
+    };
+    reject("reciprocity",[](auto& s,auto&){s.layers[3].matteTargetLayer=1;});
+    reject("provider role",[](auto& s,auto&){s.layers[3].matte=runtime::MatteMode::Alpha;});
+    reject("nonroot",[](auto& s,auto&){s.layers[2].parentLayer=1;s.layers[3].parentLayer=1;});
+    reject("multidraw",[](auto& s,auto&){s.layers[2].drawItemCount=2;});
+    reject("partial",[](auto&,auto& p){p.drawItems.pop_back();});
+    reject("reordered",[](auto&,auto& p){std::swap(p.drawItems[1],p.drawItems[2]);});
+    reject("duplicate",[](auto&,auto& p){p.drawItems[2]=p.drawItems[1];});
+    reject("other matte",[](auto& s,auto&){s.layers[2].matte=runtime::MatteMode::AlphaInverted;});
+    reject("mask",[](auto& s,auto&){s.layers[3].maskCount=1;});
+    reject("clip",[](auto& s,auto&){s.layers[3].clipPath=rectanglePath();});
+    reject("dash",[](auto& s,auto&){s.drawItems[2].localStroke.dashArray={1,2};});
+    reject("radial",[](auto& s,auto& p){s.drawItems[2].localPaint.kind=runtime::PaintKind::Gradient;
+        s.drawItems[2].localPaint.gradient.kind=runtime::GradientKind::Radial;
+        p.drawItems[2].featureBits=render::RenderFeatureGradientPaint|render::RenderFeatureMatte;});
+    reject("other blend",[](auto&,auto& p){p.drawItems[2].featureBits|=render::RenderFeatureBlend;});
+    reject("nonbottom Difference",[](auto& s,auto&){s.layers[1].isolatedBottomDifference=false;s.layers[3].isolatedBottomDifference=true;});
+    reject("canonical identity",[](auto& s,auto&){auto c=std::make_shared<runtime::CanonicalGeometry>();
+        c->path=rectanglePath();s.drawItems[2].canonicalGeometry=c;});
+    reject("unowned canonical alias",[](auto& s,auto& p){auto c=std::make_shared<runtime::CanonicalGeometry>();
+        c->path=rectanglePath();c->contentHash=p.drawItems[2].geometry.contentHash;
+        s.drawItems[2].canonicalGeometry=c;});
+    reject("orphan model identity",[](auto& s,auto&){s.drawItems[2].modelNode={0};});
+    const auto frozenPlan=frozenAlphaPlan();
+    require(bool(drawAlpha(backend,frozenPlan,session)),"alpha accepts complete frozen resource bindings");
+    const auto rejectFrozen=[&](const std::string& name,auto mutate) {
+        auto bad=frozenPlan;auto scene=std::make_shared<runtime::EvaluatedScene>(*bad.sourceScene);
+        auto frozen=std::make_shared<model::MotionAssetModel>(*scene->assetModel);scene->assetModel=frozen;bad.sourceScene=scene;
+        mutate(*frozen,*scene,bad);const auto before=context->records.size();
+        const auto failed=drawAlpha(backend,bad,session);
+        require(!failed && failed.itemsDrawn==0 && context->records.size()==before,name+" frozen binding rejection");++rejected;
+    };
+    rejectFrozen("node layer",[](auto& m,auto&,auto&){m.nodes[2].layer={1};});
+    rejectFrozen("record identity",[](auto& m,auto&,auto&){m.paints[2].id={1};});
+    rejectFrozen("frozen pair cardinality",[](auto& m,auto&,auto&){m.layers[3].nodes.count=2;});
+    rejectFrozen("frozen matte",[](auto& m,auto&,auto&){m.layers[2].matte=runtime::MatteMode::None;});
+    reject("resource identity",[](auto&,auto& p){p.drawItems[2].geometry.sourceKey++;});
+    reject("paint identity",[](auto&,auto& p){p.drawItems[2].paint.contentHash++;});
+    reject("source identity",[](auto&,auto& p){p.drawItems[2].sourceItemKey++;});
+    reject("nonfinite path",[](auto& s,auto&){s.drawItems[2].localPath.points[0].x=std::numeric_limits<float>::quiet_NaN();});
+    reject("nonfinite transform",[](auto&,auto& p){p.drawItems[2].geometryTransform.dx=std::numeric_limits<float>::infinity();});
+    reject("opacity range",[](auto&,auto& p){p.drawItems[2].effectiveOpacity=1.1F;});
+    reject("presentation range",[](auto&,auto& p){p.presentationOpacity=-.1F;});
+    reject("source opacity range",[](auto& s,auto&){s.drawItems[2].separatedOpacity=1.1F;});
+    reject("invalid resource origin",[](auto& s,auto&){s.drawItems[2].geometryOrigin=static_cast<runtime::EvaluatedValueOrigin>(99);});
+    reject("source range",[](auto& s,auto&){s.layers[3].firstDrawItem=999;});
+    reject("layer range",[](auto& s,auto&){s.drawItems[2].layerIndex=999;});
+    for(unsigned boundary=0;boundary<8;++boundary) for(auto native:{E_FAIL,D2DERR_RECREATE_TARGET}) {
+        auto* failedContext=new FakeDeviceContext(factory);failedContext->SetTarget(host);failedContext->SetTransform(transform);
+        failedContext->nativeFailure=native;
+        if(boundary<3) failedContext->failListAt=boundary+1;
+        else if(boundary<6) failedContext->failCloseAt=boundary-2;
+        else if(boundary==6) failedContext->failEffect=true;
+        else failedContext->failProperty=true;
+        backends::direct2d::Backend failureBackend;
+        const auto failed=drawAlpha(failureBackend,plan,{failedContext,99,1});
+        require(!failed && failed.error.nativeCode==native && failed.error.code==
+            (native==D2DERR_RECREATE_TARGET?Error::DeviceLost:Error::ResourceCreationFailed),
+            "native boundary failure propagates exact code");
+        const unsigned issued[]{0,1,2,3,2,3,3,3};
+        require(failed.itemsDrawn==issued[boundary] && failed.itemsSkipped==0,
+            "native failure counts source primitives actually issued before failure");
+        require(failedContext->target==host && sameMatrix(failedContext->transform(),transform) && failedContext->frameReplays==0,
+            "every native failure restores host and discards incomplete frame");
+        failedContext->Release();
+    }
+    for(unsigned variant=0;variant<4;++variant) {
+        auto hidden=std::make_shared<runtime::EvaluatedScene>(*plan.sourceScene);
+        if(variant==0) hidden->layers[3].visible=false;
+        if(variant==1) hidden->layers[3].opacity=0;
+        render::MotionRenderPlanner hiddenPlanner;
+        const auto built=hiddenPlanner.build(hidden, {.opacity=variant==2?0.F:1.F,.visible=variant!=3});
+        require(bool(built),"inactive alpha plan");
+        const auto drawn=drawAlpha(backend,built.plan,session);
+        require(bool(drawn) && drawn.itemsDrawn==built.plan.drawItems.size() && drawn.itemsSkipped==0,
+            "inactive/alpha0 pair keeps source issuance counts");
+    }
+    const auto creations=factory->pathGeometryCreations;
+    backend.invalidateGraphicsDomain(99,1);
+    require(bool(drawAlpha(backend,plan,session)) && factory->pathGeometryCreations>creations,"alpha domain invalidation recreates resources");
+    ++session.graphicsGeneration;require(bool(drawAlpha(backend,plan,session)),"alpha generation change");
+    auto* otherFactory=new FakeFactory;auto* other=new FakeDeviceContext(otherFactory);other->SetTarget(host);
+    session.deviceContext=other;
+    require(bool(drawAlpha(backend,plan,session)) && otherFactory->pathGeometryCreations>0,"alpha factory/context change");
+    other->Release();otherFactory->Release();
+    std::cout<<"alpha contracts rejections="<<rejected<<" injected_native_failures=16 fast_path_zero_composition=1\n";
+    context->Release();host->Release();factory->Release();
+}
+
 } // namespace
 
 int main() {
     using namespace avemotion;
+    alphaContracts();
 
     auto* factory = new FakeFactory;
     auto* context = new FakeDeviceContext(factory);
@@ -531,6 +819,7 @@ int main() {
         .graphicsGeneration = 1ULL,
     };
     const auto plan = makePlan();
+
 
     const auto first = backend.draw(plan, session);
     require(static_cast<bool>(first), "first Direct2D contract draw failed");
@@ -781,6 +1070,11 @@ int main() {
     require(bool(drawLinear(backend,gradient,nextSession)) && thirdContext->stopCreations==1, "factory change recreates gradient");
     thirdContext->Release(); nextFactory->Release(); nextContext->Release();
 
+    const auto alpha = drawAlpha(backend, alphaPlan(), session);
+    std::cout << "private alpha baseline drawn=" << alpha.itemsDrawn
+              << " skips=" << alpha.itemsSkipped << '\n';
+    require(bool(alpha) && alpha.itemsDrawn == 3 && alpha.itemsSkipped == 0,
+            "private alpha pair and isolated bottom Difference issue all three source primitives");
     context->Release();
     factory->Release();
 

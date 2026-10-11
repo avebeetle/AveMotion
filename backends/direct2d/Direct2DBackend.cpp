@@ -1,6 +1,8 @@
 #include "avemotion/backends/direct2d/Direct2DBackend.hpp"
 #include "avemotion/model/AssetModel.hpp"
 #include "LinearGradientBackendAccess.hpp"
+#include "AlphaMatteBackendAccess.hpp"
+#include "avemotion/core/Hash.hpp"
 
 #if !defined(_WIN32)
 #error "The AveMotion Direct2D backend is available only on Windows."
@@ -9,9 +11,11 @@
 
 #include <d2d1_1.h>
 #include <d2d1helper.h>
+#include <d2d1effects.h>
 #include <wrl/client.h>
 
 #include <bit>
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <cmath>
@@ -245,12 +249,13 @@ template <typename Left, typename Right>
     for (auto point : path.points) if (!finite(point.x) || !finite(point.y)) return false;
     return true;
 }
-[[nodiscard]] BackendErrorCode preflight(const render::MotionRenderPlan& plan) noexcept {
+[[nodiscard]] BackendErrorCode preflight(const render::MotionRenderPlan& plan,
+    bool alphaMatteEnabled = false) noexcept {
     using Error = BackendErrorCode;
     const auto& scene = *plan.sourceScene;
     if (!scene.masks.empty()) return Error::UnsupportedFeature;
     for (const auto& layer : scene.layers) {
-        if (layer.maskCount != 0 || layer.matte != runtime::MatteMode::None
+        if (layer.maskCount != 0 || (!alphaMatteEnabled && layer.matte != runtime::MatteMode::None)
             || !layer.clipPath.verbs.empty() || !layer.clipPath.points.empty())
             return Error::UnsupportedFeature;
     }
@@ -260,7 +265,9 @@ template <typename Left, typename Right>
         if (source.layerIndex >= scene.layers.size()
             || !finiteMatrix(item.geometryTransform) || !finiteMatrix(item.presentationTransform)
             || !finite(item.effectiveOpacity) || item.effectiveOpacity < 0 || item.effectiveOpacity > 1
-            || source.localGeometryAvailable != source.localPaintAvailable)
+            || (source.localGeometryAvailable != source.localPaintAvailable &&
+                !(alphaMatteEnabled && source.localGeometryAvailable && !source.localPaintAvailable
+                  && source.stroke.enabled && !source.canonicalGeometry && !source.canonicalPaint)))
             return Error::InvalidPlan;
         // The executor's frozen-model selection must be precisely the alias
         // which the planner selected. A missing alias cannot repair a plan.
@@ -299,6 +306,12 @@ template <typename Left, typename Right>
         if (paint.kind == runtime::PaintKind::Solid) bits |= render::RenderFeatureSolidPaint;
         else if (paint.kind == runtime::PaintKind::Gradient) bits |= render::RenderFeatureGradientPaint;
         else return Error::UnsupportedFeature;
+        if (alphaMatteEnabled) {
+            const auto& layer = scene.layers[source.layerIndex];
+            if (layer.matteSourceLayer != runtime::kInvalidSceneIndex ||
+                layer.matteTargetLayer != runtime::kInvalidSceneIndex) bits |= render::RenderFeatureMatte;
+            if (layer.isolatedBottomDifference) bits |= render::RenderFeatureBlend;
+        }
         if (bits != item.featureBits) return Error::UnsupportedFeature;
         if (paint.kind == runtime::PaintKind::Gradient) {
             if (stroke.enabled || paint.gradient.kind != runtime::GradientKind::Linear)
@@ -325,6 +338,191 @@ template <typename Left, typename Right>
         }
     }
     return Error::None;
+}
+
+[[nodiscard]] bool validRect(const runtime::RectF& r) noexcept {
+    return !r.valid || (finite(r.left) && finite(r.top) && finite(r.right) && finite(r.bottom)
+        && r.left <= r.right && r.top <= r.bottom);
+}
+
+// Match the planner's resource payload schema without consulting mutable caches.
+[[nodiscard]] std::uint64_t geometryHash(const runtime::EvaluatedScene& scene,
+    const runtime::EvaluatedDrawItem& source) noexcept {
+    if (source.canonicalGeometry) return source.canonicalGeometry->contentHash;
+    const auto& path = selectedPath(scene, source);
+    core::Fnv1a64 hash;
+    hash.appendU8(static_cast<std::uint8_t>(selectedFillRule(scene, source)));
+    hash.appendU64(path.verbs.size()); hash.appendU64(path.points.size());
+    for (auto verb : path.verbs) hash.appendU8(static_cast<std::uint8_t>(verb));
+    for (auto point : path.points) { hash.appendFloat(point.x); hash.appendFloat(point.y); }
+    hash.appendU8(path.controlBounds.valid ? 1U : 0U);
+    if (path.controlBounds.valid) {
+        hash.appendFloat(path.controlBounds.left); hash.appendFloat(path.controlBounds.top);
+        hash.appendFloat(path.controlBounds.right); hash.appendFloat(path.controlBounds.bottom);
+    }
+    return hash.value();
+}
+[[nodiscard]] std::uint64_t paintHash(const runtime::EvaluatedScene& scene,
+    const runtime::EvaluatedDrawItem& source) noexcept {
+    if (source.canonicalPaint) return source.canonicalPaint->contentHash;
+    const auto& paint = selectedPaint(scene, source);
+    const auto& stroke = selectedStroke(scene, source);
+    core::Fnv1a64 hash;
+    const auto color = [&](const runtime::Color8& c) {
+        hash.appendU8(c.r); hash.appendU8(c.g); hash.appendU8(c.b); hash.appendU8(c.a);
+    };
+    hash.appendU8(static_cast<std::uint8_t>(paint.kind)); hash.appendU8(stroke.enabled ? 1U : 0U);
+    hash.appendFloat(stroke.width); hash.appendFloat(stroke.miterLimit);
+    hash.appendU8(static_cast<std::uint8_t>(stroke.cap)); hash.appendU8(static_cast<std::uint8_t>(stroke.join));
+    hash.appendU64(stroke.dashArray.size()); for (auto dash : stroke.dashArray) hash.appendFloat(dash);
+    if (paint.kind == runtime::PaintKind::Solid) color(paint.solid);
+    else if (paint.kind == runtime::PaintKind::Gradient) {
+        const auto& g = paint.gradient;
+        hash.appendU8(static_cast<std::uint8_t>(g.kind));
+        for (auto value : {g.start.x,g.start.y,g.end.x,g.end.y,g.center.x,g.center.y,
+                          g.focal.x,g.focal.y,g.centerRadius,g.focalRadius}) hash.appendFloat(value);
+        hash.appendU64(g.stops.size());
+        for (const auto& stop : g.stops) { hash.appendFloat(stop.position); color(stop.color); }
+    }
+    return hash.value();
+}
+
+[[nodiscard]] BackendErrorCode preflightAlpha(const render::MotionRenderPlan& plan) {
+    using Error = BackendErrorCode;
+    constexpr auto invalid = runtime::kInvalidSceneIndex;
+    const auto& scene = *plan.sourceScene;
+    if (!finite(plan.presentationOpacity) || plan.presentationOpacity < 0 || plan.presentationOpacity > 1
+        || !validRect(plan.presentedBounds) || !validRect(plan.dirtyRegion)
+        || plan.stamp.assetHash != scene.sourceAssetHash || plan.stamp.instanceId != scene.instanceId
+        || plan.stamp.assetIdentity != (scene.assetHandle.valid() ? scene.assetHandle.packed() : 0)
+        || plan.stamp.instanceIdentity != (scene.instanceHandle.valid() ? scene.instanceHandle.packed() : scene.instanceId)
+        || plan.stamp.evaluationSequence != scene.evaluationSequence) return Error::InvalidPlan;
+    unsigned pairs = 0;
+    if (scene.assetModel && (!scene.assetModelApplied || scene.assetModel->sourceAssetHash != scene.sourceAssetHash))
+        return Error::InvalidPlan;
+    for (std::size_t i = 0; i < scene.layers.size(); ++i) {
+        const auto& layer = scene.layers[i];
+        const auto source = layer.matteSourceLayer, target = layer.matteTargetLayer;
+        if (scene.assetModel) {
+            const auto* frozen = scene.assetModel->layer(layer.modelLayer);
+            if (!frozen || frozen->id != layer.modelLayer || frozen->matte != layer.matte
+                || (frozen->parent.valid() ? frozen->parent.index() : invalid) != layer.parentLayer
+                || ((source != invalid || target != invalid) &&
+                    (frozen->nodes.count != 1 || !(frozen->dependencyBits & model::StaticDependencyMatte))))
+                return Error::InvalidPlan;
+        }
+        if (!finite(layer.opacity) || layer.opacity < 0 || layer.opacity > 1
+            || layer.firstDrawItem > scene.drawItems.size()
+            || layer.drawItemCount > scene.drawItems.size() - layer.firstDrawItem
+            || (layer.parentLayer != invalid && (layer.parentLayer >= scene.layers.size() || layer.parentLayer == i)))
+            return Error::InvalidPlan;
+        for (unsigned n = 0; n < layer.drawItemCount; ++n)
+            if (scene.drawItems[layer.firstDrawItem+n].layerIndex != i) return Error::InvalidPlan;
+        if (source != invalid || target != invalid) {
+            if (source != invalid && target != invalid) return Error::InvalidPlan;
+            if (layer.parentLayer != 0 || scene.layers.empty() || scene.layers[0].parentLayer != invalid
+                || layer.drawItemCount > 1 || layer.isolatedBottomDifference) return Error::InvalidPlan;
+            if (source != invalid) {
+                if (source >= scene.layers.size() || source != i+1 || layer.matte != runtime::MatteMode::Alpha)
+                    return Error::InvalidPlan;
+                const auto& other = scene.layers[source];
+                if (other.matteTargetLayer != i || other.matteSourceLayer != invalid || other.matte != runtime::MatteMode::None)
+                    return Error::InvalidPlan;
+                if (++pairs > 64) return Error::InvalidPlan;
+            } else {
+                if (target >= scene.layers.size() || i != static_cast<std::size_t>(target)+1
+                    || layer.matte != runtime::MatteMode::None || scene.layers[target].matteSourceLayer != i)
+                    return Error::InvalidPlan;
+            }
+        } else if (layer.matte != runtime::MatteMode::None) return Error::UnsupportedFeature;
+        if (layer.isolatedBottomDifference && (i != 1 || layer.parentLayer != 0
+            || scene.layers[0].parentLayer != invalid || layer.matte != runtime::MatteMode::None))
+            return Error::UnsupportedFeature;
+    }
+    // Validate even invisible source payloads, then require the entire eligible
+    // source sequence exactly once. A valid prefix cannot issue native work.
+    render::MotionRenderPlan validation;
+    validation.sourceScene = plan.sourceScene;
+    validation.drawItems.reserve(scene.drawItems.size());
+    std::size_t next = 0;
+    for (std::size_t i = 0; i < scene.drawItems.size(); ++i) {
+        const auto& source = scene.drawItems[i];
+        if (source.layerIndex >= scene.layers.size()) return Error::InvalidPlan;
+        const auto& layer = scene.layers[source.layerIndex];
+        const auto validOrigin = [](runtime::EvaluatedValueOrigin origin) {
+            return origin == runtime::EvaluatedValueOrigin::Unknown || origin == runtime::EvaluatedValueOrigin::AssetStatic
+                || origin == runtime::EvaluatedValueOrigin::InstanceEvaluated;
+        };
+        if (!validOrigin(source.geometryOrigin) || !validOrigin(source.paintOrigin)) return Error::InvalidPlan;
+        if (!scene.assetModel && (source.canonicalGeometry || source.canonicalPaint || source.modelNode.valid()
+            || source.modelGeometry.valid() || source.modelPaint.valid() || source.modelDrawItem.valid())) return Error::InvalidPlan;
+        if (scene.assetModel) {
+            const auto* node = scene.assetModel->node(source.modelNode);
+            const auto* geometry = scene.assetModel->geometry(source.modelGeometry);
+            const auto* paintRecord = scene.assetModel->paint(source.modelPaint);
+            if (!node || !geometry || !paintRecord || node->id != source.modelNode
+                || node->layer != layer.modelLayer || node->drawItem != source.modelDrawItem
+                || node->geometry != source.modelGeometry || node->paint != source.modelPaint
+                || geometry->id != source.modelGeometry || paintRecord->id != source.modelPaint
+                || source.sourceGeometryId != std::uint64_t(source.modelGeometry.value)+1
+                || source.sourcePaintId != std::uint64_t(source.modelPaint.value)+1) return Error::InvalidPlan;
+        }
+        if (i < layer.firstDrawItem || i-layer.firstDrawItem >= layer.drawItemCount
+            || !finite(source.separatedOpacity) || source.separatedOpacity < 0 || source.separatedOpacity > 1
+            || !validRect(selectedPath(scene,source).controlBounds)) return Error::InvalidPlan;
+        const auto inherited = source.opacitySeparated ? source.separatedOpacity : layer.opacity;
+        const auto opacity = (layer.matteTargetLayer != invalid ? 1.F : plan.presentationOpacity) * inherited;
+        const auto& paint = selectedPaint(scene,source);
+        const auto& stroke = selectedStroke(scene,source);
+        std::uint32_t bits = paint.kind == runtime::PaintKind::Solid ? render::RenderFeatureSolidPaint
+            : paint.kind == runtime::PaintKind::Gradient ? render::RenderFeatureGradientPaint : 0U;
+        if (stroke.enabled) bits |= render::RenderFeatureStroke;
+        if (layer.matteSourceLayer != invalid || layer.matteTargetLayer != invalid) bits |= render::RenderFeatureMatte;
+        if (layer.isolatedBottomDifference) bits |= render::RenderFeatureBlend;
+        render::MotionDrawItem checked;
+        checked.sourceDrawItemIndex = static_cast<std::uint32_t>(i);
+        checked.geometryTransform = usesLocalRenderingSpace(scene,source)
+            ? render::Matrix3x2{source.localToViewport.m11,source.localToViewport.m12,source.localToViewport.m21,
+                source.localToViewport.m22,source.localToViewport.dx,source.localToViewport.dy}
+            : render::Matrix3x2::identity();
+        checked.featureBits = bits;
+        if (plan.presentationVisible && plan.presentationOpacity > 0 && layer.visible && opacity > 0) {
+            if (next >= plan.drawItems.size()) return Error::InvalidPlan;
+            checked = plan.drawItems[next];
+            if (checked.sourceDrawItemIndex != i || checked.drawOrder != next || checked.effectiveOpacity != opacity
+                || checked.featureBits != bits || !validRect(checked.presentedBounds)) return Error::InvalidPlan;
+            core::Fnv1a64 fallback;
+            fallback.appendU64(scene.sourceAssetHash); fallback.appendU32(source.layerIndex);
+            fallback.appendU32(static_cast<std::uint32_t>(i-layer.firstDrawItem));
+            const auto key = fallback.value();
+            const bool aware = scene.assetModelApplied;
+            if (checked.sourceItemKey != (aware && source.modelNode.valid() ? std::uint64_t(source.modelNode.value)+1 : key)
+                || checked.drawItem != (aware ? source.modelDrawItem : model::DrawItemId{})
+                || checked.node != (aware ? source.modelNode : model::NodeId{})) return Error::InvalidPlan;
+            const auto validKey = [&](const auto& resource, auto id, std::uint64_t sourceKey,
+                                      std::uint64_t hash, runtime::EvaluatedValueOrigin origin) {
+                const auto asset = origin == runtime::EvaluatedValueOrigin::AssetStatic;
+                return resource.scope == (asset ? render::ResourceIdentityScope::Asset : render::ResourceIdentityScope::Instance)
+                    && resource.assetHash == plan.stamp.assetHash && resource.assetIdentity == plan.stamp.assetIdentity
+                    && resource.instanceId == (asset ? 0 : plan.stamp.instanceId)
+                    && resource.instanceIdentity == (asset ? 0 : plan.stamp.instanceIdentity)
+                    && resource.sourceKey == (sourceKey ? sourceKey : key) && resource.resourceId == id
+                    && resource.contentHash == hash && (!asset || resource.revision == 0);
+            };
+            if (!validKey(checked.geometry, aware && !source.sourceGeometryProjected ? source.modelGeometry : model::GeometryId{},
+                          source.sourceGeometryId,geometryHash(scene,source),source.geometryOrigin)
+                || !validKey(checked.paint, aware ? source.modelPaint : model::PaintId{},
+                          source.sourcePaintId,paintHash(scene,source),source.paintOrigin)
+                || (source.sourceGeometryRevisionAuthoritative && checked.geometry.scope == render::ResourceIdentityScope::Instance
+                    && checked.geometry.revision != source.sourceGeometryRevision)) return Error::InvalidPlan;
+            if (next && !sameMatrix(checked.presentationTransform,plan.drawItems[0].presentationTransform))
+                return Error::InvalidPlan;
+            ++next;
+        }
+        validation.drawItems.push_back(checked);
+    }
+    if (next != plan.drawItems.size()) return Error::InvalidPlan;
+    return preflight(validation,true);
 }
 
 struct GradientResource final {
@@ -519,8 +717,13 @@ DrawResult detail::LinearGradientBackendAccess::draw(Backend& backend,
     return backend.execute(plan, session, true);
 }
 
+DrawResult detail::AlphaMatteBackendAccess::draw(Backend& backend,
+    const render::MotionRenderPlan& plan, const RenderSession& session) {
+    return backend.execute(plan, session, true, true);
+}
+
 DrawResult Backend::execute(const render::MotionRenderPlan& plan,
-    const RenderSession& session, bool linearFillEnabled) {
+    const RenderSession& session, bool linearFillEnabled, bool alphaMatteEnabled) {
     DrawResult result;
     if (session.deviceContext == nullptr || !plan.sourceScene) {
         result.error = {
@@ -530,10 +733,10 @@ DrawResult Backend::execute(const render::MotionRenderPlan& plan,
         return result;
     }
     if (linearFillEnabled) {
-        const auto error = preflight(plan);
+        const auto error = alphaMatteEnabled ? preflightAlpha(plan) : preflight(plan);
         if (error != BackendErrorCode::None) {
             result.error = {error, static_cast<long>(E_INVALIDARG),
-                "private linear-fill plan failed whole-plan preflight"};
+                "private Direct2D plan failed whole-plan preflight"};
             return result;
         }
     }
@@ -551,7 +754,7 @@ DrawResult Backend::execute(const render::MotionRenderPlan& plan,
     const TransformGuard transformGuard(session.deviceContext);
     ++impl_->diagnostics.drawCalls;
 
-    for (const auto& planItem : plan.drawItems) {
+    const auto issuePrimitive = [&](const render::MotionDrawItem& planItem) -> DrawResult {
         ++impl_->diagnostics.drawItemsVisited;
         if (planItem.sourceDrawItemIndex >= plan.sourceScene->drawItems.size()) {
             result.error = {
@@ -568,7 +771,7 @@ DrawResult Backend::execute(const render::MotionRenderPlan& plan,
         if (!linearFillEnabled && (unsupported != 0U || paint.kind != runtime::PaintKind::Solid)) {
             ++result.itemsSkipped;
             ++impl_->diagnostics.unsupportedItemsSkipped;
-            continue;
+            return result;
         }
 
         const auto nativeSlot = slotKey(planItem.geometry);
@@ -690,7 +893,81 @@ DrawResult Backend::execute(const render::MotionRenderPlan& plan,
         }
         ++result.itemsDrawn;
         if (paint.kind == runtime::PaintKind::Solid) ++impl_->diagnostics.solidItemsDrawn;
+        return result;
+    };
+    const bool isolate = alphaMatteEnabled && std::any_of(plan.sourceScene->layers.begin(),
+        plan.sourceScene->layers.end(), [](const auto& layer) {
+            return layer.matteSourceLayer != runtime::kInvalidSceneIndex || layer.isolatedBottomDifference;
+        });
+    if (!isolate) {
+        for (const auto& item : plan.drawItems) if (!issuePrimitive(item)) return result;
+        return result;
     }
+
+    auto* context = session.deviceContext;
+    struct TargetGuard final {
+        ID2D1DeviceContext* context;
+        ComPtr<ID2D1Image> original;
+        explicit TargetGuard(ID2D1DeviceContext* value) : context(value) { context->GetTarget(&original); }
+        ~TargetGuard() { context->SetTarget(original.Get()); }
+    } targetGuard(context);
+    const auto failure = [&](HRESULT hr, const char* message) {
+        result.error = {hr == D2DERR_RECREATE_TARGET ? BackendErrorCode::DeviceLost
+            : BackendErrorCode::ResourceCreationFailed, static_cast<long>(hr), message};
+        return result;
+    };
+    ComPtr<ID2D1CommandList> frame;
+    auto hr = context->CreateCommandList(&frame);
+    if (FAILED(hr)) return failure(hr,"unable to create isolated frame command list");
+    context->SetTarget(frame.Get());
+    std::vector<bool> consumed(plan.sourceScene->layers.size(),false);
+    for (const auto& item : plan.drawItems) {
+        const auto& source = plan.sourceScene->drawItems[item.sourceDrawItemIndex];
+        const auto& layer = plan.sourceScene->layers[source.layerIndex];
+        const bool contentRole = layer.matteSourceLayer != runtime::kInvalidSceneIndex;
+        const bool providerRole = layer.matteTargetLayer != runtime::kInvalidSceneIndex;
+        if (!contentRole && !providerRole) {
+            if (!issuePrimitive(item)) return result;
+            continue;
+        }
+        const auto contentIndex = contentRole ? source.layerIndex : layer.matteTargetLayer;
+        const auto providerIndex = plan.sourceScene->layers[contentIndex].matteSourceLayer;
+        if (consumed[contentIndex]) continue;
+        consumed[contentIndex] = true;
+        // Each pair owns its effect and child recordings. Effects retain input
+        // references in the frame graph, so later pairs must never mutate them.
+        ComPtr<ID2D1CommandList> content, provider;
+        const auto recordInput = [&](std::uint32_t layerIndex, ComPtr<ID2D1CommandList>& capture) {
+            auto native = context->CreateCommandList(&capture);
+            if (FAILED(native)) return native;
+            context->SetTarget(capture.Get());
+            for (const auto& candidate : plan.drawItems)
+                if (plan.sourceScene->drawItems[candidate.sourceDrawItemIndex].layerIndex == layerIndex) {
+                    if (!issuePrimitive(candidate)) { context->SetTarget(frame.Get()); return static_cast<HRESULT>(result.error.nativeCode); }
+                }
+            // Close is valid only after this recording is no longer the target.
+            context->SetTarget(frame.Get());
+            return capture->Close();
+        };
+        hr = recordInput(contentIndex,content);
+        if (FAILED(hr)) return result.error ? result : failure(hr,"unable to record matte content command list");
+        hr = recordInput(providerIndex,provider);
+        if (FAILED(hr)) return result.error ? result : failure(hr,"unable to record matte provider command list");
+        ComPtr<ID2D1Effect> composite;
+        hr = context->CreateEffect(CLSID_D2D1Composite,&composite);
+        if (FAILED(hr)) return failure(hr,"unable to create alpha Composite effect");
+        composite->SetInput(0,content.Get());
+        composite->SetInput(1,provider.Get());
+        hr = composite->SetValue(D2D1_COMPOSITE_PROP_MODE,D2D1_COMPOSITE_MODE_DESTINATION_IN);
+        if (FAILED(hr)) return failure(hr,"unable to configure alpha Composite effect");
+        context->SetTransform(toD2D(render::Matrix3x2::identity()));
+        context->DrawImage(composite.Get(),nullptr,nullptr,D2D1_INTERPOLATION_MODE_LINEAR,D2D1_COMPOSITE_MODE_SOURCE_OVER);
+    }
+    context->SetTarget(targetGuard.original.Get());
+    hr = frame->Close();
+    if (FAILED(hr)) return failure(hr,"unable to close isolated frame command list");
+    context->SetTransform(toD2D(render::Matrix3x2::identity()));
+    context->DrawImage(frame.Get(),nullptr,nullptr,D2D1_INTERPOLATION_MODE_LINEAR,D2D1_COMPOSITE_MODE_SOURCE_OVER);
     return result;
 }
 

@@ -141,7 +141,24 @@ struct ID2D1SolidColorBrush : ID2D1Brush {
 struct ID2D1GradientStopCollection : IUnknown {};
 struct ID2D1LinearGradientBrush : ID2D1Brush {};
 
+enum D2D1_COMPOSITE_MODE { D2D1_COMPOSITE_MODE_SOURCE_OVER = 0, D2D1_COMPOSITE_MODE_DESTINATION_IN = 3 };
+enum D2D1_INTERPOLATION_MODE { D2D1_INTERPOLATION_MODE_LINEAR = 1 };
+struct ID2D1Image : IUnknown {};
+struct ID2D1CommandList : ID2D1Image { virtual HRESULT Close() noexcept = 0; };
+struct ID2D1Effect : IUnknown {
+    virtual void SetInput(UINT32 index, ID2D1Image* image) noexcept = 0;
+    virtual HRESULT SetValue(UINT32 property, D2D1_COMPOSITE_MODE value) noexcept = 0;
+};
+
 struct ID2D1DeviceContext : IUnknown {
+    virtual void GetTarget(ID2D1Image** image) noexcept = 0;
+    virtual void SetTarget(ID2D1Image* image) noexcept = 0;
+    virtual HRESULT CreateCommandList(ID2D1CommandList** list) noexcept = 0;
+    virtual HRESULT CreateEffect(int effect, ID2D1Effect** value) noexcept = 0;
+    virtual void DrawImage(ID2D1Image* image, const D2D1_POINT_2F*, const void*,
+        D2D1_INTERPOLATION_MODE, D2D1_COMPOSITE_MODE) noexcept = 0;
+    virtual void DrawImage(ID2D1Effect* effect, const D2D1_POINT_2F*, const void*,
+        D2D1_INTERPOLATION_MODE, D2D1_COMPOSITE_MODE) noexcept = 0;
     virtual void GetFactory(ID2D1Factory** factory) noexcept = 0;
     virtual HRESULT CreateSolidColorBrush(
         const D2D1_COLOR_F& color,

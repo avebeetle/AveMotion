@@ -243,7 +243,7 @@ if(WIN32 AND AVEMOTION_BUILD_DIRECT2D_BACKEND)
             $<INSTALL_INTERFACE:include>)
     target_link_libraries(avemotion_backend_d2d
         PUBLIC AveMotion::Rendering
-        PRIVATE d2d1 dxgi)
+        PRIVATE d2d1 dxgi dxguid)
     avemotion_set_warnings(avemotion_backend_d2d)
 endif()
 

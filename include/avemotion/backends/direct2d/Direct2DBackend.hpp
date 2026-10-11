@@ -10,7 +10,7 @@ struct ID2D1DeviceContext;
 
 namespace avemotion::backends::direct2d {
 
-namespace detail { class LinearGradientBackendAccess; }
+namespace detail { class LinearGradientBackendAccess; class AlphaMatteBackendAccess; }
 
 enum class BackendErrorCode : std::uint8_t {
     None,
@@ -85,8 +85,9 @@ public:
 
 private:
     friend class detail::LinearGradientBackendAccess;
+    friend class detail::AlphaMatteBackendAccess;
     [[nodiscard]] DrawResult execute(const render::MotionRenderPlan& plan,
-        const RenderSession& session, bool linearFillEnabled);
+        const RenderSession& session, bool linearFillEnabled, bool alphaMatteEnabled = false);
     struct Impl;
     std::unique_ptr<Impl> impl_;
 };
