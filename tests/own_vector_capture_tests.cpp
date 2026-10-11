@@ -197,6 +197,223 @@ std::vector<PixelBGRA> renderAlphaPlan(WarpCaptureSurface& surface,backends::dir
     if(clip) context->PopAxisAlignedClip();
     surface.end();return surface.readPixels();
 }
+// Independent original oracle: ordinary paths/paint and parsed paint matrix.
+// The optional literal matrix override is used only by the precision witness.
+std::vector<PixelBGRA> ordinaryPartyDraw(WarpCaptureSurface &surface,
+    const runtime::EvaluatedDrawItem &draw, const VMatrix &paintMatrix, bool local = false,
+    const runtime::AffineTransform *literalMatrix = nullptr) {
+    using Microsoft::WRL::ComPtr;
+    surface.begin(); auto *context=surface.context();
+    ComPtr<ID2D1Factory> factory; context->GetFactory(&factory);
+    ComPtr<ID2D1PathGeometry> geometry;
+    testsupport::captureSurfaceRequireHr(factory->CreatePathGeometry(&geometry),"ordinary Party geometry");
+    ComPtr<ID2D1GeometrySink> sink;
+    testsupport::captureSurfaceRequireHr(geometry->Open(&sink),"ordinary Party sink");
+    sink->SetFillMode(draw.fillRule==runtime::FillRule::EvenOdd?D2D1_FILL_MODE_ALTERNATE:D2D1_FILL_MODE_WINDING);
+    const auto &path=local?draw.localPath:draw.path;
+    if(local) context->SetTransform(D2D1::Matrix3x2F(paintMatrix.m_11(),paintMatrix.m_12(),paintMatrix.m_21(),paintMatrix.m_22(),paintMatrix.m_tx(),paintMatrix.m_ty()));
+    if(literalMatrix) {const auto &m=*literalMatrix;context->SetTransform(D2D1::Matrix3x2F(m.m11,m.m12,m.m21,m.m22,m.dx,m.dy));}
+    std::size_t point=0; bool open=false;
+    const auto next=[&]() { const auto p=path.points.at(point++);return D2D1::Point2F(p.x,p.y); };
+    for(const auto verb:path.verbs) {
+        if(verb==runtime::PathVerb::MoveTo) {
+            if(open) sink->EndFigure(D2D1_FIGURE_END_OPEN);
+            sink->BeginFigure(next(),D2D1_FIGURE_BEGIN_FILLED);open=true;
+        } else if(verb==runtime::PathVerb::LineTo) sink->AddLine(next());
+        else if(verb==runtime::PathVerb::CubicTo) {
+            const auto a=next(),b=next(),c=next();sink->AddBezier(D2D1::BezierSegment(a,b,c));
+        } else {sink->EndFigure(D2D1_FIGURE_END_CLOSED);open=false;}
+    }
+    if(open) sink->EndFigure(D2D1_FIGURE_END_OPEN);
+    require(point==path.points.size(),"ordinary Party path consumed");
+    testsupport::captureSurfaceRequireHr(sink->Close(),"ordinary Party path close");
+    require(!draw.stroke.enabled,"original Party independent fill scope");
+    const auto color=[](runtime::Color8 c) {return D2D1::ColorF(c.r/255.F,c.g/255.F,c.b/255.F,c.a/255.F);};
+    if(draw.paint.kind==runtime::PaintKind::Solid) {
+        ComPtr<ID2D1SolidColorBrush> brush;
+        testsupport::captureSurfaceRequireHr(context->CreateSolidColorBrush(color(draw.paint.solid),&brush),"ordinary Party solid");
+        context->FillGeometry(geometry.Get(),brush.Get());
+    } else {
+        require(draw.paint.kind==runtime::PaintKind::Gradient && draw.paint.gradient.kind==runtime::GradientKind::Linear,
+                "original Party independent linear scope");
+        std::vector<D2D1_GRADIENT_STOP> values;
+        for(const auto &stop:draw.paint.gradient.stops) values.push_back({stop.position,color(stop.color)});
+        ComPtr<ID2D1GradientStopCollection> stops;
+        testsupport::captureSurfaceRequireHr(context->CreateGradientStopCollection(values.data(),static_cast<UINT32>(values.size()),
+            D2D1_GAMMA_2_2,D2D1_EXTEND_MODE_CLAMP,&stops),"ordinary Party stops");
+        bool invertible=false; const auto inverse=paintMatrix.inverted(&invertible);
+        require(invertible,"ordinary Party paint matrix invertible");
+        const auto start=inverse.map(draw.paint.gradient.start.x,draw.paint.gradient.start.y);
+        const auto end=inverse.map(draw.paint.gradient.end.x,draw.paint.gradient.end.y);
+        ComPtr<ID2D1LinearGradientBrush> brush;
+        testsupport::captureSurfaceRequireHr(context->CreateLinearGradientBrush(
+            D2D1_LINEAR_GRADIENT_BRUSH_PROPERTIES{{start.x(),start.y()},{end.x(),end.y()}},stops.Get(),&brush),"ordinary Party gradient");
+        if(!local) brush->SetTransform(D2D1::Matrix3x2F(paintMatrix.m_11(),paintMatrix.m_12(),paintMatrix.m_21(),paintMatrix.m_22(),paintMatrix.m_tx(),paintMatrix.m_ty()));
+        context->FillGeometry(geometry.Get(),brush.Get());
+    }
+    surface.end();return surface.readPixels();
+}
+std::vector<PixelBGRA> ordinaryPartyRaster(WarpCaptureSurface &surface,
+    const runtime::EvaluatedScene &scene,const OwnVectorSceneOracle &oracle,
+    const fs::path &root,const std::string &label,bool local = false) {
+    std::map<int,std::vector<PixelBGRA>> inputs;
+    std::vector<int> order;
+    std::ofstream rawScene(root/(label+"-ordinary.tsv"));
+    rawScene.precision(12);
+    for(const auto &draw:scene.drawItems) {
+        const auto &layer=scene.layers.at(draw.layerIndex);
+        const auto id=oracle.instances().at(layer.modelLayer.value).data->id();
+        auto pixels=ordinaryPartyDraw(surface,draw,oracle.matrices().at(draw.modelNode.value),local);
+        const auto [found,inserted]=inputs.try_emplace(id,pixels.size());
+        if(inserted) order.push_back(id);
+        else for(const auto &pair:originalPartyPairs)
+            require(id!=pair.provider && id!=pair.content,"original Party one paired independent paint");
+        for(std::size_t i=0;i<pixels.size();++i) {
+            const auto source=pixels[i];auto &dst=found->second[i];const auto a=255U-source.a;
+            const auto over=[&](unsigned channel,unsigned background) {
+                return static_cast<std::uint8_t>(std::min(255U,channel+(background*a+127U)/255U));
+            };
+            dst={over(source.b,dst.b),over(source.g,dst.g),over(source.r,dst.r),over(source.a,dst.a)};
+        }
+        rawScene<<"draw\t"<<id<<'\t'<<unsigned(layer.matte)<<'\t'<<layer.visible<<'\t'<<layer.opacity<<'\t'<<oracle.drawRole(scene,draw)<<'\n';
+        for(const auto p:draw.path.points) rawScene<<"point\t"<<p.x<<'\t'<<p.y<<'\n';
+        rawScene<<"solid\t"<<unsigned(draw.paint.solid.r)<<'\t'<<unsigned(draw.paint.solid.g)<<'\t'<<unsigned(draw.paint.solid.b)<<'\t'<<unsigned(draw.paint.solid.a)<<'\n';
+        const auto &g=draw.paint.gradient;
+        rawScene<<"gradient\t"<<g.start.x<<'\t'<<g.start.y<<'\t'<<g.end.x<<'\t'<<g.end.y<<'\n';
+        for(const auto stop:g.stops) rawScene<<"stop\t"<<stop.position<<'\t'<<unsigned(stop.color.r)<<'\t'<<unsigned(stop.color.g)<<'\t'<<unsigned(stop.color.b)<<'\t'<<unsigned(stop.color.a)<<'\n';
+    }
+    std::vector<PixelBGRA> expected(scene.viewportWidth*scene.viewportHeight);
+    const auto mul=[](unsigned v,unsigned a) {return (v*a+127U)/255U;};
+    for(const auto id:order) {
+        bool provider=false; int mask=0;
+        for(const auto &pair:originalPartyPairs) {
+            provider |= id==pair.provider;
+            if(id==pair.content) mask=pair.provider;
+        }
+        if(provider || (mask && !inputs.contains(mask))) continue;
+        const auto &input=inputs.at(id);
+        for(std::size_t i=0;i<input.size();++i) {
+            auto source=input[i];
+            if(mask) { const auto a=inputs.at(mask)[i].a; source={static_cast<std::uint8_t>(mul(source.b,a)),static_cast<std::uint8_t>(mul(source.g,a)),static_cast<std::uint8_t>(mul(source.r,a)),static_cast<std::uint8_t>(mul(source.a,a))}; }
+            auto &dst=expected[i];const auto a=255U-source.a;
+            dst={static_cast<std::uint8_t>(std::min(255U,unsigned(source.b)+mul(dst.b,a))),
+                static_cast<std::uint8_t>(std::min(255U,unsigned(source.g)+mul(dst.g,a))),
+                static_cast<std::uint8_t>(std::min(255U,unsigned(source.r)+mul(dst.r,a))),
+                static_cast<std::uint8_t>(std::min(255U,unsigned(source.a)+mul(dst.a,a)))};
+        }
+    }
+    require(bool(rawScene),"original ordinary raw fields retained");
+    return expected;
+}
+void originalPartyPrecisionWitness(WarpCaptureSurface &surface,
+    const runtime::EvaluatedScene &reference,const OwnVectorSceneOracle &oracle,const fs::path &root) {
+    // Authored frame0 numeric literals: group G, popper L, null transform-parent P,
+    // aspect-fit V. Neither operand construction reads own evaluation output.
+    // Independently audited float32 operands. General affine operations make the
+    // association explicit; VMatrix's optimized type branches are not this probe.
+    using Matrix=runtime::AffineTransform;
+    const Matrix group{1,0,0,1,321.80999755859375F,327.3299865722656F};
+    const Matrix layer{.7071067690849304F,-.7071067690849304F,.7071067690849304F,.7071067690849304F,-463.310302734375F,-428.4501953125F};
+    const Matrix parent{.7071067690849304F,.7071067690849304F,-.7071067690849304F,.7071067690849304F,66,982};
+    const Matrix viewport{.09375F,0,0,.09375F,48,0};
+    const auto multiply=[](const Matrix &a,const Matrix &b) {
+        const auto sum=[](float x,float y) {volatile float rounded=x+y;return rounded;};
+        const auto product=[](float x,float y) {volatile float rounded=x*y;return rounded;};
+        return Matrix{sum(product(a.m11,b.m11),product(a.m12,b.m21)),
+            sum(product(a.m11,b.m12),product(a.m12,b.m22)),
+            sum(product(a.m21,b.m11),product(a.m22,b.m21)),
+            sum(product(a.m21,b.m12),product(a.m22,b.m22)),
+            sum(sum(product(a.dx,b.m11),product(a.dy,b.m21)),b.dx),
+            sum(sum(product(a.dx,b.m12),product(a.dy,b.m22)),b.dy)};
+    };
+    const auto worldThenViewport=multiply(multiply(group,multiply(layer,parent)),viewport);
+    const auto viewportBeforeGroup=multiply(group,multiply(multiply(layer,parent),viewport));
+    require(worldThenViewport.dy==63.633758544921875F &&
+                viewportBeforeGroup.dy==63.633754730224609375F,
+            "literal float32 viewport association values");
+    const auto &draw=reference.drawItems.at(0);
+    require(oracle.drawRole(reference,draw)==
+        "root/layer:11[10]|root/layer:11/shapes/5/it/0|root/layer:11/shapes/5/it/1",
+        "literal original precision witness role");
+    const auto pinned=ordinaryPartyDraw(surface,draw,oracle.matrices().at(draw.modelNode.value),true);
+    const auto first=worldThenViewport,second=viewportBeforeGroup;
+    require(first.m11==second.m11 && first.m12==second.m12 && first.m21==second.m21 &&
+                first.m22==second.m22 && first.dx==second.dx && first.dy!=second.dy,
+            "literal native sensitivity changes only dy");
+    const auto oldPixels=ordinaryPartyDraw(surface,draw,oracle.matrices().at(draw.modelNode.value),true,&first);
+    const auto vendorPixels=ordinaryPartyDraw(surface,draw,oracle.matrices().at(draw.modelNode.value),true,&second);
+    rawPixels(root/"literal-world-then-viewport.bgra",oldPixels);
+    rawPixels(root/"literal-viewport-before-group.bgra",vendorPixels);
+    const auto match=testsupport::comparePixels(pinned,vendorPixels,192,96);
+    const auto sensitivity=testsupport::comparePixels(oldPixels,vendorPixels,192,96);
+    require(match.maxChannelDifference<=3,"literal vendor association matches independent parsed source native raster");
+    require(sensitivity.maxChannelDifference>3,"native AA witnesses sensitivity to literal association delta");
+    std::cout.precision(12);
+    std::cout<<"literal precision world_dy="<<first.dy<<" viewport_before_group_dy="<<second.dy
+        <<" vendor_native_max="<<unsigned(match.maxChannelDifference)
+        <<" sensitivity_max="<<unsigned(sensitivity.maxChannelDifference)<<'\n';
+}
+void originalPartyCaptures(const std::string &json,const fs::path &root) {
+    const auto compiled=vectorCompile(json);require(bool(compiled),compiled.path+compiled.message);
+    const auto prepared=render::detail::prepareOwnVectorAsset(compiled.prepared);require(bool(prepared),prepared.message);
+    auto stream=render::detail::OwnNativeEllipseStream::create(prepared.prepared);require(bool(stream),stream.message);
+    OwnVectorSceneOracle oracle(json);render::MotionRenderPlanner planner;
+    WarpCaptureSurface ownSurface,nativeSurface;backends::direct2d::Backend backend;
+    std::ofstream metrics(root/"party-metrics.tsv");
+    metrics<<"width\theight\tframe\tnative_max\tnative_pass\tnative_iou\tnative_alpha\tnative_mean_all\tnative_mean_active\tnative_large_fraction\tnative_bounds\tnative_over3\tcpu_pass\tiou\talpha\tmean_all\tmean_active\tlarge_fraction\tbounds\tdrawn\tskipped\n";
+    unsigned failures=0,captures=0;
+    for(const auto [width,height]:{std::pair{129U,129U},std::pair{192U,96U}}) {
+        testsupport::CaptureProfile profile{"original-Party",width,height,width,height,96,96};
+        ownSurface.configure(profile);nativeSurface.configure(profile);
+        for(const auto frame:{0U,19U,20U,25U,30U,31U,50U,81U,82U,91U}) {
+            auto own=stream.stream->emit(frame,width,height);require(bool(own),own.message);
+            assertOriginalParty(*prepared.prepared,*own.scene);
+            const auto reference=oracle.freshScene(frame,width,height,true);
+            if(width==192 && frame==0) originalPartyPrecisionWitness(nativeSurface,reference,oracle,root);
+            auto plan=planner.build(std::move(*own.scene));require(bool(plan),"original Party plan");
+            const auto label="party-"+std::to_string(width)+"x"+std::to_string(height)+"-f"+std::to_string(frame);
+            auto cpu=rlottie::Animation::loadFromData(json,"fresh-original-Party-"+label,{},false);
+            require(bool(cpu),"fresh original Party pinned CPU parse");
+            const auto cpuPixels=ordinaryCpuPixels(*cpu,frame,profile);rawPixels(root/(label+"-cpu.bgra"),cpuPixels);
+            const auto expected=ordinaryPartyRaster(nativeSurface,reference,oracle,root,label);
+            const auto actual=renderAlphaPlan(ownSurface,backend,plan.plan,D2D1::Matrix3x2F::Identity(),false,false,1);
+            const auto localExpected=ordinaryPartyRaster(nativeSurface,reference,oracle,root,label+"-local",true);
+            rawPixels(root/(label+"-native-local.bgra"),localExpected);
+            std::cout<<label<<" diagnostic_local_native_max="<<unsigned(testsupport::comparePixels(localExpected,actual,width,height).maxChannelDifference)<<'\n';
+            rawPixels(root/(label+"-own.bgra"),actual);rawPixels(root/(label+"-native.bgra"),expected);
+            writeMismatch(root,label,expected,actual,width,height);
+            if(frame==0) {
+                // Authored Group6 fill is [1,.757000014361,.027000000898,1].
+                // Hand-checked interiors stay inside its opaque yellow area.
+                const unsigned x=width==129?42U:72U,y=width==129?51U:44U;
+                const PixelBGRA literal{6,193,255,255};
+                for(const auto &image:{std::cref(actual),std::cref(expected)}) {
+                    const auto pixel=image.get().at(y*width+x);
+                    require(std::abs(int(pixel.b)-literal.b)<=3 && std::abs(int(pixel.g)-literal.g)<=3 &&
+                        std::abs(int(pixel.r)-literal.r)<=3 && std::abs(int(pixel.a)-literal.a)<=3,
+                        "original Party authored yellow interior allowance3");
+                    require(image.get().front()==PixelBGRA{},"original Party literal transparent corner");
+                }
+                std::cout<<label<<" literal interior="<<x<<','<<y<<" BGRA=6,193,255,255 allowance=3\n";
+            }
+            const auto native=testsupport::comparePixels(expected,actual,width,height);
+            const auto nativeDecision=testsupport::evaluateComparison(native,{});
+            std::size_t over3=0;
+            for(std::size_t i=0;i<actual.size();++i)
+                over3 += std::abs(int(actual[i].b)-expected[i].b)>3 || std::abs(int(actual[i].g)-expected[i].g)>3 ||
+                    std::abs(int(actual[i].r)-expected[i].r)>3 || std::abs(int(actual[i].a)-expected[i].a)>3;
+            const auto cpuMetrics=testsupport::comparePixels(cpuPixels,actual,width,height);
+            const auto decision=testsupport::evaluateComparison(cpuMetrics,{});
+            for(const auto &reason:decision.failures) std::cout<<label<<" CPU failure: "<<reason<<'\n';
+            for(const auto &reason:nativeDecision.failures) std::cout<<label<<" native failure: "<<reason<<'\n';
+            metrics<<width<<'\t'<<height<<'\t'<<frame<<'\t'<<unsigned(native.maxChannelDifference)<<'\t'<<nativeDecision.passed<<'\t'<<native.activeIoU<<'\t'<<native.alphaRelativeError<<'\t'<<native.meanAbsoluteDifferenceAll<<'\t'<<native.meanAbsoluteDifferenceActive<<'\t'<<native.largeDifferenceFraction<<'\t'<<native.maximumBoundsDelta<<'\t'<<over3<<'\t'<<decision.passed<<'\t'<<cpuMetrics.activeIoU<<'\t'<<cpuMetrics.alphaRelativeError<<'\t'<<cpuMetrics.meanAbsoluteDifferenceAll<<'\t'<<cpuMetrics.meanAbsoluteDifferenceActive<<'\t'<<cpuMetrics.largeDifferenceFraction<<'\t'<<cpuMetrics.maximumBoundsDelta<<'\t'<<plan.plan.drawItems.size()<<"\t0\n";
+            std::cout<<label<<" native_max="<<unsigned(native.maxChannelDifference)<<" native_pass="<<nativeDecision.passed<<" native_over3="<<over3<<" cpu_pass="<<decision.passed<<" drawn="<<plan.plan.drawItems.size()<<" skips=0\n";
+            failures+=!nativeDecision.passed || !decision.passed;++captures;
+        }
+    }
+    require(failures==0,"original Party capture failures="+std::to_string(failures));
+    std::cout<<"original Party captures="<<captures<<" independent native/default policy="<<captures<<" fresh pinned CPU/default policy="<<captures<<" authored interiors allowance=3\n";
+}
 void alphaCaptures(const fs::path& root) {
     fs::create_directories(root);
     const auto shape=[](int id,int right,const std::string& color,const std::string& role,
@@ -679,6 +896,9 @@ int main(int argc, char **argv) {
     try {
         fs::create_directories(root);
         std::cout << "captures=" << root.string() << '\n';
+        if(argc==3 && std::string(argv[1])=="--party-original") {
+            originalPartyCaptures(vectorRead(argv[2]),root); return 0;
+        }
         if(argc==2 && std::string(argv[1])=="--alpha-matte") {
             alphaCaptures(root/"own-alpha-matte"); return 0;
         }

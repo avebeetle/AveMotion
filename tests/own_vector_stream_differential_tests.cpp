@@ -5,6 +5,7 @@
 #include "support/OwnVectorSceneComparison.hpp"
 #include "support/OwnVectorGroupTestData.hpp"
 #include "support/OwnVectorMetadataPositionTestData.hpp"
+#include "support/OwnVectorMatteTestData.hpp"
 #include <chrono>
 #include <iostream>
 #include <tuple>
@@ -526,8 +527,38 @@ void gradientOracle() {
     authoredMutation(gradientFixture(gradientFill(), R"(,"o":{"k":50})"),
                      gradientFixture(gradientFill(), R"(,"o":{"k":75})"), "gradient inherited opacity");
 }
+void originalParty(const std::string &json) {
+    const auto compiled=vectorCompile(json);
+    vectorRequire(bool(compiled), compiled.path+compiled.message);
+    const auto prepared=render::detail::prepareOwnVectorAsset(compiled.prepared);
+    vectorRequire(bool(prepared),prepared.message);
+    auto stream=render::detail::OwnNativeEllipseStream::create(prepared.prepared);
+    vectorRequire(bool(stream),stream.message);
+    OwnVectorSceneOracle oracle(json);
+    vector_scene::OwnRoles roles(*prepared.prepared);
+    std::size_t samples=0;
+    for(const auto [width,height]:{std::pair{129U,129U},std::pair{192U,96U}}) {
+        const auto compare=[&](unsigned frame) {
+            auto own=stream.stream->emit(frame,width,height);
+            vectorRequire(bool(own),own.message);
+            assertOriginalParty(*prepared.prepared,*own.scene);
+            auto reference=oracle.freshScene(frame,width,height,true);
+            vector_scene::compare(reference,oracle,*own.scene,roles,true);
+            ++samples;
+        };
+        for(unsigned frame=0;frame<92;++frame) compare(frame);
+        for(unsigned frame=92;frame-- >0;) compare(frame);
+        for(unsigned frame=0;frame<92;++frame) compare(frame);
+    }
+    std::cout<<"original Party model/ordinary qualified scene samples="<<samples<<" four literal pairs/intervals passed\n";
+    for(const auto &[field,error]:vector_scene::maxima) std::cout<<field<<" max="<<error<<'\n';
+}
 int main(int argc, char **argv) {
     try {
+        if (argc == 3 && std::string(argv[1]) == "--party-original") {
+            originalParty(vectorRead(argv[2]));
+            return 0;
+        }
         if (argc == 4 && std::string(argv[3]) == "--costs") {
             costs(vectorInput(3, argv));
             return 0;

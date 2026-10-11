@@ -54,7 +54,8 @@ class OwnVectorSceneOracle final {
         vectorRequire(bool(matrixModel), "matrix source binding: " + matrixModel.error);
         buildInstances(matrixSource_->mRoot->mRootLayer.get(), {}, "root", "root", 0, 0);
     }
-    runtime::EvaluatedScene freshScene(std::size_t frame, std::size_t width, std::size_t height) {
+    runtime::EvaluatedScene freshScene(std::size_t frame, std::size_t width, std::size_t height,
+                                     bool originalAlpha = false) {
         runtime::EvaluatedScene scene;
         if (ordinary_)
             scene = ordinary_->freshScene(frame, width, height);
@@ -70,7 +71,24 @@ class OwnVectorSceneOracle final {
         }
         scene.instanceId = 0x26A26004ULL;
         validateInstances(scene);
-        assertCanvasClip(scene);
+        if (originalAlpha) assertOriginalAlpha(scene);
+        else assertCanvasClip(scene);
+        if (originalAlpha) {
+            // renderList suppresses an active provider when its content is
+            // inactive; the ordinary tree still exports that visible provider.
+            // Derive every exported paint matrix from the separate parsed source.
+            matrices_.clear();
+            for (const auto &draw : scene.drawItems) {
+                const auto m = sourceWorld(scene, draw, draw.sourcePaintNode);
+                const auto &a = draw.localToViewport;
+                vectorRequire(std::abs(m.m_11()-a.m11)<=1e-4 && std::abs(m.m_12()-a.m12)<=1e-4 &&
+                    std::abs(m.m_21()-a.m21)<=1e-4 && std::abs(m.m_22()-a.m22)<=1e-4 &&
+                    std::abs(m.m_tx()-a.dx)<=1e-4 && std::abs(m.m_ty()-a.dy)<=1e-4,
+                    "original ordinary matrix agrees with independent parsed source");
+                vectorRequire(matrices_.emplace(draw.modelNode.value,m).second,"original unique paint matrix");
+            }
+            return scene;
+        }
         auto root = LOTCompItem::createLayerItem(matrixSource_->mRoot->mRootLayer.get());
         vectorRequire(bool(root), "fresh matrix-only layer tree");
         root->setComplexContent(false);
@@ -281,6 +299,22 @@ class OwnVectorSceneOracle final {
             for (std::size_t i = 0; i < expected.size(); ++i)
                 vectorRequire(p.points[i].x == expected[i].x && p.points[i].y == expected[i].y,
                               "ordered identity canvas rectangle");
+        }
+    }
+    // Original root-alpha seam. Ordinary export has matte modes, but no reciprocal
+    // pair identities or isolated Difference marker. Never invent those fields.
+    void assertOriginalAlpha(const runtime::EvaluatedScene &scene) const {
+        vectorRequire(scene.masks.empty() && instances_.size() == 12,
+                      "original Party ordinary root inventory/masks");
+        for (const auto &layer : scene.layers) {
+            const int id = instances_.at(layer.modelLayer.value).data->id();
+            const bool content = id == 3 || id == 5 || id == 7 || id == 9;
+            vectorRequire(layer.matte == (content ? runtime::MatteMode::Alpha : runtime::MatteMode::None) &&
+                              layer.maskCount == 0 && layer.clipPath.verbs.empty() &&
+                              layer.clipPath.points.empty(), "original Party ordinary matte/clip mode");
+            vectorRequire(layer.matteSourceLayer == runtime::kInvalidSceneIndex &&
+                              layer.matteTargetLayer == runtime::kInvalidSceneIndex &&
+                              !layer.isolatedBottomDifference, "ordinary missing pair/blend fields retained");
         }
     }
     void assertRedundantClips(const runtime::EvaluatedScene &scene) const {

@@ -240,9 +240,11 @@ inline void recordRawLocal(const runtime::EvaluatedPath &a, const runtime::Evalu
     }
 }
 inline void compare(const runtime::EvaluatedScene &ref, const OwnVectorSceneOracle &oracle,
-                    const runtime::EvaluatedScene &own, const OwnRoles &ownRoles) {
+                    const runtime::EvaluatedScene &own, const OwnRoles &ownRoles,
+                    bool originalAlpha = false) {
     oracle.validateInstances(ref);
-    oracle.assertRedundantClips(ref);
+    if (originalAlpha) oracle.assertOriginalAlpha(ref);
+    else oracle.assertRedundantClips(ref);
     if (ref.drawItems.size() != own.drawItems.size()) {
         std::set<std::string> expected;
         for (const auto &draw : ref.drawItems)
