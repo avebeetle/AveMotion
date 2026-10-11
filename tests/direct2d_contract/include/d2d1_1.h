@@ -46,6 +46,11 @@ struct D2D1_COLOR_F {
     FLOAT a = 0.0F;
 };
 
+enum D2D1_GAMMA { D2D1_GAMMA_2_2, D2D1_GAMMA_1_0 };
+enum D2D1_EXTEND_MODE { D2D1_EXTEND_MODE_CLAMP, D2D1_EXTEND_MODE_WRAP, D2D1_EXTEND_MODE_MIRROR };
+struct D2D1_GRADIENT_STOP { FLOAT position; D2D1_COLOR_F color; };
+struct D2D1_LINEAR_GRADIENT_BRUSH_PROPERTIES { D2D1_POINT_2F startPoint; D2D1_POINT_2F endPoint; };
+
 enum D2D1_FILL_MODE : std::uint32_t {
     D2D1_FILL_MODE_ALTERNATE = 0,
     D2D1_FILL_MODE_WINDING = 1,
@@ -127,24 +132,33 @@ struct ID2D1PathGeometry : IUnknown {
 struct ID2D1StrokeStyle : IUnknown {
 };
 
-struct ID2D1SolidColorBrush : IUnknown {
-    virtual void SetColor(const D2D1_COLOR_F& color) noexcept = 0;
+struct ID2D1Brush : IUnknown {
     virtual void SetOpacity(FLOAT opacity) noexcept = 0;
 };
+struct ID2D1SolidColorBrush : ID2D1Brush {
+    virtual void SetColor(const D2D1_COLOR_F& color) noexcept = 0;
+};
+struct ID2D1GradientStopCollection : IUnknown {};
+struct ID2D1LinearGradientBrush : ID2D1Brush {};
 
 struct ID2D1DeviceContext : IUnknown {
     virtual void GetFactory(ID2D1Factory** factory) noexcept = 0;
     virtual HRESULT CreateSolidColorBrush(
         const D2D1_COLOR_F& color,
         ID2D1SolidColorBrush** brush) noexcept = 0;
+    virtual HRESULT CreateGradientStopCollection(const D2D1_GRADIENT_STOP* stops,
+        UINT32 count, D2D1_GAMMA gamma, D2D1_EXTEND_MODE extend,
+        ID2D1GradientStopCollection** collection) noexcept = 0;
+    virtual HRESULT CreateLinearGradientBrush(const D2D1_LINEAR_GRADIENT_BRUSH_PROPERTIES& properties,
+        ID2D1GradientStopCollection* collection, ID2D1LinearGradientBrush** brush) noexcept = 0;
     virtual void GetTransform(D2D1_MATRIX_3X2_F* transform) const noexcept = 0;
     virtual void SetTransform(const D2D1_MATRIX_3X2_F& transform) noexcept = 0;
     virtual void FillGeometry(
         ID2D1PathGeometry* geometry,
-        ID2D1SolidColorBrush* brush) noexcept = 0;
+        ID2D1Brush* brush) noexcept = 0;
     virtual void DrawGeometry(
         ID2D1PathGeometry* geometry,
-        ID2D1SolidColorBrush* brush,
+        ID2D1Brush* brush,
         FLOAT strokeWidth,
         ID2D1StrokeStyle* strokeStyle) noexcept = 0;
 };

@@ -1,5 +1,6 @@
 #include "avemotion/backends/direct2d/Direct2DBackend.hpp"
 #include "avemotion/model/AssetModel.hpp"
+#include "LinearGradientBackendAccess.hpp"
 
 #if !defined(_WIN32)
 #error "The AveMotion Direct2D backend is available only on Windows."
@@ -13,6 +14,8 @@
 #include <bit>
 #include <cstddef>
 #include <cstdint>
+#include <cmath>
+#include <vector>
 #include <unordered_map>
 #include <utility>
 
@@ -215,6 +218,126 @@ private:
     return item.localPaintAvailable ? item.localPaint : item.paint;
 }
 
+[[nodiscard]] bool finite(float value) noexcept { return std::isfinite(value); }
+template <typename Matrix>
+[[nodiscard]] bool finiteMatrix(const Matrix& m) noexcept {
+    return finite(m.m11) && finite(m.m12) && finite(m.m21) && finite(m.m22)
+        && finite(m.dx) && finite(m.dy);
+}
+template <typename Left, typename Right>
+[[nodiscard]] bool sameMatrix(const Left& a, const Right& b) noexcept {
+    return a.m11 == b.m11 && a.m12 == b.m12 && a.m21 == b.m21
+        && a.m22 == b.m22 && a.dx == b.dx && a.dy == b.dy;
+}
+[[nodiscard]] bool validPath(const runtime::EvaluatedPath& path) noexcept {
+    std::size_t count = 0;
+    bool open = false;
+    for (auto verb : path.verbs) {
+        switch (verb) {
+        case runtime::PathVerb::MoveTo: ++count; open = true; break;
+        case runtime::PathVerb::LineTo: if (!open) return false; ++count; break;
+        case runtime::PathVerb::CubicTo: if (!open) return false; count += 3; break;
+        case runtime::PathVerb::Close: if (!open) return false; open = false; break;
+        default: return false;
+        }
+    }
+    if (count != path.points.size()) return false;
+    for (auto point : path.points) if (!finite(point.x) || !finite(point.y)) return false;
+    return true;
+}
+[[nodiscard]] BackendErrorCode preflight(const render::MotionRenderPlan& plan) noexcept {
+    using Error = BackendErrorCode;
+    const auto& scene = *plan.sourceScene;
+    if (!scene.masks.empty()) return Error::UnsupportedFeature;
+    for (const auto& layer : scene.layers) {
+        if (layer.maskCount != 0 || layer.matte != runtime::MatteMode::None
+            || !layer.clipPath.verbs.empty() || !layer.clipPath.points.empty())
+            return Error::UnsupportedFeature;
+    }
+    for (const auto& item : plan.drawItems) {
+        if (item.sourceDrawItemIndex >= scene.drawItems.size()) return Error::InvalidPlan;
+        const auto& source = scene.drawItems[item.sourceDrawItemIndex];
+        if (source.layerIndex >= scene.layers.size()
+            || !finiteMatrix(item.geometryTransform) || !finiteMatrix(item.presentationTransform)
+            || !finite(item.effectiveOpacity) || item.effectiveOpacity < 0 || item.effectiveOpacity > 1
+            || source.localGeometryAvailable != source.localPaintAvailable)
+            return Error::InvalidPlan;
+        // The executor's frozen-model selection must be precisely the alias
+        // which the planner selected. A missing alias cannot repair a plan.
+        if (scene.assetModel && source.modelGeometry.valid()) {
+            const auto* record = scene.assetModel->geometry(source.modelGeometry);
+            if (!record || (record->resourceClass == model::ResourceClass::AssetStatic
+                && record->staticValue && source.canonicalGeometry.get() != &*record->staticValue))
+                return Error::InvalidPlan;
+        }
+        if (scene.assetModel && source.modelPaint.valid()) {
+            const auto* record = scene.assetModel->paint(source.modelPaint);
+            if (!record || (record->resourceClass == model::ResourceClass::AssetStatic
+                && record->staticValue && source.canonicalPaint.get() != &*record->staticValue))
+                return Error::InvalidPlan;
+        }
+        if ((source.canonicalGeometry || source.canonicalPaint)
+            && !(source.localGeometryAvailable && source.localPaintAvailable)) return Error::InvalidPlan;
+        const auto local = usesLocalRenderingSpace(scene, source);
+        if ((local && (!finiteMatrix(source.localToViewport)
+                      || !sameMatrix(item.geometryTransform, source.localToViewport)))
+            || (!local && !sameMatrix(item.geometryTransform, render::Matrix3x2::identity())))
+            return Error::InvalidPlan;
+        const auto& paint = selectedPaint(scene, source);
+        const auto& stroke = selectedStroke(scene, source);
+        if (!validPath(selectedPath(scene, source))
+            || (selectedFillRule(scene, source) != runtime::FillRule::EvenOdd
+                && selectedFillRule(scene, source) != runtime::FillRule::Winding)
+            || !finite(stroke.width) || stroke.width < 0 || !finite(stroke.miterLimit)
+            || stroke.miterLimit < 0
+            || (stroke.cap != runtime::LineCap::Flat && stroke.cap != runtime::LineCap::Square
+                && stroke.cap != runtime::LineCap::Round)
+            || (stroke.join != runtime::LineJoin::Miter && stroke.join != runtime::LineJoin::Bevel
+                && stroke.join != runtime::LineJoin::Round)) return Error::InvalidPlan;
+        if (!stroke.dashArray.empty()) return Error::UnsupportedFeature;
+        std::uint32_t bits = stroke.enabled ? render::RenderFeatureStroke : 0U;
+        if (paint.kind == runtime::PaintKind::Solid) bits |= render::RenderFeatureSolidPaint;
+        else if (paint.kind == runtime::PaintKind::Gradient) bits |= render::RenderFeatureGradientPaint;
+        else return Error::UnsupportedFeature;
+        if (bits != item.featureBits) return Error::UnsupportedFeature;
+        if (paint.kind == runtime::PaintKind::Gradient) {
+            if (stroke.enabled || paint.gradient.kind != runtime::GradientKind::Linear)
+                return Error::UnsupportedFeature;
+            if (!local || !source.localGeometryAvailable || !source.localPaintAvailable)
+                return Error::InvalidPlan;
+            const auto& g = paint.gradient;
+            if (!finite(g.start.x) || !finite(g.start.y) || !finite(g.end.x) || !finite(g.end.y)
+                || (g.start.x == g.end.x && g.start.y == g.end.y)
+                || g.stops.size() < 2 || g.stops.size() > 16
+                || g.center.x != 0 || g.center.y != 0 || g.focal.x != 0 || g.focal.y != 0
+                || g.centerRadius != 0 || g.focalRadius != 0
+                || paint.solid.r != 0 || paint.solid.g != 0 || paint.solid.b != 0 || paint.solid.a != 0
+                || paint.image.present || paint.image.width != 0 || paint.image.height != 0)
+                return Error::UnsupportedFeature;
+            for (const auto value : paint.image.matrix) if (value != 0) return Error::UnsupportedFeature;
+            float previous = -1;
+            const auto alpha = g.stops.front().color.a;
+            for (const auto& stop : g.stops) {
+                if (!finite(stop.position) || stop.position < 0 || stop.position > 1
+                    || stop.position <= previous || stop.color.a != alpha) return Error::UnsupportedFeature;
+                previous = stop.position;
+            }
+        }
+    }
+    return Error::None;
+}
+
+struct GradientResource final {
+    std::uint64_t contentHash = 0;
+    std::uint64_t revision = 0;
+    ComPtr<ID2D1GradientStopCollection> stops;
+    ComPtr<ID2D1LinearGradientBrush> brush;
+};
+[[nodiscard]] GeometrySlotKey slotKey(const render::PaintCacheKey& key) noexcept {
+    return {key.scope, key.assetHash, key.assetIdentity, key.instanceId,
+        key.instanceIdentity, key.sourceKey, key.resourceId.value};
+}
+
 [[nodiscard]] HRESULT buildPathGeometry(
     ID2D1Factory* factory,
     const runtime::EvaluatedScene& scene,
@@ -324,10 +447,12 @@ struct Backend::Impl final {
         ComPtr<ID2D1StrokeStyle>,
         StrokeStyleKeyHash> strokeStyleCache;
     BackendDiagnostics diagnostics;
+    std::unordered_map<GeometrySlotKey, GradientResource, GeometrySlotKeyHash> gradientCache;
 
     void resetResources() noexcept {
         geometryCache.clear();
         strokeStyleCache.clear();
+        gradientCache.clear();
         solidBrush.Reset();
         brushContextIdentity = nullptr;
         factory.Reset();
@@ -361,6 +486,7 @@ struct Backend::Impl final {
             factoryIdentity = factory.Get();
         }
         if (brushContextIdentity != session.deviceContext || !solidBrush) {
+            gradientCache.clear();
             solidBrush.Reset();
             const auto hr = session.deviceContext->CreateSolidColorBrush(
                 D2D1::ColorF(D2D1::ColorF::White),
@@ -385,6 +511,16 @@ Backend::~Backend() = default;
 DrawResult Backend::draw(
     const render::MotionRenderPlan& plan,
     const RenderSession& session) {
+    return execute(plan, session, false);
+}
+
+DrawResult detail::LinearGradientBackendAccess::draw(Backend& backend,
+    const render::MotionRenderPlan& plan, const RenderSession& session) {
+    return backend.execute(plan, session, true);
+}
+
+DrawResult Backend::execute(const render::MotionRenderPlan& plan,
+    const RenderSession& session, bool linearFillEnabled) {
     DrawResult result;
     if (session.deviceContext == nullptr || !plan.sourceScene) {
         result.error = {
@@ -392,6 +528,14 @@ DrawResult Backend::draw(
             static_cast<long>(E_INVALIDARG),
             "a valid device context and render plan source scene are required"};
         return result;
+    }
+    if (linearFillEnabled) {
+        const auto error = preflight(plan);
+        if (error != BackendErrorCode::None) {
+            result.error = {error, static_cast<long>(E_INVALIDARG),
+                "private linear-fill plan failed whole-plan preflight"};
+            return result;
+        }
     }
     const auto domainResult = impl_->ensureDomain(session);
     if (FAILED(domainResult)) {
@@ -421,7 +565,7 @@ DrawResult Backend::draw(
         const auto& stroke = selectedStroke(*plan.sourceScene, source);
         const auto unsupported = planItem.featureBits
             & ~(render::RenderFeatureSolidPaint | render::RenderFeatureStroke);
-        if (unsupported != 0U || paint.kind != runtime::PaintKind::Solid) {
+        if (!linearFillEnabled && (unsupported != 0U || paint.kind != runtime::PaintKind::Solid)) {
             ++result.itemsSkipped;
             ++impl_->diagnostics.unsupportedItemsSkipped;
             continue;
@@ -460,8 +604,40 @@ DrawResult Backend::draw(
             }
         }
 
-        impl_->solidBrush->SetColor(toD2D(paint.solid));
-        impl_->solidBrush->SetOpacity(planItem.effectiveOpacity);
+        ID2D1Brush* brush = impl_->solidBrush.Get();
+        if (paint.kind == runtime::PaintKind::Gradient) {
+            const auto key = slotKey(planItem.paint);
+            auto gradient = impl_->gradientCache.find(key);
+            if (gradient == impl_->gradientCache.end()
+                || gradient->second.contentHash != planItem.paint.contentHash
+                || gradient->second.revision != planItem.paint.revision) {
+                GradientResource resource;
+                resource.contentHash = planItem.paint.contentHash;
+                resource.revision = planItem.paint.revision;
+                std::vector<D2D1_GRADIENT_STOP> stops;
+                stops.reserve(paint.gradient.stops.size());
+                for (const auto& stop : paint.gradient.stops) stops.push_back({stop.position, toD2D(stop.color)});
+                auto hr = session.deviceContext->CreateGradientStopCollection(stops.data(),
+                    static_cast<UINT32>(stops.size()), D2D1_GAMMA_2_2, D2D1_EXTEND_MODE_CLAMP, &resource.stops);
+                if (SUCCEEDED(hr)) {
+                    const D2D1_LINEAR_GRADIENT_BRUSH_PROPERTIES properties{
+                        D2D1::Point2F(paint.gradient.start.x, paint.gradient.start.y),
+                        D2D1::Point2F(paint.gradient.end.x, paint.gradient.end.y)};
+                    hr = session.deviceContext->CreateLinearGradientBrush(properties, resource.stops.Get(), &resource.brush);
+                }
+                if (FAILED(hr)) {
+                    result.error = {hr == D2DERR_RECREATE_TARGET ? BackendErrorCode::DeviceLost
+                        : BackendErrorCode::ResourceCreationFailed, static_cast<long>(hr),
+                        "unable to create a Direct2D linear gradient"};
+                    return result;
+                }
+                gradient = impl_->gradientCache.insert_or_assign(key, std::move(resource)).first;
+            }
+            brush = gradient->second.brush.Get();
+        } else {
+            impl_->solidBrush->SetColor(toD2D(paint.solid));
+        }
+        brush->SetOpacity(planItem.effectiveOpacity);
         session.deviceContext->SetTransform(
             toD2D(planItem.geometryTransform)
             * toD2D(planItem.presentationTransform)
@@ -504,16 +680,16 @@ DrawResult Backend::draw(
             }
             session.deviceContext->DrawGeometry(
                 geometry.Get(),
-                impl_->solidBrush.Get(),
+                brush,
                 stroke.width,
                 strokeStyle.Get());
         } else {
             session.deviceContext->FillGeometry(
                 geometry.Get(),
-                impl_->solidBrush.Get());
+                brush);
         }
         ++result.itemsDrawn;
-        ++impl_->diagnostics.solidItemsDrawn;
+        if (paint.kind == runtime::PaintKind::Solid) ++impl_->diagnostics.solidItemsDrawn;
     }
     return result;
 }

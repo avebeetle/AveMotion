@@ -10,6 +10,8 @@ struct ID2D1DeviceContext;
 
 namespace avemotion::backends::direct2d {
 
+namespace detail { class LinearGradientBackendAccess; }
+
 enum class BackendErrorCode : std::uint8_t {
     None,
     InvalidArgument,
@@ -82,6 +84,9 @@ public:
     [[nodiscard]] BackendDiagnostics diagnostics() const noexcept;
 
 private:
+    friend class detail::LinearGradientBackendAccess;
+    [[nodiscard]] DrawResult execute(const render::MotionRenderPlan& plan,
+        const RenderSession& session, bool linearFillEnabled);
     struct Impl;
     std::unique_ptr<Impl> impl_;
 };
