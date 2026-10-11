@@ -1,6 +1,6 @@
 # Unchanged original Party: own alpha-matte evidence
 
-Status: original acceptance and final frozen combined suites pass under the written precision execution addendum. Task3, the host task and strongest whole-stage reviews are approved with no Critical/Important findings. The own host is installed; native Party control acceptance is pending. No production changes, asset normalization, golden edits or existing tolerance edits were made by Task3.
+Status: original acceptance and final frozen combined suites pass under the written precision execution addendum. Task3, the host task and strongest whole-stage reviews are approved with no Critical/Important findings. The own host is installed; on 2026-10-11 the user confirmed Party animation, Play/Pause, seek and 1/4/16. Native restart/backdrop remain separately pending. No production changes, asset normalization, golden edits or existing tolerance edits were made by Task3.
 
 The original local Party remains 67875 bytes, SHA256 `EAB1FD7070BFFD2965C12A80D2D91CFF76683AF65019F142ACF9A553EE877B5C`, 1024x1024,60fps,92frames. Its four literal authored alpha pairs are 2->3 on [20,31), and 4->5,6->7,8->9 on [20,82). The original two Duck hashes also remain unchanged. Artwork and raw captures are local-only under ignored `out/`.
 
@@ -18,7 +18,7 @@ The final fresh frame0 CPU host oracle is `out/own-alpha-matte-task3/final-froze
 
 Final frozen MSVC Debug suites passed47/47 no-reference,95/95 Telegram and96/96 explicit preview with native build/CTest/wrapper exits0. Both reference-enabled caches separately passed552 original scene samples,20 native and20 CPU full-image decisions, authored interiors and the independent single-dy sensitivity witness. Each full capture suite retained528 owned native comparisons and396 freshCPU comparisons plus28 fractional/native-exact records. Source hashes were rechecked after execution with zero changes. Original Duck model/stream/full-scene/capture regressions also passed; inherited rlottie.hC4251 warnings remain documented.
 
-Detailed commands, TDD chronology, exits, warnings and gate status live in `.superpowers/sdd/2026-10-11-own-alpha-matte/task-3-report.md`. WARP is software correctness evidence; installed Party UI, hardware GPU behavior and speedups are not claimed.
+Detailed commands, TDD chronology, exits, warnings and gate status live in `.superpowers/sdd/2026-10-11-own-alpha-matte/task-3-report.md`. WARP is software correctness evidence. Installed UI acceptance has the user-reported scope below; hardware GPU behavior and speedups are not claimed.
 
 ## Installed Avelabs host
 
@@ -51,8 +51,11 @@ Test Animation -> Party Popper needs no manual file opening or new download.
 The canonical EXE launched, but state capture failed with
 `FrameArrived timed out: timed out waiting on channel`, then after refreshed
 selection/activation `window capture timed out: timed out waiting on channel`.
-Inputs stopped, with no fallback/system change. Installed native play/pause/
-seek/restart/1/4/16/transparent-backdrop acceptance remains a separate user gate;
-launch/harness evidence is not substituted. No hardware-GPU/speedup or new
-licensing/publication claim. The next useful action is that native check, not
-another engine rewrite. [Host installation report](https://github.com/avebeetle/Avelabs-UI/blob/main/docs/testing/party-alpha-matte-2026-10-11/REPORT.md).
+Inputs stopped, with no fallback/system change. On 2026-10-11 the user answered
+"работают" to the installed Test Animation -> Party Popper question covering
+animation, Play/Pause, seek and 1/4/16. Those controls are manually accepted by
+the user, not observed by the controller. Stop->Play/restart and transparent
+backdrop were not in that question and remain a separate manual gate; launch/
+harness evidence is not substituted. No hardware-GPU/speedup or new licensing/
+publication claim. The remaining action is those two observations, not another
+engine rewrite. [Host installation report](https://github.com/avebeetle/Avelabs-UI/blob/main/docs/testing/party-alpha-matte-2026-10-11/REPORT.md).

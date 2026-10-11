@@ -2,15 +2,16 @@
 
 Updated: 2026-10-11 (Moscow local date)
 
-## Latest checkpoint — Party installed, native UI acceptance pending
+## Latest checkpoint — Party controls accepted, two native observations pending
 
 Canonical E `C:/Users/USER/Desktop/AveMotion`, H
 `D:/rvc/c++/DragonianVoice/Avelabs-UI`; plan/spec/ledger are the alpha-matte paths
 in the checkpoint below. Tasks1–3 complete; Task4 product, task review, strongest
 whole-stage review, guarded installation and local Party seed are complete.
-Task4 native controls acceptance is PENDING, not full-stage completion.
-Do not repeat implementation/build/delivery: next action is the user's native
-Test Animation -> Party Popper -> play/pause/seek/restart/1/4/16/backdrop check.
+On 2026-10-11 the user confirmed installed Party animation, Play/Pause, seek
+and 1/4/16 instances with the reply "работают". Native Stop->Play/restart and
+transparent backdrop were not included in that question and remain separately
+pending; no full-stage completion yet. Do not repeat implementation/build/delivery.
 
 Build E69ebbb125e7c84dd4b133bd43dd71101c43e7afd and
 H69fe01b0d06aab3e8d85a9a6c8fe401550c9137a were clean/frozen; product commits
@@ -35,8 +36,12 @@ returned window1050972. Screenshot/accessibility capture first failed with
 FrameArrived timeout, then refreshedselection/activation failed with window
 capture timeout. Inputs stopped per computer-use recovery policy; app leftopen
 for user check, no foreign-process termination or Windows/security changes.
-Manual controls/transparency/1/4/16 acceptance NOT observed; async user check
-requested. HardwareGPU/DPI/performance/livefailedrollback not claimed.
+No native control observation by the controller is claimed. The user's manual
+receipt covers animation/Play/Pause/seek/1/4/16; a supplemental question requests
+Stop->Play/restart and transparent backdrop. HardwareGPU/DPI/performance/
+livefailedrollback not claimed. Fresh post-doc verification checked 3082 bound
+source files: only five expected documentation paths differ, no product mismatch;
+26 installed files/PDB/original Party/catalog hashes match the delivery receipts.
 All product writers/reviewers finished; no duplicate active executor. Detailed
 raw/commands/receipts in H/build/checks/2026-10-11-own-alpha-matte-001. Tracked
 handoff docs follow guarded delivery; no source rebuild for documentation.

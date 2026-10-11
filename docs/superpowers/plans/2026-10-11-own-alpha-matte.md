@@ -11,9 +11,10 @@
 **Spec:** `docs/superpowers/specs/2026-10-11-own-alpha-matte-design.md`.
 
 Checkpoint 2026-10-11: Tasks1–3 complete. Task4 implementation/reviews and guarded
-Release installation/local seed complete; installed native control acceptance
-pending after two Windows capture timeouts. No repeated build is required to
-obtain the user's Test Animation -> Party Popper manual receipt.
+Release installation/local seed complete. On 2026-10-11 the user confirmed native
+Party animation, Play/Pause, seek and 1/4/16 in the installed EXE. Stop->Play/restart
+and transparent backdrop remain separately pending after the capture failures;
+no repeated build is required to obtain those remaining manual observations.
 
 ## Global Constraints
 
@@ -100,8 +101,9 @@ obtain the user's Test Animation -> Party Popper manual receipt.
 - [x] Stage a fresh variant-none `/MT` candidate through existing static build and Runtime-only install path; verify native smoke/original/tests/imports/readiness/SymChk and exact source/build provenance. Avoid Symbols install's absolute canonical destination until guarded promotion. Preserve current EXE/PDB until verified candidate and zero installed processes.
 - [x] Independent host task review and strongest combined-stage review of frozen packages/reports. Fix all Critical/Important findings with covering tests; maintain scoped commits/ordinary pushes in each repository after remote checks.
 - [x] Back up26-file Release plus matching PDB, guarded promotion, installed hashes/provenance and launch smoke. Full package/PDB and installed readiness/SymChk verified; actual launch returned the own window. Matched Release performance remains a separate stage; no unmeasured optimization/speedup claims.
-- [ ] Native original playback/pause/seek/restart/1/4/16/transparent backdrop validation. Two capture timeouts prevented observation after refreshed selection/activation; user check requested. No UI/API-harness substitution, alternate manual/DPI/GPU acceptance or fake completion. Do not rebuild/reimplement solely for this pending receipt.
-- [x] Finish report/STATE/ledger with E/H build SHAs, commands/counts/native/CPU/UI coverage, retained warning/raw limitations, every ruling and costs, installed provenance and next step. Delivery handoff explicitly leaves native user acceptance and later measurements open. Retain recovery/evidence artifacts; no automation changes.
+- [x] Native original animation/Play/Pause/seek/1/4/16 validation by the user, 2026-10-11: reply "работают" to the exact installed Party question. This is user-reported acceptance, not a controller screenshot/control observation; both earlier capture failures remain historical evidence.
+- [ ] Native Stop->Play/restart and transparent backdrop validation. These two observations were not in the answered question; a supplemental question is pending. No UI/API-harness substitution, alternate manual/DPI/GPU acceptance or fake completion. Do not rebuild/reimplement solely for this pending receipt.
+- [x] Finish report/STATE/ledger with E/H build SHAs, commands/counts/native/CPU/UI coverage, retained warning/raw limitations, every ruling and costs, installed provenance and next step. Delivery handoff distinguishes confirmed controls, remaining restart/backdrop and later measurements. Retain recovery/evidence artifacts; no automation changes.
 
 ## Verification commands
 
