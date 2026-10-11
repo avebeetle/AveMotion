@@ -1,5 +1,6 @@
 #include "NativeEllipseAdmissionCore.hpp"
 #include "support/OwnVectorGradientTestData.hpp"
+#include "support/OwnVectorMatteTestData.hpp"
 #include "OwnVectorTestData.hpp"
 #include "support/OwnVectorGroupTestData.hpp"
 #include "support/OwnVectorMetadataPositionTestData.hpp"
@@ -615,9 +616,108 @@ void gradientModel() {
     std::cout << "owned static gradient: packed/statics/defaults; contextual rejections=" << rejected
               << "; aggregate boundary4096/overflow verified\n";
 }
+void matteAdmission() {
+    using namespace test;
+    const auto reject = [](const std::string& json, const std::string& label) {
+        const auto r = vectorCompile(json);
+        vectorRequire(!r && !r.prepared && !r.path.empty() && !r.message.empty(), "atomic matte rejection: " + label);
+    };
+    for (const auto& role : {"td", "tt"})
+        for (const auto& value : {"0","2","1.5","\"1\"","null","true"})
+            reject(vectorRoot(matteLayer(1,",\"" + std::string(role) + "\":" + value)), role);
+    for (const auto& roles : {std::pair{"td","td"}, {"tt","tt"}, {"tt","td"}})
+        reject(vectorRoot(matteLayer(1,",\"" + std::string(roles.first) + "\":1") + "," +
+                          matteLayer(2,",\"" + std::string(roles.second) + "\":1")), "consecutive/orphan roles");
+    for (const auto& role : {",\"td\":1",",\"tt\":1",",\"td\":1,\"tt\":1"})
+        reject(vectorRoot(matteLayer(1,role)), "orphan/chain");
+    reject(vectorPrecomp(matteLayer(1,",\"td\":1") + "," + matteLayer(2,",\"tt\":1")), "nested pair");
+    reject(vectorReplace(vectorPrecomp(matteLayer(1)),"\"ty\":0","\"ty\":0,\"td\":1"), "precomp role");
+    reject(vectorReplace(matteFixture(),"\"ty\":3","\"ty\":3,\"td\":1"), "null role");
+    for (const auto& role : {"td","tt"}) {
+        auto json = vectorRoot(matteLayer(1,",\"td\":1", "", std::string(role)=="td" ? 2 : 1) + "," +
+                               matteLayer(2,",\"tt\":1", "", std::string(role)=="tt" ? 2 : 1));
+        reject(json, "multi paint role");
+    }
+    reject(vectorReplace(matteFixture(),"\"td\":1","\"td\":1,\"unknown\":0"), "unknown field");
+    std::string overflow;
+    for (unsigned i=1;i<=129;++i) { if(i>1) overflow += ","; overflow += matteLayer(i); }
+    reject(vectorRoot(overflow), "layer overflow");
+    for (const auto& value : {"1","3","2.5","\"2\"","null","true"})
+        reject(vectorRoot(matteLayer(1,"", "\"p\":{\"l\":" + std::string(value) + ",\"k\":[0,0]}")), "l domain");
+    reject(vectorRoot(matteLayer(1,"",R"("o":{"l":2,"k":50})")), "scalar l context");
+    reject(vectorReplace(vectorRoot(matteLayer(1)), "\"ty\":\"tr\"", R"("ty":"tr","p":{"l":2,"k":[0,0]})"), "group vector l");
+    reject(vectorReplace(vectorRoot(matteLayer(1)), "\"ty\":\"fl\"", R"("ty":"fl","l":2)"), "paint l");
+    for (const auto& mode : {"1","9","11","10.5","\"10\"","null","true"})
+        reject(vectorRoot(matteLayer(1,",\"bm\":" + std::string(mode))), "blend domain");
+    reject(vectorRoot(matteLayer(1,",\"bm\":10") + "," + matteLayer(2)), "backdrop below Difference");
+    reject(vectorPrecomp(matteLayer(1,",\"bm\":10")), "nested Difference");
+    reject(vectorReplace(vectorRoot(vectorLayer("")), "\"ty\":3", "\"ty\":3,\"bm\":10"), "null Difference");
+    reject(vectorRoot(matteLayer(1,",\"td\":1") + "," + matteLayer(2,",\"tt\":1,\"bm\":10")), "paired Difference");
+    reject(vectorRoot(matteLayer(1,",\"td\":1,\"bm\":10") + "," + matteLayer(2,",\"tt\":1")), "provider Difference");
+    reject(vectorReplace(vectorPrecomp(matteLayer(1)),"\"ty\":0","\"ty\":0,\"bm\":10"), "precomp Difference");
+    std::string boundary;
+    for (unsigned i=1;i<=128;++i) { if(i>1) boundary += ","; boundary += matteLayer(i,i%2 ? ",\"td\":1" : ",\"tt\":1"); }
+    const auto bounded=vectorCompile(vectorRoot(boundary));
+    vectorRequire(bool(bounded) && bounded.prepared->layers.size()==128 && bounded.prepared->draws.size()==128,
+                  "64 pairs at unchanged 128 layer boundary");
+    unsigned failures = 0;
+    const auto pair = vectorCompile(matteFixture());
+    if (!pair) { ++failures; std::cerr << "owned adjacent alpha pair admission: " << pair.path << " " << pair.message << '\n'; }
+    else vectorRequire(pair.prepared->draws.size() == 2, "exactly two painted pair bindings");
+    if (pair) {
+        const auto& bindings=pair.prepared->layers;
+        const auto& m=*pair.prepared->model;
+        vectorRequire(bindings[1].matteTarget==bindings[2].layer && bindings[2].matteSource==bindings[1].layer &&
+            m.sourceNodes[bindings[2].layer.index()].matteSource==bindings[1].layer &&
+            m.sourceNodes[bindings[2].layer.index()].matteMode==SourceMatteMode::Alpha &&
+            m.sourceNodes[bindings[1].layer.index()].transformParent==bindings[2].layer &&
+            m.sourceNodes[bindings[1].layer.index()].parent==bindings[1].structuralParent,
+            "reciprocal authored identities preserve both parent graphs");
+        auto writable = std::const_pointer_cast<MotionAssetModel>(pair.prepared->model);
+        const auto content = bindings[2].layer.index();
+        const auto saved = writable->sourceNodes[content];
+        for(unsigned corruption=0;corruption<3;++corruption) {
+            writable->sourceNodes[content]=saved;
+            if(corruption==0) writable->sourceNodes[content].matteSource=makeId<SourceNodeId>(9999);
+            if(corruption==1) writable->sourceNodes[content].matteMode=SourceMatteMode::None;
+            if(corruption==2) writable->sourceNodes[content].matteSource={};
+            vectorRequire(!runtime::detail::validateOwnVectorModel(*pair.prepared), "own binding rejects corrupt source matte metadata");
+        }
+        writable->sourceNodes[content]=saved;
+    }
+    for (const auto& field : {"a", "p", "s"}) {
+        const auto value = std::string(field) == "s" ? "[100,100]" : "[0,0]";
+        const auto r = vectorCompile(vectorRoot(matteLayer(1,"", "\"" + std::string(field) + "\":{\"l\":2,\"k\":" + value + "}")));
+        if (!r) { ++failures; std::cerr << "neutral layer vector l2 admission: " << r.path << " " << r.message << '\n'; }
+        else {
+            const auto unannotated=vectorCompile(vectorRoot(matteLayer(1,"", "\"" + std::string(field) + "\":{\"k\":" + value + "}")));
+            vectorRequire(bool(unannotated) && r.prepared->model->vec2Values==unannotated.prepared->model->vec2Values &&
+                r.prepared->propertyFrameOffsets==unannotated.prepared->propertyFrameOffsets &&
+                r.prepared->model->tracks.size()==unannotated.prepared->model->tracks.size(), "neutral metadata preserves values/tracks/clocks");
+            for(unsigned i=0;i<r.prepared->model->properties.size();++i) {
+                const auto& a=r.prepared->model->properties[i]; const auto& b=unannotated.prepared->model->properties[i];
+                vectorRequire(a.semantic==b.semantic && a.flags==b.flags && a.track==b.track && a.staticValue.index==b.staticValue.index,
+                    "neutral metadata preserves property bindings and flags");
+            }
+        }
+    }
+    const auto mixedPaints=vectorCompile(vectorRoot(
+        vectorReplace(vectorGroupsLayer(gradientGroup(),1),"{\"ty\":4","{\"ty\":4,\"td\":1") + "," +
+        vectorReplace(vectorGroupsLayer(vectorGroup("",0,true),2,R"("o":{"k":37.5},"p":{"l":2,"a":1,"k":[{"t":0,"s":[0,0],"h":1},{"t":10,"s":[10,20]}]})"),
+                      "{\"ty\":4","{\"ty\":4,\"tt\":1")));
+    vectorRequire(bool(mixedPaints) && mixedPaints.prepared->draws.size()==2 && mixedPaints.prepared->model->tracks.size()==1,
+                  "static linear provider and solid stroke content retain animation and fractional alpha");
+    const auto difference = vectorCompile(vectorRoot(matteLayer(1,",\"bm\":10")));
+    if (!difference) { ++failures; std::cerr << "isolated bottom Difference admission: " << difference.path << " " << difference.message << '\n'; }
+    else vectorRequire(difference.prepared->layers[0].isolatedBottomDifference &&
+        difference.prepared->model->sourceNodes[difference.prepared->layers[0].layer.index()].blendMode==SourceBlendMode::Difference,
+        "authored Difference not relabeled Normal");
+    vectorRequire(!failures, "matte/neutral/Difference admission failures=" + std::to_string(failures));
+}
 int main(int argc, char** argv) {
     try {
         if (argc == 1) {
+            matteAdmission();
             gradientModel();
             unsigned failures = 0;
             for (const auto& [label,test] : std::vector<std::pair<std::string,void(*)()>>{

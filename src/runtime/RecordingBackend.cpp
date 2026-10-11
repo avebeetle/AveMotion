@@ -118,6 +118,13 @@ SceneFingerprints computeSceneFingerprints(const EvaluatedScene& scene) noexcept
         topology.appendU32(layer.maskCount);
         topology.appendString(layer.keyPath);
         topology.appendU8(static_cast<std::uint8_t>(layer.matte));
+        if (layer.matteSourceLayer != kInvalidSceneIndex || layer.matteTargetLayer != kInvalidSceneIndex ||
+            layer.isolatedBottomDifference) {
+            topology.appendString("OwnLayerRelationships.v1");
+            topology.appendU32(layer.matteSourceLayer);
+            topology.appendU32(layer.matteTargetLayer);
+            topology.appendU8(layer.isolatedBottomDifference ? 1U : 0U);
+        }
         appendPathTopology(topology, layer.clipPath);
 
         geometry.appendU32(layer.parentLayer);

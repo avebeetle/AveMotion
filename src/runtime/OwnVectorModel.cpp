@@ -4,6 +4,7 @@
 #include "avemotion/core/Hash.hpp"
 #include "avemotion/evaluation/PropertyEvaluator.hpp"
 #include <algorithm>
+#include <cmath>
 #include <map>
 #include <set>
 
@@ -357,14 +358,24 @@ private:
             input.fail("expanded layer limit exceeded");
         std::map<int, SourceNodeId> ids;
         std::vector<SourceNodeId> nodes;
+        const auto firstBinding = layers.size();
+        const bool rootComposition = structural == model->compositions.front().rootNode;
         for (const auto& source : entries) {
             source.keys({"ty", "nm", "ind", "parent", "ks", "ip", "op", "st", "sr", "bm", "hd",
-                         "ddd", "ao", "shapes", "refId", "w", "h"});
-            source.metadata();
+                         "ddd", "ao", "shapes", "refId", "w", "h", "td", "tt"});
+            const bool difference = source.get("bm").exists() && source.get("bm").number(0, 10, true) == 10;
+            source.metadata(difference);
             const auto authored = static_cast<int>(source.get("ind").number(1, 32768, true));
             const auto kind = source.get("ty").number(0, 4, true);
             if (kind != 0 && kind != 3 && kind != 4)
                 source.get("ty").fail("only shape/null/bounded precomp layers supported");
+            const bool provider = source.get("td").exists(), content = source.get("tt").exists();
+            if (provider) (void)source.get("td").number(1, 1, true);
+            if (content) (void)source.get("tt").number(1, 1, true);
+            if ((provider || content) && (!rootComposition || kind != 4 || (provider && content)))
+                source.fail("matte roles require root shape siblings with one role each");
+            if (difference && (!rootComposition || kind != 4 || provider || content || &source != &entries.back()))
+                source.get("bm").fail("Difference requires absolute bottom unpaired root shape");
             const auto start = source.get("st").exists()
                 ? source.get("st").number(-20000, 20000, true) : 0;
             if (source.get("sr").exists())
@@ -385,6 +396,7 @@ private:
             n.inFrame = in;
             n.outFrame = out;
             n.startFrame = start;
+            if (difference) n.blendMode = SourceBlendMode::Difference;
             if (!ids.emplace(authored, id).second)
                 source.get("ind").fail("duplicate layer ID in composition");
             const auto visibleStart = std::max(first, static_cast<double>(in) + offset);
@@ -392,7 +404,22 @@ private:
                 std::max(visibleStart, std::min(end, static_cast<double>(out) + offset));
             nodes.push_back(id);
             layers.push_back({id, structural, visibleStart, visibleEnd});
+            layers.back().isolatedBottomDifference = difference;
             transform(id, source.get("ks"), false, kind == 0);
+        }
+        for (std::size_t i = 0; i < entries.size(); ++i) {
+            if (entries[i].get("td").exists()) {
+                if (i + 1 >= entries.size() || !entries[i + 1].get("tt").exists())
+                    entries[i].get("td").fail("orphan matte provider");
+                layers[firstBinding + i].matteTarget = nodes[i + 1];
+                layers[firstBinding + i + 1].matteSource = nodes[i];
+                model->sourceNodes[nodes[i + 1].index()].matteSource = nodes[i];
+                model->sourceNodes[nodes[i + 1].index()].matteMode = SourceMatteMode::Alpha;
+                model->sourceNodes[nodes[i].index()].dependencyBits |= StaticDependencyMatte;
+                model->sourceNodes[nodes[i + 1].index()].dependencyBits |= StaticDependencyMatte;
+            }
+            if (entries[i].get("tt").exists() && (i == 0 || !entries[i - 1].get("td").exists()))
+                entries[i].get("tt").fail("orphan matte content");
         }
         for (std::size_t i = 0; i < nodes.size(); ++i) {
             auto& n = model->sourceNodes[nodes[i].index()];
@@ -423,6 +450,10 @@ private:
                 shapes(source.get("shapes"), id);
             else if (source.get("shapes").exists())
                 source.get("shapes").fail("non-shape layer cannot carry shapes");
+            const auto& binding = layers[firstBinding + i];
+            if ((binding.matteSource.valid() || binding.matteTarget.valid()) &&
+                std::count_if(draws.begin(), draws.end(), [&](const auto& d) { return d.layer == id; }) != 1)
+                source.fail("matte role requires exactly one painted draw");
             if (kind != SourceLayerKind::Precomposition) {
                 for (auto key : {"refId", "w", "h"})
                     if (source.get(key).exists())
@@ -535,11 +566,34 @@ bool validateOwnVectorModel(const OwnVectorModel& owner) {
     evaluation::PropertyEvaluator evaluator(owner.model, owner.propertyFrameOffsets);
     if (!evaluator.valid())
         return false;
-    for (const auto& b : owner.layers) {
+    std::set<std::uint32_t> layerIds;
+    for (std::size_t i=0;i<owner.layers.size();++i) {
+        const auto& b=owner.layers[i];
         const auto* n = m.sourceNode(b.layer);
         if (!n || n->kind != model::SourceNodeKind::Layer || n->parent != b.structuralParent ||
-            !m.sourceNode(b.structuralParent) || b.outFrame < b.inFrame)
+            !m.sourceNode(b.structuralParent) || !std::isfinite(b.inFrame) || !std::isfinite(b.outFrame) ||
+            b.outFrame < b.inFrame || !layerIds.insert(b.layer.value).second ||
+            n->matteSource != b.matteSource ||
+            n->matteMode != (b.matteSource.valid() ? SourceMatteMode::Alpha : SourceMatteMode::None) ||
+            n->blendMode != (b.isolatedBottomDifference ? SourceBlendMode::Difference : SourceBlendMode::Normal))
             return false;
+        const bool provider=b.matteTarget.valid(), content=b.matteSource.valid();
+        if (provider || content) {
+            if ((provider && content) || b.isolatedBottomDifference || n->layerKind != SourceLayerKind::Shape ||
+                b.structuralParent != m.compositions.front().rootNode || !(n->dependencyBits & StaticDependencyMatte) ||
+                std::count_if(owner.draws.begin(),owner.draws.end(),[&](const auto& d){ return d.layer==b.layer; }) != 1)
+                return false;
+            if (provider && (i+1>=owner.layers.size() || owner.layers[i+1].layer!=b.matteTarget ||
+                owner.layers[i+1].matteSource!=b.layer)) return false;
+            if (content && (i==0 || owner.layers[i-1].layer!=b.matteSource ||
+                owner.layers[i-1].matteTarget!=b.layer)) return false;
+        }
+        if (b.isolatedBottomDifference) {
+            if (n->layerKind != SourceLayerKind::Shape || b.structuralParent != m.compositions.front().rootNode)
+                return false;
+            for (std::size_t j=i+1;j<owner.layers.size();++j)
+                if (owner.layers[j].structuralParent==b.structuralParent) return false;
+        }
     }
     for (const auto& b : owner.draws) {
         const auto* l = m.sourceNode(b.layer);

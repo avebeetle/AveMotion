@@ -247,6 +247,13 @@ void computeFingerprints(MotionAssetModel& model) noexcept {
         topology.appendU32(node.dependencyBits);
     }
     for (const auto id : model.drawOrder) topology.appendU32(id.value);
+    for (const auto& source : model.sourceNodes) {
+        if (!source.matteSource.valid() && source.blendMode != SourceBlendMode::Difference) continue;
+        topology.appendString("OwnSourceRelationships.v1");
+        topology.appendU32(source.id.value);
+        topology.appendU32(source.matteSource.value);
+        topology.appendU8(static_cast<std::uint8_t>(source.blendMode));
+    }
     for (const auto& clip : model.clips) {
         topology.appendU8(clip.present ? 1U : 0U);
         if (!clip.present) continue;

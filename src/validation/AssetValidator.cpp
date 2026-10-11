@@ -582,6 +582,23 @@ void validateSourceNodes(
                 FeatureKind::Unknown,
                 node.id);
         }
+        if (node.matteSource.valid()) {
+            const auto* provider = asset.sourceNode(node.matteSource);
+            bool invalid = !provider || provider->id == node.id || node.kind != model::SourceNodeKind::Layer ||
+                node.layerKind != model::SourceLayerKind::Shape || node.matteMode != model::SourceMatteMode::Alpha ||
+                node.blendMode != model::SourceBlendMode::Normal;
+            if (provider) invalid = invalid || provider->kind != model::SourceNodeKind::Layer ||
+                provider->layerKind != model::SourceLayerKind::Shape || provider->parent != node.parent ||
+                provider->composition != node.composition || provider->matteSource.valid() ||
+                provider->matteMode != model::SourceMatteMode::None || provider->blendMode != model::SourceBlendMode::Normal;
+            unsigned consumers = 0;
+            for (const auto& other : asset.sourceNodes)
+                if (other.present && other.matteSource == node.matteSource) ++consumers;
+            invalid = invalid || consumers != 1;
+            if (invalid) builder.addIssue(
+                ValidationSeverity::Fatal, ValidationIssueCode::InvalidReference,
+                nodeLabel(node) + " has an invalid alpha matte source relationship", FeatureKind::Matte, node.id);
+        }
         if (node.referencedComposition.valid()
             && !validId(node.referencedComposition, asset.compositions.size())) {
             builder.addIssue(

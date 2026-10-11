@@ -66,7 +66,7 @@ bool Value::boolean() const {
     require(OwnJsonKind::Boolean);
     return document->node(id)->boolean;
 }
-void Value::metadata() const {
+void Value::metadata(bool isolatedDifference) const {
     if (get("nm").exists())
         (void)get("nm").string();
     // Callers enforce context-specific keys before validating optional metadata.
@@ -77,7 +77,8 @@ void Value::metadata() const {
         get("mn").fail("exporter name exceeds byte limit");
     for (auto key : {"bm", "ddd", "ao"})
         if (get(key).exists())
-            (void)get(key).number(0, 0, true);
+            (void)get(key).number(key == std::string_view("bm") && isolatedDifference ? 10 : 0,
+                                  key == std::string_view("bm") && isolatedDifference ? 10 : 0, true);
     if (get("hd").exists() && get("hd").boolean())
         get("hd").fail("hidden content is unsupported");
 }
@@ -206,7 +207,14 @@ PropertyId PropertyCompiler::vec2(SourceNodeId owner, PropertySemantic semantic,
 PropertyId PropertyCompiler::add(SourceNodeId owner, PropertySemantic semantic, Value property,
                                  PropertyValueType type, std::int64_t low, std::int64_t high,
                                  bool animated, float z, bool strictLow) {
-    property.keys({"a", "k", "ix"});
+    const auto* source = model_.sourceNode(owner);
+    const bool neutralVector = source && source->kind == SourceNodeKind::Layer &&
+        type == PropertyValueType::Vec2 &&
+        (semantic == PropertySemantic::TransformAnchor || semantic == PropertySemantic::TransformPosition ||
+         semantic == PropertySemantic::TransformScale);
+    if (neutralVector) property.keys({"a", "k", "ix", "l"});
+    else property.keys({"a", "k", "ix"});
+    if (property.get("l").exists()) (void)property.get("l").number(2, 2, true);
     if (property.get("ix").exists())
         (void)property.get("ix").number(0, 32768, true);
     const auto a = property.get("a");

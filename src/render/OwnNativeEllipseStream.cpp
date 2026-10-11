@@ -209,6 +209,9 @@ OwnNativeEllipseFrameResult OwnNativeEllipseStream::emit(std::size_t frame, std:
         const bool active = static_cast<double>(frame) >= layer.inFrame &&
                             static_cast<double>(frame) < layer.outFrame;
         auto evaluated = makeLayer(model.layers[layer.layer.index()], active, 0);
+        evaluated.matteSourceLayer = layer.matteSourceLayer;
+        evaluated.matteTargetLayer = layer.matteTargetLayer;
+        evaluated.isolatedBottomDifference = layer.isolatedBottomDifference;
         evaluated.firstDrawItem = static_cast<std::uint32_t>(scene.drawItems.size());
         scene.layers.push_back(std::move(evaluated));
         ++scene.statistics.layerCount;

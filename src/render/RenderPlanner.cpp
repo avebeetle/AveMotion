@@ -336,9 +336,11 @@ void appendColor(core::Fnv1a64& hash, const runtime::Color8& color) noexcept {
         if (layer.maskCount != 0U) {
             bits |= RenderFeatureMask;
         }
-        if (layer.matte != runtime::MatteMode::None) {
+        if (layer.matte != runtime::MatteMode::None || layer.matteSourceLayer != runtime::kInvalidSceneIndex ||
+            layer.matteTargetLayer != runtime::kInvalidSceneIndex) {
             bits |= RenderFeatureMatte;
         }
+        if (layer.isolatedBottomDifference) bits |= RenderFeatureBlend;
     }
     return bits;
 }
@@ -409,6 +411,37 @@ RenderPlanBuildResult MotionRenderPlanner::build(
     }
 
     const auto instanceIdentity = sceneInstanceIdentity(*scene);
+    for (std::size_t i = 0; i < scene->layers.size(); ++i) {
+        const auto& layer = scene->layers[i];
+        const auto source = layer.matteSourceLayer, target = layer.matteTargetLayer;
+        const bool hasSource = source != runtime::kInvalidSceneIndex;
+        const bool hasTarget = target != runtime::kInvalidSceneIndex;
+        const auto invalidRange = [&](std::size_t first, std::size_t count) {
+            return first > scene->drawItems.size() || count > scene->drawItems.size() - first;
+        };
+        bool badRange = false;
+        if (hasSource || hasTarget) {
+            badRange = invalidRange(layer.firstDrawItem, layer.drawItemCount) || layer.drawItemCount > 1 ||
+                (layer.parentLayer != runtime::kInvalidSceneIndex &&
+                 (layer.parentLayer >= scene->layers.size() || layer.parentLayer == i));
+            if (!badRange) for (std::uint32_t n = 0; n < layer.drawItemCount; ++n)
+                if (scene->drawItems[layer.firstDrawItem + n].layerIndex != i) badRange = true;
+        }
+        const auto badPair = [&](std::uint32_t peer, bool content) {
+            if (peer >= scene->layers.size() || peer == i) return true;
+            const auto& other = scene->layers[peer];
+            return layer.parentLayer != other.parentLayer || layer.isolatedBottomDifference || other.isolatedBottomDifference ||
+                (content ? (layer.matte != runtime::MatteMode::Alpha || other.matte != runtime::MatteMode::None ||
+                    other.matteTargetLayer != i || other.matteSourceLayer != runtime::kInvalidSceneIndex)
+                         : (layer.matte != runtime::MatteMode::None || other.matte != runtime::MatteMode::Alpha ||
+                    other.matteSourceLayer != i || other.matteTargetLayer != runtime::kInvalidSceneIndex));
+        };
+        if (badRange || (hasSource && hasTarget) || (hasSource && badPair(source, true)) || (hasTarget && badPair(target, false))) {
+            result.error = {RenderPlanErrorCode::InvalidScene, "invalid reciprocal matte relationship"};
+            ++impl_->diagnostics.plansRejected;
+            return result;
+        }
+    }
     const auto assetIdentity = sceneAssetIdentity(*scene);
     auto& state = impl_->instances[instanceIdentity];
     if (state.hasPreviousPlan
@@ -428,6 +461,8 @@ RenderPlanBuildResult MotionRenderPlanner::build(
     state.assetIdentity = assetIdentity;
 
     auto& plan = result.plan;
+    plan.presentationOpacity = presentation.opacity;
+    plan.presentationVisible = presentation.visible;
     plan.sourceScene = std::move(scene);
     plan.stamp = {
         .assetHash = plan.sourceScene->sourceAssetHash,
@@ -460,10 +495,10 @@ RenderPlanBuildResult MotionRenderPlanner::build(
             ? sourceItem.separatedOpacity
             : layer.opacity;
         const auto opacity = std::clamp(
-            presentation.opacity * inheritedOpacity,
+            (layer.matteTargetLayer != runtime::kInvalidSceneIndex ? 1.0F : presentation.opacity) * inheritedOpacity,
             0.0F,
             1.0F);
-        if (!presentation.visible || !layer.visible || opacity <= 0.0F) {
+        if (!presentation.visible || presentation.opacity <= 0.0F || !layer.visible || opacity <= 0.0F) {
             continue;
         }
 

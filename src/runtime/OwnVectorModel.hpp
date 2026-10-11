@@ -6,6 +6,8 @@ namespace avemotion::runtime::detail {
 struct OwnVectorLayerBinding final {
     model::SourceNodeId layer, structuralParent;
     double inFrame = 0, outFrame = 0;
+    model::SourceNodeId matteSource, matteTarget;
+    bool isolatedBottomDifference = false;
 };
 struct OwnVectorDrawBinding final {
     model::SourceNodeId layer, group, paintScope, path, paint;

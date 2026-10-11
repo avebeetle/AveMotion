@@ -156,6 +156,20 @@ lowerOwnVectorProgram(const runtime::detail::OwnVectorModel &owner,
             static_cast<std::uint32_t>(asset.childLayerIds.size()) - record.children.first;
     };
     append(root, {}, 0, static_cast<double>(asset.totalFrames), {});
+    for (const auto& binding : owner.layers) {
+        const auto indexOf = [&](model::SourceNodeId source) {
+            for (const auto& layer : layers)
+                if (layer.source == source) return layer.layer.index();
+            return runtime::kInvalidSceneIndex;
+        };
+        auto& layer = layers[indexOf(binding.layer)];
+        if (binding.matteSource.valid()) layer.matteSourceLayer = indexOf(binding.matteSource);
+        if (binding.matteTarget.valid()) layer.matteTargetLayer = indexOf(binding.matteTarget);
+        layer.isolatedBottomDifference = binding.isolatedBottomDifference;
+        auto& record = asset.layers[layer.layer.index()];
+        if (binding.matteSource.valid()) record.matte = runtime::MatteMode::Alpha;
+        if (binding.matteSource.valid() || binding.matteTarget.valid()) record.dependencyBits |= model::StaticDependencyMatte;
+    }
     return std::make_shared<const OwnSceneProgram>(std::move(layers), std::move(draws));
 }
 

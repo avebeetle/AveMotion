@@ -1,5 +1,8 @@
 #include "OwnNativeEllipsePlayback.hpp"
 #include "support/OwnVectorGradientTestData.hpp"
+#include "support/OwnVectorMatteTestData.hpp"
+#include "../src/model/AssetModelBuilder.hpp"
+#include "avemotion/runtime/RecordingBackend.hpp"
 #include "OwnNativeEllipseStream.hpp"
 #include "avemotion/render/RenderPlanner.hpp"
 #include "support/OwnVectorClippingTestData.hpp"
@@ -494,8 +497,84 @@ void gradientStream() {
     std::cout << "owned static gradient local/final RGB, parent opacity0, full affine, fractional alpha,"
                  " static paint identity, animated parent/path seeks and occurrence clocks verified\n";
 }
+void matteStream() {
+    // Lost role indices, parenting-as-alpha, interval drift and double common
+    // alpha all fail these independent literal observations.
+    auto stream = instanceStream(matteFixture());
+    for (const auto [width,height,contentX,contentY,providerX,providerY] : {
+            std::tuple{256U,128U,79.F,27.F,81.F,31.F},
+            std::tuple{128U,256U,15.F,91.F,17.F,95.F}}) {
+        for (unsigned frame : {19U,20U,30U,31U,30U,20U,19U,20U}) {
+            const auto emitted = stream->emit(frame,width,height);
+            vectorRequire(bool(emitted), "matte scene emit");
+            const auto& scene = *emitted.scene;
+            vectorRequire(scene.layers.size()==4 && scene.layers[1].matteSourceLayer==2 &&
+                scene.layers[2].matteTargetLayer==1 && scene.layers[1].matte==runtime::MatteMode::Alpha &&
+                scene.layers[2].matte==runtime::MatteMode::None && scene.layers[1].parentLayer==0 &&
+                scene.layers[2].parentLayer==0, "stable reciprocal scene roles independent of parenting");
+            const bool active = frame==20 || frame==30;
+            vectorRequire(scene.drawItems.size()==(active ? 2U:0U), "literal [20,31) interval");
+            if (!active) continue;
+            for (unsigned i=0;i<2;++i) {
+                const auto& d=scene.drawItems[i];
+                vectorRequire(d.layerIndex==i+1 && d.localToViewport.dx==(i?providerX:contentX) &&
+                    d.localToViewport.dy==(i?providerY:contentY) && d.localToViewport.m11==1 &&
+                    d.localToViewport.m22==1 && d.separatedOpacity==0.5F, "literal parent matrix and independent fractional alpha");
+            }
+            render::MotionRenderPlanner planner;
+            render::PresentationState p; p.opacity=0.5F;
+            const auto plan=planner.build(scene,p);
+            vectorRequire(bool(plan) && plan.plan.drawItems.size()==2 && plan.plan.presentationOpacity==0.5F &&
+                plan.plan.presentationVisible && plan.plan.drawItems[0].effectiveOpacity==0.25F &&
+                plan.plan.drawItems[1].effectiveOpacity==0.5F && plan.plan.statistics.unsupportedFeatureItemCount==2 &&
+                (plan.plan.drawItems[0].featureBits & render::RenderFeatureMatte) &&
+                (plan.plan.drawItems[1].featureBits & render::RenderFeatureMatte), "public fail-closed pair and presentation alpha once");
+        }
+    }
+    auto zeroJson=vectorReplace(matteFixture(),R"("p":{"k":[2,4]},"o":{"k":50})",R"("p":{"k":[2,4]},"o":{"k":0})");
+    auto zero = instanceStream(zeroJson);
+    const auto emptyProvider=zero->emit(20,128,128);
+    vectorRequire(bool(emptyProvider) && emptyProvider.scene->drawItems.size()==1 &&
+        emptyProvider.scene->layers[2].drawItemCount==0 && emptyProvider.scene->layers[2].matteTargetLayer==1 &&
+        emptyProvider.scene->layers[1].matteSourceLayer==2, "empty provider keeps relationship identity");
+    auto difference=instanceStream(vectorRoot(matteLayer(1,",\"bm\":10")));
+    const auto d=difference->emit(0,128,128);
+    vectorRequire(bool(d) && d.scene->layers[1].isolatedBottomDifference, "Difference preserved in scene");
+    render::MotionRenderPlanner differencePlanner;
+    const auto dp=differencePlanner.build(*d.scene);
+    vectorRequire(bool(dp) && dp.plan.statistics.unsupportedFeatureItemCount==1 &&
+        (dp.plan.drawItems[0].featureBits & render::RenderFeatureBlend), "isolated Difference unsupported publicly");
+    auto twoPairs=instanceStream(vectorRoot(matteLayer(1,",\"td\":1")+","+matteLayer(2,",\"tt\":1")+","+
+                                            matteLayer(3,",\"td\":1")+","+matteLayer(4,",\"tt\":1")));
+    auto emitted=twoPairs->emit(0,128,128);
+    vectorRequire(bool(emitted), "two pair topology witness emit");
+    auto swapped=*emitted.scene;
+    swapped.layers[1].matteSourceLayer=4; swapped.layers[4].matteTargetLayer=1;
+    swapped.layers[3].matteSourceLayer=2; swapped.layers[2].matteTargetLayer=3;
+    vectorRequire(runtime::computeSceneFingerprints(swapped).topology != emitted.scene->fingerprints.topology,
+        "valid reciprocal relationship changes scene topology");
+    render::MotionRenderPlanner topologyPlanner;
+    const auto originalPlan=topologyPlanner.build(*emitted.scene), swappedPlan=topologyPlanner.build(swapped);
+    vectorRequire(bool(originalPlan) && bool(swappedPlan) &&
+        originalPlan.plan.fingerprints.topology!=swappedPlan.plan.fingerprints.topology &&
+        originalPlan.plan.fingerprints.geometryIdentity==swappedPlan.plan.fingerprints.geometryIdentity &&
+        originalPlan.plan.fingerprints.paintIdentity==swappedPlan.plan.fingerprints.paintIdentity,
+        "valid reciprocal relationship changes plan topology only");
+    auto originalModel=*emitted.scene->assetModel;
+    auto changedModel=originalModel;
+    unsigned first=0, second=0;
+    for (auto& source:changedModel.sourceNodes) if(source.matteSource.valid()) {
+        if (!first) first=source.id.value; else second=source.id.value;
+    }
+    std::swap(changedModel.sourceNodes[first].matteSource,changedModel.sourceNodes[second].matteSource);
+    model::detail::refreshAssetModelDerivedData(changedModel);
+    vectorRequire(originalModel.topologyFingerprint!=changedModel.topologyFingerprint &&
+        originalModel.resourceFingerprint==changedModel.resourceFingerprint,
+        "source relationships change immutable model topology without resource churn");
+}
 int main(int argc, char **argv) {
     try {
+        if (argc==1) matteStream();
         const auto json = vectorInput(argc, argv);
         const bool second = argc == 3 && std::filesystem::path(argv[2]).filename() == "a-2.tgs";
         lifecycle(json);

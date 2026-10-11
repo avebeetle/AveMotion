@@ -162,6 +162,7 @@ enum class SourceBlendMode : std::uint8_t {
     Multiply,
     Screen,
     Overlay,
+    Difference,
 };
 
 enum class SourcePathDirection : std::uint8_t {
@@ -336,6 +337,7 @@ struct MotionSourceNodeRecord final {
     SourceNodeId id;
     SourceNodeId parent;
     SourceNodeId transformParent;
+    SourceNodeId matteSource;
     CompositionId composition;
     CompositionId referencedComposition;
     SourceNodeKind kind = SourceNodeKind::Unknown;

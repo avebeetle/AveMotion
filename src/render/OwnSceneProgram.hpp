@@ -15,6 +15,9 @@ struct OwnSceneLayer final {
     double inFrame = 0, outFrame = 0;
     model::IndexRange draws;
     std::vector<model::SourceNodeId> enclosingClips;
+    std::uint32_t matteSourceLayer = runtime::kInvalidSceneIndex;
+    std::uint32_t matteTargetLayer = runtime::kInvalidSceneIndex;
+    bool isolatedBottomDifference = false;
 };
 struct OwnSceneDraw final {
     model::SourceNodeId group, paintScope, path, paint;

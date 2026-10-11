@@ -77,6 +77,7 @@ enum RenderFeatureBits : std::uint32_t {
     RenderFeatureMask = 1U << 5U,
     RenderFeatureMatte = 1U << 6U,
     RenderFeatureDash = 1U << 7U,
+    RenderFeatureBlend = 1U << 8U,
 };
 
 struct RenderPlanStamp final {
@@ -137,6 +138,8 @@ struct RenderPlanFingerprints final {
 };
 
 struct MotionRenderPlan final {
+    float presentationOpacity = 1.0F;
+    bool presentationVisible = true;
     RenderPlanStamp stamp;
     std::shared_ptr<const runtime::EvaluatedScene> sourceScene;
     std::vector<MotionDrawItem> drawItems;

@@ -244,6 +244,9 @@ struct EvaluatedLayer final {
     bool visible = false;
     float opacity = 1.0F;
     MatteMode matte = MatteMode::None;
+    std::uint32_t matteSourceLayer = kInvalidSceneIndex;
+    std::uint32_t matteTargetLayer = kInvalidSceneIndex;
+    bool isolatedBottomDifference = false;
     EvaluatedPath clipPath;
 };
 

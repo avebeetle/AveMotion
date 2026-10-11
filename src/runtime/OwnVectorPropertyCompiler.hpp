@@ -23,7 +23,7 @@ struct Value final {
                  bool strictLow = false) const;
     std::string string() const;
     bool boolean() const;
-    void metadata() const;
+    void metadata(bool isolatedDifference = false) const;
 };
 class PropertyCompiler final {
 public:

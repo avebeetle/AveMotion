@@ -136,6 +136,48 @@ bool matrixIsIdentity(const avemotion::render::Matrix3x2& value) {
 
 int main() {
     using namespace avemotion;
+    {
+        // A provider must be unsupported and omit common alpha; corrupted role
+        // references must reject the whole snapshot, including a valid prefix.
+        auto scene=makeScene(800,1,10,{255,0,0,255},runtime::EvaluatedValueOrigin::AssetStatic,
+                            runtime::EvaluatedValueOrigin::AssetStatic);
+        scene.layers.push_back(scene.layers[0]);
+        scene.layers[0].matte=runtime::MatteMode::Alpha;
+        scene.layers[0].matteSourceLayer=1;
+        scene.layers[1].matteTargetLayer=0;
+        scene.layers[1].firstDrawItem=1;
+        scene.layers[0].opacity=scene.layers[1].opacity=0.5F;
+        scene.drawItems.push_back(scene.drawItems[0]); scene.drawItems[1].layerIndex=1;
+        scene.drawItems[1].drawOrder=1;
+        render::PresentationState p; p.opacity=0.5F;
+        render::MotionRenderPlanner mattePlanner;
+        auto plan=mattePlanner.build(scene,p);
+        require(bool(plan) && plan.plan.presentationOpacity==0.5F &&
+            plan.plan.drawItems[0].effectiveOpacity==0.25F && plan.plan.drawItems[1].effectiveOpacity==0.5F &&
+            plan.plan.statistics.unsupportedFeatureItemCount==2, "pair opacity and unsupported accounting");
+        for(unsigned corruption=0;corruption<10;++corruption) {
+            auto forged=scene;
+            if(corruption==0) forged.layers[1].matteTargetLayer=runtime::kInvalidSceneIndex;
+            if(corruption==1) forged.layers[0].matteSourceLayer=99;
+            if(corruption==2) forged.layers[0].matteSourceLayer=0;
+            if(corruption==3) forged.layers[1].matte=runtime::MatteMode::Alpha;
+            if(corruption==4) forged.layers[1].matteSourceLayer=0;
+            if(corruption==5) forged.layers[1].firstDrawItem=0xFFFFFFFFU;
+            if(corruption==6) forged.layers[1].drawItemCount=0xFFFFFFFFU;
+            if(corruption==7) forged.layers[1].firstDrawItem=0;
+            if(corruption==8) forged.layers[0].isolatedBottomDifference=true;
+            if(corruption==9) forged.layers[0].parentLayer=forged.layers[1].parentLayer=99;
+            require(!mattePlanner.build(forged,p), "forged/nonreciprocal relationships fail closed");
+        }
+        p.opacity=0;
+        const auto hidden=mattePlanner.build(scene,p);
+        require(bool(hidden) && hidden.plan.drawItems.empty() && hidden.plan.presentationOpacity==0,
+                "presentation zero gives empty plan without division");
+        p.opacity=0.5F; p.visible=false;
+        const auto invisible=mattePlanner.build(scene,p);
+        require(bool(invisible) && invisible.plan.drawItems.empty() && !invisible.plan.presentationVisible,
+                "presentation visibility recorded");
+    }
     render::MotionRenderPlanner planner;
     render::HeadlessPlanBackend headless;
 

@@ -64,6 +64,16 @@ RenderPlanFingerprints computeRenderPlanFingerprints(
     topology.appendU64(plan.stamp.assetIdentity);
     topology.appendU64(plan.stamp.instanceIdentity);
     topology.appendU64(plan.drawItems.size());
+    if (plan.sourceScene) for (std::size_t i = 0; i < plan.sourceScene->layers.size(); ++i) {
+        const auto& layer = plan.sourceScene->layers[i];
+        if (layer.matteSourceLayer == runtime::kInvalidSceneIndex && layer.matteTargetLayer == runtime::kInvalidSceneIndex &&
+            !layer.isolatedBottomDifference) continue;
+        topology.appendString("OwnLayerRelationships.v1");
+        topology.appendU64(i);
+        topology.appendU32(layer.matteSourceLayer);
+        topology.appendU32(layer.matteTargetLayer);
+        topology.appendU8(layer.isolatedBottomDifference ? 1U : 0U);
+    }
     for (const auto& item : plan.drawItems) {
         topology.appendU64(item.sourceItemKey);
         topology.appendU32(item.sourceDrawItemIndex);

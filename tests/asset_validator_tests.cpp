@@ -349,6 +349,32 @@ void testStructuralCorruption() {
     require(hasIssue(report, validation::ValidationIssueCode::InvalidRange),
             "invalid child range was not diagnosed");
 }
+void testExtendedMatteReferences() {
+    auto asset=makeValidAsset();
+    auto content=makeSourceNode(model::SourceNodeId{5},model::SourceNodeId{0},model::SourceNodeKind::Layer,"content");
+    content.layerKind=model::SourceLayerKind::Shape;
+    content.inFrame=0; content.outFrame=120;
+    content.matteMode=model::SourceMatteMode::Alpha;
+    content.matteSource=model::SourceNodeId{1};
+    asset.sourceNodes.push_back(content);
+    asset.sourceNodes[0].children={static_cast<std::uint32_t>(asset.sourceChildIds.size()),2};
+    asset.sourceChildIds.push_back(model::SourceNodeId{1}); asset.sourceChildIds.push_back(model::SourceNodeId{5});
+    const validation::AssetValidator validator;
+    require(validator.validate(asset).structurallyValid,"extended source alpha fixture structurally valid");
+    auto legacy=asset; legacy.sourceNodes[5].matteSource={};
+    require(validator.validate(legacy).structurallyValid,"legacy source matte without relationship preserved");
+    for(unsigned corruption=0;corruption<7;++corruption) {
+        auto forged=asset;
+        if(corruption==0) forged.sourceNodes[5].matteSource=model::SourceNodeId{9999};
+        if(corruption==1) forged.sourceNodes[5].matteSource=model::SourceNodeId{5};
+        if(corruption==2) forged.sourceNodes[5].matteSource=model::SourceNodeId{2};
+        if(corruption==3) forged.sourceNodes[5].matteMode=model::SourceMatteMode::None;
+        if(corruption==4) forged.sourceNodes[1].matteMode=model::SourceMatteMode::Alpha;
+        if(corruption==5) forged.sourceNodes[1].matteSource=model::SourceNodeId{5};
+        if(corruption==6) forged.sourceNodes[5].blendMode=model::SourceBlendMode::Difference;
+        require(!validator.validate(forged).structurallyValid,"invalid extended source matte relationship rejected");
+    }
+}
 
 void testCycleAndUnsupportedFeature() {
     auto asset = makeValidAsset();
@@ -393,6 +419,7 @@ int main() {
     testTelegramDurationEndpointSemantics();
     testTelegramForbiddenFeatures();
     testStructuralCorruption();
+    testExtendedMatteReferences();
     testCycleAndUnsupportedFeature();
     testDirect2DNativeProfile();
     std::cout << "AveMotion asset validator tests passed\n";
