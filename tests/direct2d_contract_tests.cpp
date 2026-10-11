@@ -14,6 +14,7 @@
 #include <limits>
 #include <memory>
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -666,6 +667,101 @@ avemotion::render::MotionRenderPlan frozenAlphaPlan() {
     render::MotionRenderPlanner planner;auto plan=planner.build(scene);require(bool(plan),"frozen alpha fixture plan");return std::move(plan.plan);
 }
 
+void alphaCanonicalProvenanceContracts() {
+    using namespace avemotion;
+    using Class = model::ResourceClass;
+    struct Case { const char* name; Class resourceClass; bool value; bool ownedAlias; bool alias; };
+    const Case corrupt[]{
+        {"instance foreign alias",Class::InstanceEvaluated,false,false,true},
+        {"unknown foreign alias",Class::Unknown,false,false,true},
+        {"static absent value alias",Class::AssetStatic,false,false,true},
+        {"instance value owned alias",Class::InstanceEvaluated,true,true,true},
+        {"unknown value owned alias",Class::Unknown,true,true,true},
+        {"instance value foreign alias",Class::InstanceEvaluated,true,false,true},
+        {"unknown value foreign alias",Class::Unknown,true,false,true},
+        {"static value foreign alias",Class::AssetStatic,true,false,true},
+        {"static value missing alias",Class::AssetStatic,true,false,false},
+    };
+    const Case valid[]{
+        {"instance no alias",Class::InstanceEvaluated,false,false,false},
+        {"unknown no alias",Class::Unknown,false,false,false},
+        {"static absent value no alias",Class::AssetStatic,false,false,false},
+        {"instance value no alias",Class::InstanceEvaluated,true,false,false},
+        {"unknown value no alias",Class::Unknown,true,false,false},
+        {"static canonical aliases",Class::AssetStatic,true,true,true},
+    };
+    const auto base=frozenAlphaPlan();
+    const auto makePlan=[&](const Case& test,bool geometry,bool legitimate) {
+        auto plan=base;auto scene=std::make_shared<runtime::EvaluatedScene>(*base.sourceScene);
+        auto frozen=std::make_shared<model::MotionAssetModel>(*scene->assetModel);
+        scene->assetModel=frozen;plan.sourceScene=scene;
+        // Corrupt only the last source, retaining a complete valid prefix and
+        // every original resource key/hash. Finite foreign pixels differ.
+        auto& item=scene->drawItems[2];
+        const auto bind=[&](auto& record,auto& alias,auto payload) {
+            using Alias=std::remove_reference_t<decltype(alias)>;
+            record.resourceClass=test.resourceClass;
+            if(legitimate && test.alias) record.contentHash=payload.contentHash;
+            if(test.value) record.staticValue=payload;
+            if(test.alias) alias=test.ownedAlias
+                ?Alias(frozen,&*record.staticValue)
+                :std::make_shared<std::remove_const_t<typename Alias::element_type>>(payload);
+        };
+        if(geometry || legitimate) {
+            runtime::CanonicalGeometry payload;
+            payload.sourceKey=item.sourceGeometryId;
+            payload.path=item.localPath;payload.fillRule=item.fillRule;
+            payload.contentHash=base.drawItems[2].geometry.contentHash;
+            if(!legitimate) payload.path.points[0].x+=7;
+            bind(frozen->geometries[2],item.canonicalGeometry,payload);
+        }
+        if(!geometry || legitimate) {
+            runtime::CanonicalPaint payload;
+            payload.sourceKey=item.sourcePaintId;
+            payload.paint=item.localPaint;payload.stroke=item.localStroke;
+            payload.contentHash=base.drawItems[2].paint.contentHash;
+            if(!legitimate) payload.paint.solid={0,0,255,255};
+            bind(frozen->paints[2],item.canonicalPaint,payload);
+        }
+        if(legitimate && test.alias) {
+            item.geometryOrigin=item.paintOrigin=runtime::EvaluatedValueOrigin::AssetStatic;
+            render::MotionRenderPlanner planner;auto built=planner.build(scene);
+            require(bool(built),"legitimate canonical alpha plan");plan=std::move(built.plan);
+        }
+        return plan;
+    };
+    bool allRejected=true;unsigned rejectionChecks=0,acceptedChecks=0;
+    for(bool warm:{false,true}) for(bool geometry:{true,false}) for(const auto& test:corrupt) {
+        auto* factory=new FakeFactory;auto* context=new FakeDeviceContext(factory);auto* host=new FakeImage;
+        context->SetTarget(host);const auto transform=context->transform();
+        backends::direct2d::Backend backend;backends::direct2d::RenderSession session{context,199,1};
+        if(warm) require(bool(drawAlpha(backend,base,session)),"warm canonical rejection baseline");
+        const auto resources=[&] {return factory->pathGeometryCreations+factory->strokeStyleCreations+
+            context->listCreations+context->effectCreations+context->solidBrushCreations+
+            context->stopCreations+context->linearBrushCreations;};
+        const auto beforeResources=resources(),beforeDraws=context->records.size();
+        const auto failed=drawAlpha(backend,makePlan(test,geometry,false),session);
+        const bool rejected=!failed && failed.error.code==backends::direct2d::BackendErrorCode::InvalidPlan &&
+            failed.itemsDrawn==0 && failed.itemsSkipped==0 && resources()==beforeResources &&
+            context->records.size()==beforeDraws && context->target==host && sameMatrix(context->transform(),transform);
+        if(!rejected) std::cout<<"canonical provenance bypass: "<<(geometry?"geometry ":"paint ")<<test.name
+            <<" warm="<<warm<<" drawn="<<failed.itemsDrawn<<" native_resources="<<resources()-beforeResources<<'\n';
+        allRejected=allRejected && rejected;++rejectionChecks;
+        context->Release();host->Release();factory->Release();
+    }
+    for(bool warm:{false,true}) for(const auto& test:valid) {
+        auto* factory=new FakeFactory;auto* context=new FakeDeviceContext(factory);
+        backends::direct2d::Backend backend;backends::direct2d::RenderSession session{context,199,1};
+        if(warm) require(bool(drawAlpha(backend,base,session)),"warm canonical acceptance baseline");
+        const auto accepted=drawAlpha(backend,makePlan(test,true,true),session);
+        require(bool(accepted) && accepted.itemsDrawn==3 && accepted.itemsSkipped==0,
+            std::string(test.name)+" remains admitted cold/warm");++acceptedChecks;
+        context->Release();factory->Release();
+    }
+    std::cout<<"alpha canonical rejection checks="<<rejectionChecks<<" legitimate acceptance checks="<<acceptedChecks<<'\n';
+    require(allRejected,"alpha rejects forged frozen geometry/paint aliases before native work cold/warm");
+}
+
 void alphaContracts() {
     using namespace avemotion;
     using Error = backends::direct2d::BackendErrorCode;
@@ -803,6 +899,7 @@ void alphaContracts() {
 } // namespace
 
 int main() {
+    alphaCanonicalProvenanceContracts();
     using namespace avemotion;
     alphaContracts();
 

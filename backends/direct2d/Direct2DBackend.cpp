@@ -466,6 +466,14 @@ template <typename Left, typename Right>
                 || geometry->id != source.modelGeometry || paintRecord->id != source.modelPaint
                 || source.sourceGeometryId != std::uint64_t(source.modelGeometry.value)+1
                 || source.sourcePaintId != std::uint64_t(source.modelPaint.value)+1) return Error::InvalidPlan;
+            // Supplied canonical payloads must be the frozen static value,
+            // never an instance/unknown alias carrying a trusted-looking hash.
+            const auto validAlias = [](const auto& record, const auto& alias) {
+                return !alias || (record.resourceClass == model::ResourceClass::AssetStatic
+                    && record.staticValue && alias.get() == &*record.staticValue);
+            };
+            if (!validAlias(*geometry, source.canonicalGeometry)
+                || !validAlias(*paintRecord, source.canonicalPaint)) return Error::InvalidPlan;
         }
         if (i < layer.firstDrawItem || i-layer.firstDrawItem >= layer.drawItemCount
             || !finite(source.separatedOpacity) || source.separatedOpacity < 0 || source.separatedOpacity > 1
