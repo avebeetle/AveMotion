@@ -88,7 +88,7 @@ content retains it. Thus common opacity is applied once, not squared. Geometry
 and presentation transforms retain their existing meaning and canonical ownership.
 
 Add private `AlphaMatteBackendAccess::draw(Backend&, const MotionRenderPlan&,
-const NativeContext&) -> DrawResult`, with fixed solid/static-linear/normal-alpha/
+const RenderSession&) -> DrawResult`, with fixed solid/static-linear/normal-alpha/
 isolated-bottom-Difference scope. Whole-plan preflight validates every source,
 canonical resource, finite payload, role/adjacency/root/one-draw relationship,
 supported bits, reciprocal indices, ranges and complete ordered eligible item
@@ -117,6 +117,10 @@ already captured the host/presentation transform; test this against native pixel
 [Target changes](https://learn.microsoft.com/en-us/windows/win32/api/d2d1_1/nf-d2d1_1-id2d1devicecontext-settarget),
 [command-list errors](https://learn.microsoft.com/en-us/windows/win32/api/d2d1_1/nf-d2d1_1-id2d1commandlist-close)
 
+For a plan with no pair relationships and no isolated Difference marker, use
+the existing shared direct primitive route without creating composition lists
+or effects. This avoids imposing matte machinery on already-working Ducks;
+the fixed successor still runs its own complete-plan validation.
 Use transient per-draw lists/effects initially; do not add mutable effect caches
 without measurements. `drawnItems` counts source geometry issued into recordings,
 including consumed providers, not standalone host contributions. An inactive or

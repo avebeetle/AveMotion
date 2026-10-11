@@ -10,8 +10,16 @@ plan `plans/2026-10-11-own-alpha-matte.md`, recovery ledger
 Base E2fbdb35, H e02c2eb; canonical main, previous gradient stage CLOSED.
 Read-only engine/Party/host audits complete. Four tasks: immutable bounded
 pairing/metadata, existing private Direct2D composition, unchanged original Party
-acceptance, then narrow host wiring/guarded Release delivery. No Task1 product
-work yet; check ledger/live agents before resuming. Root-adjacent one-painted-draw
+acceptance, then narrow host wiring/guarded Release delivery. Task1 local product
+0018b5785e3832184d326daba4c59a6a1eb7bd61 plus fix
+a6781d9f6e0cde0831b1e9a699d8f8a4e21fb573 is independently reviewed complete:
+one Important lookup defect and one matrix assertion minor addressed, no new
+Critical/Important. Fresh fix no-reference full47/47 and Telegram/preview owning
+4/4 pass; controller fresh4/4 and exact4filehashes. Initial full95/96 and retrospective
+hash/283freeze evidence explicitly pre-fix, not coverage of changed bytes.
+Product0018b57/a6781d9 ordinarily pushed; origin main verifieda6781d9.
+Task2 must run complete three-cache gates on combined final bytes. Check ledger/live agents; do not repeat this
+implementation or gates. Task2/3/4 remain pending. Root-adjacent one-painted-draw
 Alpha pairs only; both provider/content remain publicly unsupported, no mask art
 leak. Neutral layer vector `l:2` and preserved bottommost-root Difference are
 explicit original-input requirements, not JSON stripping or general blend support.
