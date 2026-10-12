@@ -48,6 +48,13 @@ resize/reset/nativeFailure. Written spec addendum/Tasks4–5 before product work
 independent report/selection review clean after one bookkeeping/precision fix.
 No device/asset sharing or scheduler,
 GPU/format/docking change. Next Task4 TDD/review then identical-kit comparison.
+Task4 complete: bounded two-slot exclusive storage implemented only in H own
+renderer/test. Actual functionalRED12vs2, GREEN new methods/fullown6of6,
+root fresh renderer1of1 (16Qtpass/3named optional externalskips). Independent
+spec/quality Approved0findings; public signatures/worker/Player/native lifetime
+unchanged. E fresh final package46of46 and explicit preview97of97 retained in
+out/checks/2026-10-12-resource-reuse-final-001. Next clean committed B rebuild,
+same13-file kit full serial comparison. Installed EXE/PDB still unchanged.
 
 ## Completed — supported own playback and one real UI icon
 
