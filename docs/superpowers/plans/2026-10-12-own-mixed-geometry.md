@@ -52,14 +52,14 @@
 **Files:**
 - Test: existing `tests/own_vector_model_differential_tests.cpp`, `tests/own_vector_stream_differential_tests.cpp`, `tests/own_vector_capture_tests.cpp` as needed for mixed cases.
 - Test support: existing `tests/support/OwnVectorSceneComparison.hpp` only if comparator wiring needs it; optional focused `tests/support/OwnVectorMixedTestData.hpp` for shared authored variants, never for computing expected output.
-- Host test: `D:/rvc/c++/DragonianVoice/Avelabs-UI/tests/motionlab/tst_motion_page.cpp` only for a small optional icon PNG evidence hook if needed.
+- Host test: `D:/rvc/c++/DragonianVoice/Avelabs-UI/tests/motionlab/tst_motion_page.cpp` for a small optional icon PNG evidence hook and explicit expected wide/tall raster inputs in the existing external-page slot. Preserve square100x100 defaults for original assets; the authored128x96 mixed case declares133x100/100x75, not production-derived expectations.
 - Report/checkpoint: `docs/superpowers/STATE.md`, a concise stage report under `docs/testing/`, Avelabs `docs/ROADMAP.md` and existing testing documentation.
 
 **Interfaces:**
 - Consumes: Task1's unchanged public playback and the first-party mixed fixture; existing fresh ordinary oracle/capture, Test Animation external-fixture route and frozen measurements.
 - Produces: reproducible captured-image/geometry/regression evidence and a checked static reference-none UI build, not a new engine/API or diagnostic system.
 
-- [ ] Step 1: Add mixed static/animated/direction/roundness/fractional cases to the existing differential/capture tests with unchanged policies. Assert structural/reference geometry and visible transparent output, not only successful preparation.
+- [x] Step 1: Add mixed static/animated/direction/roundness/fractional cases to the existing differential/capture tests with unchanged policies. Assert structural/reference geometry and visible transparent output, not only successful preparation. Encode the independently audited subpixel alpha-threshold case as the spec addendum's narrow expected-negative regression, retaining policy rejection and raw cpu_pass=0; never a blanket exemption.
 - [ ] Step 2: Run full `windows-msvc-win32-preview` gates and public installed consumer against a fresh reference-none package. Preserve raw logs, configure/build/source provenance and selected output images. Investigate failures; never change goldens to pass.
 - [ ] Step 3: Rebuild separate Avelabs check targets against the new source. Run existing own UI suite plus original Duck/Party external-fixture regressions and mixed fixture at existing 1/4/16 controls. Save existing page screenshots; inspect pixels/images. If adding icon PNG hooks, use existing realTtsIconUsesAsyncOwnedFrames rest/hover/press/rest checkpoints and controlled scale invocations; no screenshot subsystem.
 - [ ] Step 4: Run the existing saved load/steady/pause/hidden measurement scenarios for original assets with matched physical size and provenance. Report limits and differences without requiring or claiming speedup. Do not reconfigure or overwrite frozen baselines.

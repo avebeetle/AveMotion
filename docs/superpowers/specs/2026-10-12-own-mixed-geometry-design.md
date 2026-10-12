@@ -87,6 +87,27 @@ changing goldens. Run the reference-none suite, packaged public consumer,
 `windows-msvc-win32-preview`, and Avelabs own regressions. Reuse the existing
 Test Animation page for widget capture and control checks; no new viewer.
 
+### Evidence-driven capture expectation addendum
+
+The new subpixel fractional case (ellipse0.5x0.25,512x256,frame60) exposed
+the existing CPU comparison's active-alpha threshold, not an own geometry
+difference. Independently reviewed raw bytes show own/ordinary-WARP identical;
+the four ellipse pixels have CPU alpha7,7,6,6 versus WARP9,9,11,11. The unchanged
+`alpha>8` active-bounds metric excludes that ellipse only on CPU, producing a
+sole bounds rejection (delta81), while the other five default criteria pass.
+CPU versus independent ordinary-WARP rejects identically.
+
+Approve a narrowly named expected-negative threshold-boundary regression for
+this new case only. Keep the authored inputs, full frame/viewport schedule,
+default policy and all existing positive checks unchanged. Assert the policy's
+sole rejection, all other default criteria, exact independent geometry/WARP and
+literal nonzero threshold witness; catch missing/moved/recolored geometry.
+Keep `cpu_pass=0` in raw metrics, separately count negative samples, retain the
+original failed runs and disclose the limitation. This is not a CPU-policy PASS,
+not a blanket exemption, and not a renderer fix. Other CPU failures still fail.
+The addendum is approved under delegated design authority after independent
+read-only source/raw audit; task and whole-stage reviews remain required.
+
 Use the saved measurement kit to check existing Duck/Party behavior and load,
 not to require a speedup from this functionality change. Keep original baselines
 and raw evidence. Only promote a checked static reference-none build to

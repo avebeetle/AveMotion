@@ -1,8 +1,10 @@
 #include "OwnVectorTestData.hpp"
+#include "support/OwnVectorMixedTestData.hpp"
 #include "TelegramParsedModelBuilder.hpp"
 #include "avemotion/evaluation/PropertyEvaluator.hpp"
 #include <algorithm>
 #include <cmath>
+#include <functional>
 #include <iostream>
 #include <map>
 #include <set>
@@ -18,7 +20,13 @@ std::string role(const MotionAssetModel& m, SourceNodeId id) {
         return n.layerKind == SourceLayerKind::Precomposition
                    ? "precomp"
                    : "layer:" + std::to_string(n.authoredLayerId);
-    return role(m, n.parent) + "/" + std::to_string(static_cast<int>(n.kind));
+    const auto& parent = m.sourceNodes.at(n.parent.index());
+    const auto children = std::span(m.sourceChildIds).subspan(parent.children.first,
+                                                             parent.children.count);
+    const auto child = std::find(children.begin(), children.end(), id);
+    vectorRequire(child != children.end(), "source parent owns child");
+    return role(m, n.parent) + "/" + std::to_string(child - children.begin()) + ":" +
+           std::to_string(static_cast<int>(n.kind));
 }
 using Roles = std::map<std::string, SourceNodeId>;
 Roles roles(const MotionAssetModel& m) {
@@ -44,36 +52,47 @@ void inspectMiterSource(const std::string& json) {
                 return c;
         return OwnJsonNoNode;
     };
-    struct Pending {
-        OwnJsonNodeId id;
-        std::string layer;
-    };
-    std::vector<Pending> pending{{0, {}}};
-    while (!pending.empty()) {
-        auto current = pending.back();
-        pending.pop_back();
-        const auto* node = d.node(current.id);
-        if (node->kind == OwnJsonKind::Object) {
-            const auto type = member(current.id, "ty");
-            if (type != OwnJsonNoNode && d.node(type)->kind == OwnJsonKind::Number) {
-                const auto ind = member(current.id, "ind");
-                if (ind != OwnJsonNoNode)
-                    current.layer = "layer:" + std::string(*d.valueBytes(ind));
-            }
-            if (type != OwnJsonNoNode && d.valueBytes(type) == "st" &&
-                member(current.id, "ml") == OwnJsonNoNode) {
-                const auto join = member(current.id, "lj");
+    std::function<void(OwnJsonNodeId, const std::string&)> shapes;
+    shapes = [&](OwnJsonNodeId array, const std::string& parent) {
+        std::size_t ordinal = 0;
+        for (auto id = d.node(array)->firstChild; id != OwnJsonNoNode;
+             id = d.node(id)->nextSibling) {
+            const auto type = member(id, "ty");
+            vectorRequire(type != OwnJsonNoNode, "authored shape type");
+            const auto kind = d.valueBytes(type);
+            // Group transforms are properties of their parent, not source children.
+            if (kind == "tr")
+                continue;
+            const auto prefix = parent + "/" + std::to_string(ordinal++) + ":";
+            if (kind == "gr") {
+                const auto items = member(id, "it");
+                vectorRequire(items != OwnJsonNoNode, "authored group children");
+                shapes(items, prefix + std::to_string(static_cast<int>(SourceNodeKind::ShapeGroup)));
+            } else if (kind == "st" && member(id, "ml") == OwnJsonNoNode) {
+                const auto join = member(id, "lj");
                 if (join != OwnJsonNoNode &&
                     (d.valueBytes(join) == "2" || d.valueBytes(join) == "3"))
                     permittedInactiveMiter.insert(
-                        current.layer + "/" +
-                        std::to_string(static_cast<int>(SourceNodeKind::ShapeGroup)) + "/" +
-                        std::to_string(static_cast<int>(SourceNodeKind::Stroke)));
+                        prefix + std::to_string(static_cast<int>(SourceNodeKind::Stroke)));
+            }
+        }
+    };
+    std::vector<OwnJsonNodeId> pending{0};
+    while (!pending.empty()) {
+        const auto current = pending.back();
+        pending.pop_back();
+        const auto* node = d.node(current);
+        if (node->kind == OwnJsonKind::Object) {
+            const auto type = member(current, "ty");
+            if (type != OwnJsonNoNode && d.node(type)->kind == OwnJsonKind::Number) {
+                const auto ind = member(current, "ind"), items = member(current, "shapes");
+                if (ind != OwnJsonNoNode && items != OwnJsonNoNode)
+                    shapes(items, "layer:" + std::string(*d.valueBytes(ind)));
             }
         }
         for (auto child = node->firstChild; child != OwnJsonNoNode;
              child = d.node(child)->nextSibling)
-            pending.push_back({child, current.layer});
+            pending.push_back(child);
     }
 }
 void close(float expected, float got, const std::string& context) {
@@ -120,7 +139,8 @@ void compare(const model::detail::TelegramPropertyOracleResult& ref,
         const auto& on = own.model->sourceNodes[oid.index()];
         vectorRequire(rn.kind == on.kind && rn.layerKind == on.layerKind &&
                           rn.fillRule == on.fillRule && rn.strokeCap == on.strokeCap &&
-                          rn.strokeJoin == on.strokeJoin && rn.trimMode == on.trimMode,
+                          rn.strokeJoin == on.strokeJoin && rn.trimMode == on.trimMode &&
+                          rn.pathDirection == on.pathDirection,
                       "source enums " + key);
         if (rn.kind == SourceNodeKind::Stroke) {
             if (permittedInactiveMiter.contains(key) && rn.strokeJoin != SourceStrokeJoin::Miter) {
@@ -141,7 +161,8 @@ void compare(const model::detail::TelegramPropertyOracleResult& ref,
                 const auto op = std::find_if(
                     own.model->properties.begin(), own.model->properties.end(),
                     [&](const auto& p) { return p.owner == oid && p.semantic == rp.semantic; });
-                vectorRequire(op != own.model->properties.end(), "missing property role " + key);
+                vectorRequire(op != own.model->properties.end(), "missing property role " + key +
+                    " semantic=" + std::to_string(static_cast<int>(rp.semantic)));
                 vectorRequire(rp.valueType == op->valueType, "property type " + key);
                 if (rp.flags & PropertyFlagAnimated) {
                     ++animated;
@@ -196,7 +217,9 @@ void run(const std::string& json) {
     evaluation::PropertyEvaluator evaluator(own.prepared->model);
     evaluation::PropertyEvaluationWorkspace ws;
     evaluator.prepare(ws);
-    for (int frame = 0; frame < 180; ++frame) {
+    const auto frameCount = static_cast<int>(m.totalFrames);
+    vectorRequire(frameCount > 0, "positive authored frame count");
+    for (int frame = 0; frame < frameCount; ++frame) {
         const auto oracle = model::detail::evaluateTelegramParsedProperties(
             json, "own-vector-property-" + std::to_string(frame), desc, frame);
         vectorRequire(bool(oracle), "ordinary Telegram property oracle: " + oracle.error);
@@ -206,6 +229,25 @@ void run(const std::string& json) {
         if (frame == 0) {
             auto changed = oracle;
             auto changedModel = std::make_shared<MotionAssetModel>(*oracle.model);
+            const auto primitive = std::find_if(changedModel->sourceNodes.begin(),
+                changedModel->sourceNodes.end(), [](const auto& n) {
+                    return n.kind == SourceNodeKind::Ellipse || n.kind == SourceNodeKind::Rectangle;
+                });
+            if (primitive != changedModel->sourceNodes.end()) {
+                primitive->pathDirection = primitive->pathDirection == SourcePathDirection::Clockwise
+                    ? SourcePathDirection::CounterClockwise : SourcePathDirection::Clockwise;
+                changed.model = changedModel;
+                bool rejected = false;
+                try {
+                    compare(changed, *own.prepared, view, "direction mutation ");
+                } catch (const std::runtime_error& e) {
+                    rejected = std::string(e.what()).find("source enums") != std::string::npos;
+                }
+                vectorRequire(rejected, "primitive direction mutation caught");
+                std::cout << "primitive direction mutation caught\n";
+                changed = oracle;
+                changedModel = std::make_shared<MotionAssetModel>(*oracle.model);
+            }
             auto stroke = std::find_if(changedModel->sourceNodes.begin(),
                                        changedModel->sourceNodes.end(), [](const auto& n) {
                                            return n.kind == SourceNodeKind::Stroke &&
@@ -257,14 +299,14 @@ void run(const std::string& json) {
             }
         }
     }
-    for (int frame : {180, 200, 15, 14, 179, 0}) {
+    for (int frame : {frameCount, frameCount + 20, 15, 14, frameCount - 1, 0}) {
         const auto oracle = model::detail::evaluateTelegramParsedProperties(
             json, "own-vector-boundary-" + std::to_string(frame), desc, frame);
         vectorRequire(bool(oracle), "boundary oracle");
         compare(oracle, *own.prepared, evaluator.evaluate(frame, ws),
                 "boundary=" + std::to_string(frame) + " ");
     }
-    std::cout << "PASS ordinary Telegram property oracle frames=180 boundaries=6 "
+    std::cout << "PASS ordinary Telegram property oracle frames=" << frameCount << " boundaries=6 "
                  "maximum_absolute_error="
               << maximum << " own_properties=" << m.properties.size()
               << " animated=" << m.tracks.size() << " segments=" << m.segments.size()
@@ -272,10 +314,22 @@ void run(const std::string& json) {
 }
 int main(int argc, char** argv) {
     try {
+        if (argc == 2 && std::string(argv[1]) == "--mixed") {
+            for (const auto& [name, json] : test::vectorMixedFixtures()) {
+                std::cout << "mixed case=" << name << '\n';
+                run(json);
+            }
+            return 0;
+        }
         run(test::vectorInput(argc, argv));
-        if (argc == 1)
+        if (argc == 1) {
             run(test::vectorRead(std::filesystem::path(AVEMOTION_FIXTURE_DIR) /
                                  "own_vector/animated.json"));
+            for (const auto& [name, json] : test::vectorMixedFixtures()) {
+                std::cout << "mixed case=" << name << '\n';
+                run(json);
+            }
+        }
     } catch (const std::exception& e) {
         std::cerr << e.what() << '\n';
         return 1;

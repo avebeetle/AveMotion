@@ -19,8 +19,14 @@ Functional public/model/stream RED0/3 preceded production; GREEN3/3 and fresh
 full reference-none45/45 passed. Original44/45 setup failure is retained: a child
 Ninja configure lacked cl in PATH; command-scoped VsDevCmd recovery changed no
 product/CMake code. Review: specPASS, qualityAPPROVE, no findings.
-Task2 is next and owns differential/capture/UI gates, existing measurements and checked
-delivery. The completed stage below must not be repeated. The installed
+Task2 focused test slice implemented: full model/stream differential passed;
+455 exact WARP samples,453 positive CPU samples and2 explicitly documented
+expected-negative subpixel threshold samples. Default policy/inputs unchanged,
+missing/moved/recolored witnesses caught. Mixed Test Animation Play/Pause/seek,
+1/4/16 and resize passed; icon controlled DPR1/1.5/2 captures passed.
+Independent Task2 spec/quality review approved the test-only slice, no findings.
+Fresh full platform/host gates, existing measurements and checked delivery remain
+pending. The completed stage below must not be repeated. The installed
 build/Release EXE/PDB remain unchanged until the new delivery gates pass.
 Native live icon/mixed-monitor acceptance remains open; automated captures may
 provide evidence but cannot turn delegated trust into a manual PASS.

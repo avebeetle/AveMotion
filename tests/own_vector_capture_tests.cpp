@@ -4,10 +4,12 @@
 #include "avemotion/render/RenderPlanner.hpp"
 #include "support/OwnVectorClippingTestData.hpp"
 #include "support/OwnVectorSceneOracle.hpp"
+#include "support/OwnVectorSceneComparison.hpp"
 #include "support/OwnVectorGroupTestData.hpp"
 #include "support/OwnVectorMetadataPositionTestData.hpp"
 #include "support/OwnVectorGradientTestData.hpp"
 #include "support/OwnVectorMatteTestData.hpp"
+#include "support/OwnVectorMixedTestData.hpp"
 #include "../backends/direct2d/LinearGradientBackendAccess.hpp"
 #include "../backends/direct2d/AlphaMatteBackendAccess.hpp"
 #include "support/WarpCaptureSurface.hpp"
@@ -783,8 +785,76 @@ void widthZeroWitness() {
     }
 }
 
+void subpixelAlphaThresholdRejection(const std::vector<PixelBGRA>& cpu,
+                                    const std::vector<PixelBGRA>& reference,
+                                    const std::vector<PixelBGRA>& own,
+                                    unsigned width, unsigned height, unsigned frame) {
+    require(width == 512 && height == 256 && frame == 60,
+            "subpixel threshold witness has exact viewport/frame");
+    require(cpu.size() == width * height && reference.size() == cpu.size() && own.size() == cpu.size(),
+            "subpixel threshold witness has exact pixel storage");
+    require(own == reference, "subpixel own/reference exact WARP");
+    const testsupport::PixelComparisonPolicy policy;
+    for (const auto* pixels : {&own, &reference}) {
+        const auto metrics = testsupport::comparePixels(cpu, *pixels, width, height);
+        const auto decision = testsupport::evaluateComparison(metrics, policy);
+        require(!decision.passed && decision.failures == std::vector<std::string>{
+                    "nontransparent bounds differ beyond policy"},
+                "subpixel CPU policy rejects only bounds, including independent ordinary WARP");
+        require(metrics.activeIoU >= policy.minimumActiveIoU &&
+                    metrics.alphaRelativeError <= policy.maximumAlphaRelativeError &&
+                    metrics.meanAbsoluteDifferenceAll <= policy.maximumMeanAbsoluteDifferenceAll &&
+                    metrics.meanAbsoluteDifferenceActive <= policy.maximumMeanAbsoluteDifferenceActive &&
+                    metrics.largeDifferenceFraction <= policy.maximumLargeDifferenceFraction,
+                "subpixel retains all five other default CPU policy criteria");
+        const auto& a = metrics.referenceBounds;
+        const auto& b = metrics.actualBounds;
+        require(a.valid && b.valid && a.left == 252 && a.top == 42 && a.right == 405 && a.bottom == 127 &&
+                    b.left == 171 && b.top == 42 && b.right == 405 && b.bottom == 127 &&
+                    metrics.maximumBoundsDelta == 81,
+                "subpixel literal thresholded bounds");
+    }
+    // Literal coverage, coordinates, red color and premultiplication come from
+    // the retained independent raw audit, not a production path generator.
+    const std::array<unsigned, 4> x{171,172,171,172}, y{85,85,86,86};
+    const std::array<std::uint8_t, 4> cpuAlpha{7,7,6,6}, warpAlpha{9,9,11,11};
+    for (std::size_t i = 0; i < x.size(); ++i) {
+        const auto index = y[i] * width + x[i];
+        require(cpu[index] == PixelBGRA{0,0,cpuAlpha[i],cpuAlpha[i]} &&
+                    own[index] == PixelBGRA{0,0,warpAlpha[i],warpAlpha[i]} &&
+                    reference[index] == own[index],
+                "subpixel literal nonzero red premultiplied alpha at guarded coordinates");
+    }
+}
+
+void subpixelMutationWitnesses(const std::vector<PixelBGRA>& cpu,
+                              const std::vector<PixelBGRA>& reference,
+                              const std::vector<PixelBGRA>& own) {
+    const std::array<unsigned, 4> indices{85*512+171,85*512+172,86*512+171,86*512+172};
+    for (unsigned mutation : {0U,1U,2U}) {
+        auto changed = own;
+        for (const auto index : indices)
+            changed[index] = {};
+        if (mutation == 1)
+            for (const auto index : indices)
+                changed[index + 1] = own[index];
+        if (mutation == 2)
+            for (const auto index : indices)
+                changed[index] = {0,own[index].a,0,own[index].a};
+        bool rejected = false;
+        try {
+            subpixelAlphaThresholdRejection(cpu, reference, changed, 512, 256, 60);
+        } catch (const std::runtime_error& error) {
+            rejected = std::string(error.what()).find("subpixel own/reference exact WARP") != std::string::npos;
+        }
+        require(rejected, "subpixel missing/moved/recolored geometry mutation caught");
+    }
+    std::cout << "subpixel missing/moved/recolored geometry mutations caught=3\n";
+}
+
 void run(const std::string &json, const fs::path &root, bool rectangles, bool groups = false,
-         bool positions = false) {
+         bool positions = false, const std::vector<unsigned> &requestedFrames = {},
+         bool fractionalThresholdWitness = false) {
     auto parsed = formats::detail::readOwnJson(json, {65536, 32});
     require(bool(parsed), "vector reader");
     auto prepared = render::detail::prepareOwnMotionAsset(*parsed.document);
@@ -792,6 +862,9 @@ void run(const std::string &json, const fs::path &root, bool rectangles, bool gr
     auto stream = render::detail::OwnNativeEllipseStream::create(prepared.prepared);
     require(bool(stream), stream.message);
     OwnVectorSceneOracle oracle(json);
+    std::unique_ptr<vector_scene::OwnRoles> ownRoles;
+    if (!requestedFrames.empty())
+        ownRoles = std::make_unique<vector_scene::OwnRoles>(*prepared.prepared);
     auto cpu = rlottie::Animation::loadFromData(json, "vector-cpu", {}, false);
     require(bool(cpu), "ordinary CPU parse");
     render::MotionRenderPlanner ownPlanner, refPlanner;
@@ -800,8 +873,10 @@ void run(const std::string &json, const fs::path &root, bool rectangles, bool gr
     std::ofstream metrics(root / "metrics.tsv");
     metrics << "width\theight\tframe\tdiff_pixels\tmax_channel\tmean_abs\tcpu_"
                "pass\tcpu_"
-               "iou\tcpu_alpha\tcpu_mean\n";
+               "iou\tcpu_alpha\tcpu_mean\tcpu_active_mean\tcpu_large_fraction\tcpu_bounds_delta\n";
     std::size_t failures = 0;
+    std::size_t sample = 0;
+    std::size_t expectedNegativeSamples = 0;
     std::vector<std::pair<unsigned, unsigned>> viewports{{128, 128}, {256, 256}, {512, 512}};
     if (rectangles) {
         viewports.emplace_back(512, 256);
@@ -813,7 +888,8 @@ void run(const std::string &json, const fs::path &root, bool rectangles, bool gr
         testsupport::CaptureProfile profile{"vector", width, height, width, height, 96, 96};
         ownSurface.configure(profile);
         refSurface.configure(profile);
-        const std::vector<unsigned> frames = positions ? std::vector<unsigned>{0,14,15,20,25,40,59,60,70,179,70,60,59,40,25,20,15,14,0,15,15} :
+        const std::vector<unsigned> frames = !requestedFrames.empty() ? requestedFrames :
+            positions ? std::vector<unsigned>{0,14,15,20,25,40,59,60,70,179,70,60,59,40,25,20,15,14,0,15,15} :
             groups ? std::vector<unsigned>{0,50,68,69,100,110,179,68,69} :
             std::vector<unsigned>{0,10,15,20,33,34,45,67,68,90,110,127,128,135,137,138,179};
         for (const auto frame : frames) {
@@ -821,6 +897,8 @@ void run(const std::string &json, const fs::path &root, bool rectangles, bool gr
             require(bool(own), own.message);
             auto ref = oracle.freshScene(frame, width, height);
             oracle.assertRedundantClips(ref);
+            if (ownRoles)
+                vector_scene::compare(ref, oracle, *own.scene, *ownRoles);
             auto ownPlan = ownPlanner.build(std::move(*own.scene));
             auto refPlan = refPlanner.build(std::move(ref));
             require(bool(ownPlan) && bool(refPlan), "plans built");
@@ -833,13 +911,22 @@ void run(const std::string &json, const fs::path &root, bool rectangles, bool gr
             const auto cpuMetrics = testsupport::comparePixels(cpuPixels, actual, width, height);
             const auto cpuDecision = testsupport::evaluateComparison(cpuMetrics, {});
             const auto warpMetrics = testsupport::comparePixels(expected, actual, width, height);
+            const bool expectedNegative = fractionalThresholdWitness && width == 512 &&
+                                          height == 256 && frame == 60;
+            if (expectedNegative) {
+                subpixelAlphaThresholdRejection(cpuPixels, expected, actual, width, height, frame);
+                if (expectedNegativeSamples == 0)
+                    subpixelMutationWitnesses(cpuPixels, expected, actual);
+                ++expectedNegativeSamples;
+            }
             std::size_t differences = 0;
             for (std::size_t i = 0; i < actual.size(); ++i)
                 if (actual[i] != expected[i])
                     ++differences;
             const auto label = "s" + std::to_string(width) +
                                (width == height ? "" : "x" + std::to_string(height)) + "-f" +
-                               std::to_string(frame);
+                               std::to_string(frame) + (requestedFrames.empty() ? "" :
+                                   "-n" + std::to_string(sample++));
             if (differences && frame == 0) {
                 std::cout.precision(12);
                 for (std::size_t i = 0; i < ownPlan.plan.drawItems.size(); ++i) {
@@ -860,6 +947,8 @@ void run(const std::string &json, const fs::path &root, bool rectangles, bool gr
             }
             writeMismatch(root, label, expected, actual, width, height);
             writePpm(root / (label + "-cpu.ppm"), cpuPixels, width, height);
+            if (!requestedFrames.empty())
+                rawPixels(root / (label + "-cpu.bgra"), cpuPixels);
             std::ofstream ownRaw(root / (label + "-own.bgra"), std::ios::binary);
             ownRaw.write(reinterpret_cast<const char *>(actual.data()),
                          static_cast<std::streamsize>(actual.size() * sizeof(PixelBGRA)));
@@ -868,19 +957,53 @@ void run(const std::string &json, const fs::path &root, bool rectangles, bool gr
                          static_cast<std::streamsize>(expected.size() * sizeof(PixelBGRA)));
             require(activePixels(actual) > 0 && activePixels(expected) > 0,
                     "nonempty expected frame");
+            if (!requestedFrames.empty()) {
+                require(ownPlan.plan.drawItems.size() == 3 && refPlan.plan.drawItems.size() == 3,
+                        "mixed capture retains all three authored sibling paints");
+                require(actual.front().a == 0 && expected.front().a == 0,
+                        "mixed capture has a transparent corner");
+                require(std::any_of(actual.begin(), actual.end(), [](const auto& pixel) {
+                    return pixel.a > 0 && pixel.a < 255;
+                }), "mixed capture retains visible fractional alpha");
+            }
             metrics << width << '\t' << height << '\t' << frame << '\t' << differences << '\t'
                     << unsigned(warpMetrics.maxChannelDifference) << '\t'
                     << warpMetrics.meanAbsoluteDifferenceAll << '\t' << cpuDecision.passed << '\t'
                     << cpuMetrics.activeIoU << '\t' << cpuMetrics.alphaRelativeError << '\t'
-                    << cpuMetrics.meanAbsoluteDifferenceAll << '\n';
+                    << cpuMetrics.meanAbsoluteDifferenceAll << '\t'
+                    << cpuMetrics.meanAbsoluteDifferenceActive << '\t'
+                    << cpuMetrics.largeDifferenceFraction << '\t'
+                    << cpuMetrics.maximumBoundsDelta << '\n';
             std::cout << label << " diff_pixels=" << differences
                       << " max_channel=" << unsigned(warpMetrics.maxChannelDifference)
                       << " cpu_pass=" << cpuDecision.passed
                       << " drawn=" << ownPlan.plan.drawItems.size() << " skips=0\n";
-            if (differences || !cpuDecision.passed)
+            if (!cpuDecision.passed) {
+                const auto bounds = [](const auto& b) {
+                    return std::to_string(b.left) + "," + std::to_string(b.top) + "," +
+                           std::to_string(b.right) + "," + std::to_string(b.bottom);
+                };
+                const auto referenceCpu = testsupport::evaluateComparison(
+                    testsupport::comparePixels(cpuPixels, expected, width, height), {});
+                std::cout << "cpu reference_scene_pass=" << referenceCpu.passed
+                          << " reference_bounds=" << bounds(cpuMetrics.referenceBounds)
+                          << " own_bounds=" << bounds(cpuMetrics.actualBounds)
+                          << " bounds_delta=" << cpuMetrics.maximumBoundsDelta
+                          << " active_mean=" << cpuMetrics.meanAbsoluteDifferenceActive
+                          << " large_fraction=" << cpuMetrics.largeDifferenceFraction << '\n';
+                for (const auto& reason : cpuDecision.failures)
+                    std::cout << "cpu failure: " << reason << '\n';
+            }
+            if (differences || (!cpuDecision.passed && !expectedNegative))
                 ++failures;
         }
     }
+    if (fractionalThresholdWitness)
+        require(expectedNegativeSamples == 2, "both repeated fractional threshold-negative samples exercised");
+    if (!requestedFrames.empty())
+        std::cout << "expected_negative_cpu_samples=" << expectedNegativeSamples
+                  << (expectedNegativeSamples ? " (CPU policy rejection retained; cpu_pass=0)" : "")
+                  << '\n';
     require(failures == 0, "capture matrix failures=" + std::to_string(failures));
 }
 } // namespace
@@ -896,6 +1019,17 @@ int main(int argc, char **argv) {
     try {
         fs::create_directories(root);
         std::cout << "captures=" << root.string() << '\n';
+        if (argc == 2 && (std::string(argv[1]) == "--mixed" ||
+                          std::string(argv[1]) == "--mixed-fractional")) {
+            for (const auto &[name, json] : vectorMixedFixtures()) {
+                if (std::string(argv[1]) == "--mixed-fractional" && name != "fractional")
+                    continue;
+                std::cout << "mixed case=" << name << '\n';
+                fs::create_directories(root / ("mixed-" + name));
+                run(json, root / ("mixed-" + name), true, false, false, vectorMixedFrames(), name == "fractional");
+            }
+            return 0;
+        }
         if(argc==3 && std::string(argv[1])=="--party-original") {
             originalPartyCaptures(vectorRead(argv[2]),root); return 0;
         }
@@ -918,6 +1052,11 @@ int main(int argc, char **argv) {
             fs::create_directories(root / "contained-precomp");
             run(clippingPrecomp(clippingShape(56, 56, 72, 72, true)), root / "contained-precomp",
                 true);
+            for (const auto &[name, json] : vectorMixedFixtures()) {
+                std::cout << "mixed case=" << name << '\n';
+                fs::create_directories(root / ("mixed-" + name));
+                run(json, root / ("mixed-" + name), true, false, false, vectorMixedFrames(), name == "fractional");
+            }
         }
     } catch (const std::exception &e) {
         std::cerr << e.what() << '\n';

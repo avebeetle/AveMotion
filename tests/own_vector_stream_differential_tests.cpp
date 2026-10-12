@@ -6,6 +6,7 @@
 #include "support/OwnVectorGroupTestData.hpp"
 #include "support/OwnVectorMetadataPositionTestData.hpp"
 #include "support/OwnVectorMatteTestData.hpp"
+#include "support/OwnVectorMixedTestData.hpp"
 #include <chrono>
 #include <iostream>
 #include <tuple>
@@ -65,11 +66,15 @@ std::string mixedComposition() {
                          "\"layers\":[" + top + ",{\"ddd\":0,\"ty\":0");
     return vectorReplace(json, "\"ks\":{}}]}", "\"ks\":{}}," + bottom + "]}");
 }
-void run(const std::string &json, bool rectangles = false, bool exhaustive = false) {
+void run(const std::string &json, bool rectangles = false, bool exhaustive = false,
+         const std::vector<unsigned> &seekFrames = {}) {
     vector_scene::permittedInactiveMiter.clear();
     vector_scene::observedInactiveMiter.clear();
     const auto compiled = vectorCompile(json);
     vectorRequire(bool(compiled), compiled.path + compiled.message);
+    const auto frameCount = static_cast<unsigned>(compiled.prepared->model->totalFrames);
+    vectorRequire(frameCount > 0, "positive authored scene frame count");
+    const auto lastFrame = frameCount - 1;
     const auto prepared = render::detail::prepareOwnVectorAsset(compiled.prepared);
     vectorRequire(bool(prepared), prepared.message);
     auto stream = render::detail::OwnNativeEllipseStream::create(prepared.prepared);
@@ -77,8 +82,8 @@ void run(const std::string &json, bool rectangles = false, bool exhaustive = fal
     OwnVectorSceneOracle oracle(json);
     vector_scene::OwnRoles ownRoles(*prepared.prepared);
     {
-        auto own = stream.stream->emit(3, 512, 512);
-        auto ref = oracle.freshScene(3, 512, 512);
+        auto own = stream.stream->emit(std::min(3U, lastFrame), 512, 512);
+        auto ref = oracle.freshScene(std::min(3U, lastFrame), 512, 512);
         vectorRequire(bool(own), own.message);
         const auto full = [&](const runtime::EvaluatedScene &changed) {
             vector_scene::compare(ref, oracle, changed, ownRoles);
@@ -159,30 +164,32 @@ void run(const std::string &json, bool rectangles = false, bool exhaustive = fal
     };
     for (auto width :
          exhaustive ? std::vector<unsigned>{128, 129, 256, 512} : std::vector<unsigned>{512}) {
-        for (std::size_t f = 0; f < 180; ++f)
+        for (std::size_t f = 0; f < frameCount; ++f)
             compare(f, width, width);
-        for (std::size_t f = 180; f-- > 0;)
+        for (std::size_t f = frameCount; f-- > 0;)
             compare(f, width, width);
     }
-    for (auto f :
-         {179U, 0U, 33U, 34U, 67U, 68U, 127U, 128U, 137U, 138U, 90U, 15U, 14U, 15U, 179U, 0U})
+    const auto seeks = seekFrames.empty()
+        ? std::vector<unsigned>{lastFrame,0,33,34,67,68,127,128,137,138,90,15,14,15,lastFrame,0}
+        : seekFrames;
+    for (auto f : seeks)
         for (auto width : {128U, 129U, 256U, 512U, 128U})
-            compare(f, width, width);
+            compare(std::min(f, lastFrame), width, width);
     if (exhaustive) {
         auto second = render::detail::OwnNativeEllipseStream::create(prepared.prepared);
         vectorRequire(bool(second), second.message);
         for (auto width : {128U, 129U, 256U, 512U})
-            for (std::size_t f = 0; f < 180; ++f) {
-                const auto other = second.stream->emit(179 - f, width, width);
+            for (std::size_t f = 0; f < frameCount; ++f) {
+                const auto other = second.stream->emit(lastFrame - f, width, width);
                 vectorRequire(bool(other), other.message);
-                auto ref = oracle.freshScene(179 - f, width, width);
+                auto ref = oracle.freshScene(lastFrame - f, width, width);
                 vector_scene::compare(ref, oracle, *other.scene, ownRoles);
                 ++samples;
                 compare(f, width, width);
             }
     }
     if (rectangles)
-        for (std::size_t f = 0; f < 180; ++f) {
+        for (std::size_t f = 0; f < frameCount; ++f) {
             compare(f, 512, 256);
             compare(f, 256, 512);
         }
@@ -555,6 +562,13 @@ void originalParty(const std::string &json) {
 }
 int main(int argc, char **argv) {
     try {
+        if (argc == 2 && std::string(argv[1]) == "--mixed") {
+            for (const auto &[name, json] : vectorMixedFixtures()) {
+                std::cout << "mixed case=" << name << '\n';
+                run(json, true, true, vectorMixedFrames());
+            }
+            return 0;
+        }
         if (argc == 3 && std::string(argv[1]) == "--party-original") {
             originalParty(vectorRead(argv[2]));
             return 0;
@@ -594,6 +608,10 @@ int main(int argc, char **argv) {
         // rectangular rejection probes live in the stream lifecycle test.
         run(input, false, exhaustive);
         if (argc == 1) {
+            for (const auto &[name, json] : vectorMixedFixtures()) {
+                std::cout << "mixed case=" << name << '\n';
+                run(json, true, true, vectorMixedFrames());
+            }
             gradientOracle();
             run(metadataPositionFixture(), true);
             run(metadataPositionFixture(true,true), true);
