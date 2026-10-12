@@ -2,7 +2,23 @@
 
 Updated: 2026-10-12 (Moscow local date)
 
-## Current work — supported own playback and one real UI icon
+## Current work — public hardening, independent-element costs and bounded reuse
+
+User accepts supported-own integration as implemented (new-icon native visual
+check still open), and requests two public API follow-ups followed by measured
+resource/latency work, not GPU. New spec/plan:
+`docs/superpowers/specs/2026-10-12-own-ui-resource-reuse-design.md` and
+`docs/superpowers/plans/2026-10-12-own-ui-resource-reuse.md`; recovery ledger
+`.superpowers/sdd/2026-10-12-own-ui-resource-reuse/progress.md`. Start Ec7d0d03 /
+Hbd3c7dc, clean. Read-only source/resource audits complete. Close public terminal
+docs/regression and fr1e-37 duration admission, then use existing measurement
+approach for separate controllers/icons, memory and shared-thread contention.
+Exactly one bounded improvement selected only after measured attribution and
+written addendum. No format, GPU, scheduler, large cache, docking/physics change.
+Frozen kit/previous installation/raw evidence preserved; standing delegated
+main-in-place approval retained. Prior stage below is complete, do not repeat.
+
+## Completed — supported own playback and one real UI icon
 
 The user accepted the initial measurement with its limits and authorized a separate
 supported own-engine boundary plus one real Avelabs UI element. Current spec/plan:
