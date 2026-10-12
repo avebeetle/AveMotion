@@ -2,10 +2,10 @@
 
 Updated: 2026-10-12 (Moscow local date)
 
-## Active — common mixed geometry composition
+## Completed — common mixed geometry composition
 
 The user delegated autonomous quality/functionality work and cannot perform
-manual PC visual checks. Next bounded result: combine supported el/rc/sh sibling
+manual PC visual checks. Delivered bounded result: combine supported el/rc/sh sibling
 groups through the existing canonical own pipeline, not another allocation
 optimization. New design/plan are approved under that delegation:
 
@@ -25,9 +25,31 @@ expected-negative subpixel threshold samples. Default policy/inputs unchanged,
 missing/moved/recolored witnesses caught. Mixed Test Animation Play/Pause/seek,
 1/4/16 and resize passed; icon controlled DPR1/1.5/2 captures passed.
 Independent Task2 spec/quality review approved the test-only slice, no findings.
-Fresh full platform/host gates, existing measurements and checked delivery remain
-pending. The completed stage below must not be repeated. The installed
-build/Release EXE/PDB remain unchanged until the new delivery gates pass.
+Fresh explicit preview97/97, reference-none package46/46/public installed consumer,
+H own6/6, final reference4/4, shell3/3, static2/2, nine explicit original gates and
+three static original smokes passed. Initial reference3/4 pause-barrier failure
+and unchanged focused3/3/twofull4/4 rechecks remain: nonblocking P2 test reliability,
+inferred event ordering not a traced product regression. Deterministic follow-up
+must cover both old line737 and copied mixed line1506 without weakening assertions.
+
+Unchanged five-file kit/observer serial Duck/Party1/4/16 comparison completed,
+256x256 physical/DPR1. Settled pause/hidden new renders/readbacks0; resume returns.
+Group p95 Duck16=10.7995ms,Party16=10.7867ms. Historical A predates API/icon/reuse,
+so comparison is cumulative/non-causal; memory is higher, no general speedup or
+memory-saving claim. Separate production-linked probes, NOT installed EXE timing.
+Three authorized MSBuild nodes exited naturally; no process was terminated.
+
+Whole-stage review approved; all20617 audit artifacts checked, no blockers.
+Protected preflight/Execute and installed release/readiness/stability/manifest/
+SymChk passed. Clean compiled E2b577a9626a976a1358eb78ddb64fc2924169994 /
+H47231515635c0a66658a7b5186e4b7577c508da2 installed in H/build/Release at
+2026-10-12T16:28:53.6046353Z. EXE58C6A522.../PDB13076747...,26files/24unchanged
+notices, full prior package/PDB in H/build/checks/2026-10-12-own-mixed-geometry-001/
+promotion-001/backup. Later docs commits are NOT compiled revisions. Full results:
+`docs/testing/own-mixed-geometry-2026-10-12/REPORT.md`; raw and ignored SDD preserved.
+User latest intent is finish/handoff, not another feature or allocation investigation.
+Do not repeat this stage. Next separately bounded work: deterministic test barrier
+and a common functional composition capability chosen from verified corpus; not GPU.
 Native live icon/mixed-monitor acceptance remains open; automated captures may
 provide evidence but cannot turn delegated trust into a manual PASS.
 

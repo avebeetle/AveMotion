@@ -60,15 +60,20 @@
 - Produces: reproducible captured-image/geometry/regression evidence and a checked static reference-none UI build, not a new engine/API or diagnostic system.
 
 - [x] Step 1: Add mixed static/animated/direction/roundness/fractional cases to the existing differential/capture tests with unchanged policies. Assert structural/reference geometry and visible transparent output, not only successful preparation. Encode the independently audited subpixel alpha-threshold case as the spec addendum's narrow expected-negative regression, retaining policy rejection and raw cpu_pass=0; never a blanket exemption.
-- [ ] Step 2: Run full `windows-msvc-win32-preview` gates and public installed consumer against a fresh reference-none package. Preserve raw logs, configure/build/source provenance and selected output images. Investigate failures; never change goldens to pass.
-- [ ] Step 3: Rebuild separate Avelabs check targets against the new source. Run existing own UI suite plus original Duck/Party external-fixture regressions and mixed fixture at existing 1/4/16 controls. Save existing page screenshots; inspect pixels/images. If adding icon PNG hooks, use existing realTtsIconUsesAsyncOwnedFrames rest/hover/press/rest checkpoints and controlled scale invocations; no screenshot subsystem.
-- [ ] Step 4: Run the existing saved load/steady/pause/hidden measurement scenarios for original assets with matched physical size and provenance. Report limits and differences without requiring or claiming speedup. Do not reconfigure or overwrite frozen baselines.
-- [ ] Step 5: Independent task review and whole-stage review, fresh covering gates, scoped commits/push. Promote only after existing protected EXE/PDB backup and non-running-process checks. Record compiled SHAs separately from report commits. Leave native mixed-monitor visual acceptance open.
+- [x] Step 2: Run full `windows-msvc-win32-preview` gates and public installed consumer against a fresh reference-none package. Preserve raw logs, configure/build/source provenance and selected output images. Investigate failures; never change goldens to pass.
+- [x] Step 3: Rebuild separate Avelabs check targets against the new source. Run existing own UI suite plus original Duck/Party external-fixture regressions and mixed fixture at existing 1/4/16 controls. Save existing page screenshots; inspect pixels/images. If adding icon PNG hooks, use existing realTtsIconUsesAsyncOwnedFrames rest/hover/press/rest checkpoints and controlled scale invocations; no screenshot subsystem.
+- [x] Step 4: Run the existing saved load/steady/pause/hidden measurement scenarios for original assets with matched physical size and provenance. Report limits and differences without requiring or claiming speedup. Do not reconfigure or overwrite frozen baselines.
+- [x] Step 5: Independent task review and whole-stage review, fresh covering gates, scoped commits/push. Promote only after existing protected EXE/PDB backup and non-running-process checks. Record compiled SHAs separately from report commits. Leave native mixed-monitor visual acceptance open.
 
 ## Approval and self review
 
 Delegated execution choice: subagent-driven, one writer at a time, root owns Git
 and protected delivery. Tasks1/2 share only the unchanged playback contract and
 fixture; Task2 validates Task1 without expanding its format. Each review-focus
-entry has Task1 regression coverage. The full stage remains incomplete until
-Task2 evidence and checked delivery are finished.
+entry has Task1 regression coverage. Task2 evidence and checked local delivery
+completed on2026-10-12 with the report's explicit acceptance limits. Native
+physical/mixed-monitor acceptance stays OPEN; the two pause-test barriers are
+a separately tracked nonblocking P2 reliability follow-up, not a hidden PASS.
+Historical A/B measurements are not causal speedup or memory-saving evidence.
+Compiled SHAs and delivery receipt are in `docs/testing/own-mixed-geometry-2026-10-12/REPORT.md`;
+subsequent handoff documentation commits are separate from compiled revisions.
