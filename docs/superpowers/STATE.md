@@ -2,6 +2,25 @@
 
 Updated: 2026-10-12 (Moscow local date)
 
+## Active — common mixed geometry composition
+
+The user delegated autonomous quality/functionality work and cannot perform
+manual PC visual checks. Next bounded result: combine supported el/rc/sh sibling
+groups through the existing canonical own pipeline, not another allocation
+optimization. New design/plan are approved under that delegation:
+
+- `docs/superpowers/specs/2026-10-12-own-mixed-geometry-design.md`
+- `docs/superpowers/plans/2026-10-12-own-mixed-geometry.md`
+- `.superpowers/sdd/2026-10-12-own-mixed-geometry/progress.md`
+
+Task1 is next: functional public RED before production, canonical admission and
+lowering, legacy preservation, independent review and scoped commit/push.
+Task2 owns differential/capture/UI gates, existing measurements and checked
+delivery. The completed stage below must not be repeated. The installed
+build/Release EXE/PDB remain unchanged until the new delivery gates pass.
+Native live icon/mixed-monitor acceptance remains open; automated captures may
+provide evidence but cannot turn delegated trust into a manual PASS.
+
 ## Completed — public hardening, independent-element costs and bounded reuse
 
 Tasks1–5 delivered with explicit acceptance limits. Both public API follow-ups
