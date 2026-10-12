@@ -17,6 +17,14 @@ Exactly one bounded improvement selected only after measured attribution and
 written addendum. No format, GPU, scheduler, large cache, docking/physics change.
 Frozen kit/previous installation/raw evidence preserved; standing delegated
 main-in-place approval retained. Prior stage below is complete, do not repeat.
+Task1 complete: two public findings addressed by terminal pre-GREEN/public
+regression and float-duration admission guard (fr1e-37 functional RED, fr1e-35
+finite acceptance). Independent task review Approved/no findings; root fresh
+public1/1, full none/package46/46 and explicit preview97/97. Initial45/46
+legacy_subproject missing-compiler setup run retained, corrected under VsDevCmd.
+Only3API/test files changed; normal timing/scheduler unchanged. Raw outputs
+out/checks/2026-10-12-own-ui-api-001. Installed H EXE/PDB unchanged. Next Task2:
+minimal counters/scenario adapter, no resource optimization before baseline.
 
 ## Completed — supported own playback and one real UI icon
 

@@ -90,6 +90,8 @@ public:
     void setDirection(runtime::PlaybackDirection direction, runtime::MotionTime now) noexcept;
     [[nodiscard]] bool setPlaybackRate(double rate, runtime::MotionTime now) noexcept;
     void setLoopMode(runtime::PlaybackLoopMode mode) noexcept;
+    // A completed snapshot projects the requested terminal state; it does not
+    // indicate that a terminal scene was emitted or commit its revision.
     [[nodiscard]] runtime::PlaybackSnapshot playbackSnapshot(runtime::MotionTime now) const noexcept;
     [[nodiscard]] double frameRate() const noexcept;
     [[nodiscard]] double durationSeconds() const noexcept;
@@ -98,6 +100,8 @@ public:
         OwnError error;
         [[nodiscard]] explicit operator bool() const noexcept { return scene.has_value() && !error; }
     };
+    // Failed evaluation leaves the revision uncommitted. A successful terminal
+    // evaluation commits completion once, even if evaluated again at that time.
     [[nodiscard]] Evaluation evaluateAt(runtime::MotionTime now,
                                         std::size_t width, std::size_t height);
 private:
@@ -121,5 +125,8 @@ struct OwnPlaybackResult final {
 // Player retains the public wrapper until removal/clear/destruction. Own tick
 // frames have a null Runtime instance and invalid Runtime handle; resolve their
 // PlayerHandle with ownPlayback, then evaluate on the same control/render thread.
+// A Completion reason requests the projected terminal frame, not proof of scene
+// emission. If evaluation fails, Player does not requeue it automatically;
+// explicitly call Player::invalidate(handle) to request another frame.
 
 } // namespace avemotion::render

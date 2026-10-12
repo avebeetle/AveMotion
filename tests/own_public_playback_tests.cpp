@@ -1,6 +1,7 @@
 #include "avemotion/render/OwnPlayback.hpp"
 
 #include <cstddef>
+#include <cmath>
 #include <filesystem>
 #include <fstream>
 #include <iterator>
@@ -20,6 +21,70 @@ std::string readFixture(const char* name) {
 avemotion::render::OwnPrepareResult prepare(const std::string& source) {
     return avemotion::render::prepareOwnAsset(std::as_bytes(std::span{source.data(), source.size()}));
 }
+void durationAdmissionIsFinite(const char* fixture, const std::string& rateMarker) {
+    using namespace avemotion;
+    auto source = readFixture(fixture);
+    const auto offset = source.find(rateMarker);
+    require(offset != std::string::npos, "fixture frame rate found");
+    source.replace(offset, rateMarker.size(), "\"fr\":1e-37");
+    const auto overflowing = prepare(source);
+    source.clear();
+    source.shrink_to_fit();
+    require(!overflowing.asset && overflowing.error.code == render::OwnErrorCode::UnsupportedAsset
+            && overflowing.error.path == "/fr" && !overflowing.error.message.empty(),
+            "positive frame rate with overflowing float duration is rejected");
+
+    source = readFixture(fixture);
+    source.replace(source.find(rateMarker), rateMarker.size(), "\"fr\":1e-35");
+    const auto finite = prepare(source);
+    require(bool(finite), "nearby finite-duration frame rate is accepted");
+    auto created = render::createOwnPlayback(finite.asset);
+    require(bool(created) && std::isfinite(created.playback->durationSeconds())
+            && created.playback->durationSeconds() > 0,
+            "accepted frame rate has finite positive duration");
+    const auto start = runtime::MotionTime::fromSeconds(0);
+    created.playback->play(start);
+    require(bool(created.playback->evaluateAt(start, 128, 128)),
+            "accepted frame rate evaluates its initial frame");
+}
+void terminalCompletionRequiresExplicitRetry(
+    const std::shared_ptr<const avemotion::render::OwnAsset>& asset) {
+    using namespace avemotion;
+    const auto start = runtime::MotionTime::fromSeconds(0);
+    const auto terminal = runtime::MotionTime::fromSeconds(2);
+    auto created = render::createOwnPlayback(asset);
+    require(bool(created), "public terminal playback creates");
+    player::Player player;
+    const auto added = render::addOwnPlayback(player, created.playback, start);
+    require(bool(added) && player.setLoopMode(added.handle, runtime::PlaybackLoopMode::Once, start)
+            && player.play(added.handle, start), "public Once playback starts at zero");
+    (void)player.tick(start);
+    auto tick = player.tick(terminal);
+    require(tick.frames.size() == 1 && tick.frames[0].playback.completed
+            && tick.frames[0].playback.frameIndex == 60
+            && player::hasReason(tick.frames[0].reasons, player::FrameReason::Completion)
+            && !tick.nextDeadline, "terminal tick projects completion and frame 60");
+    const auto revision = tick.frames[0].playback.revision;
+    require(created.playback->playbackSnapshot(terminal).revision == revision,
+            "terminal snapshot does not commit completion");
+    const auto failed = created.playback->evaluateAt(terminal, 0, 128);
+    require(!failed && failed.error.code == render::OwnErrorCode::InvalidViewport
+            && created.playback->playbackSnapshot(terminal).revision == revision,
+            "failed terminal evaluation leaves revision unchanged");
+    require(player.tick(terminal).frames.empty(), "failed evaluation does not requeue a frame");
+    require(player.invalidate(added.handle), "host can request terminal retry");
+    tick = player.tick(terminal);
+    require(tick.frames.size() == 1
+            && player::hasReason(tick.frames[0].reasons, player::FrameReason::ExplicitInvalidation),
+            "explicit invalidation returns retry frame");
+    const auto success = created.playback->evaluateAt(terminal, 128, 128);
+    require(bool(success) && success.scene->frameIndex == 60
+            && created.playback->playbackSnapshot(terminal).revision == revision + 1,
+            "successful terminal evaluation emits frame 60 and commits once");
+    require(bool(created.playback->evaluateAt(terminal, 128, 128))
+            && created.playback->playbackSnapshot(terminal).revision == revision + 1,
+            "repeat terminal evaluation does not recommit");
+}
 }
 
 int run() {
@@ -33,6 +98,9 @@ int run() {
             prepared.asset->metadata().totalFrames == 61 &&
             prepared.asset->metadata().frameRate == 60,
             "public metadata retains authored dimensions and timing");
+    terminalCompletionRequiresExplicitRetry(prepared.asset);
+    durationAdmissionIsFinite("primitive_geometry.json", "\"fr\": 60");
+    durationAdmissionIsFinite("own_vector/parent.json", "\"fr\":60");
     auto tinyRateSource = readFixture("own_vector/parent.json");
     const std::string rateMarker = "\"fr\":60";
     const auto rateOffset = tinyRateSource.find(rateMarker);

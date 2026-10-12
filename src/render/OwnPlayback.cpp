@@ -65,6 +65,12 @@ OwnPrepareResult prepareOwnAsset(std::span<const std::byte> bytes) {
         !std::isfinite(model.frameRate) || model.frameRate <= 0) {
         return {{}, error(OwnErrorCode::UnsupportedAsset, "/", "own asset metadata outside supported bounds")};
     }
+    const auto duration = static_cast<float>(model.totalFrames - 1U)
+        / static_cast<float>(model.frameRate);
+    if (!std::isfinite(duration) || duration <= 0) {
+        return {{}, error(OwnErrorCode::UnsupportedAsset, "/fr",
+                          "own frame rate produces no finite positive duration")};
+    }
     auto impl = std::make_unique<OwnAsset::Impl>();
     impl->metadata = {static_cast<std::size_t>(model.logicalWidth),
                       static_cast<std::size_t>(model.logicalHeight), model.totalFrames,
