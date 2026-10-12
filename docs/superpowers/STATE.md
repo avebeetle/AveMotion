@@ -55,6 +55,17 @@ spec/quality Approved0findings; public signatures/worker/Player/native lifetime
 unchanged. E fresh final package46of46 and explicit preview97of97 retained in
 out/checks/2026-10-12-resource-reuse-final-001. Next clean committed B rebuild,
 same13-file kit full serial comparison. Installed EXE/PDB still unchanged.
+Task5 B collection/strict analysis complete: all8 full serial cases, clean
+compiled E68db09d/Hc3bb101, exact13 kit hashes equal A. Canvas1/4/16 steady
+output allocations0/0/0 versus A600/2400/9590; readbacks601/2400/9592 continue.
+Tiny icons remain almost allocation-per-frame; busy Party peer reuse reduces
+nominal output allocation events, not total live/native memory. Canvas16 private
+mean149.64MiB versus A145.88; busy56.48 versus52.23. Busy button paint p95
+18.2387ms/n20, GUI deletion0.6922ms/n1 with actual publication overlap and peer
+survival. Single A/B is not statistical speedup or leak-free evidence. Raw B
+H/build/checks/2026-10-12-motion-elements-candidate-001/series-B preserved;
+report/checkpoint, remaining H original/reference/shell/static gates, whole-stage
+review and guarded delivery next. Native new-icon/mixed-DPR visual gate open.
 
 ## Completed — supported own playback and one real UI icon
 
