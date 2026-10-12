@@ -25,6 +25,11 @@ legacy_subproject missing-compiler setup run retained, corrected under VsDevCmd.
 Only3API/test files changed; normal timing/scheduler unchanged. Raw outputs
 out/checks/2026-10-12-own-ui-api-001. Installed H EXE/PDB unchanged. Next Task2:
 minimal counters/scenario adapter, no resource optimization before baseline.
+Task2 complete: Haa02189, independent review and two scoped fix rounds clean.
+Actual preparation/output-storage counters and a versioned thin adapter for
+independent canvases/icons and busy deletion; old kit/observer unchanged. Own6/6,
+root fresh diagnostics48/48 and eight smoke cases passed (not timing evidence).
+Full clean committed static Release baseline is next; installed pair unchanged.
 
 ## Completed — supported own playback and one real UI icon
 
