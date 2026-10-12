@@ -30,6 +30,11 @@ Actual preparation/output-storage counters and a versioned thin adapter for
 independent canvases/icons and busy deletion; old kit/observer unchanged. Own6/6,
 root fresh diagnostics48/48 and eight smoke cases passed (not timing evidence).
 Full clean committed static Release baseline is next; installed pair unchanged.
+Task3 first full collection completed eight cases but strict analysis rejected
+four intervals short by<0.5ms. Raw attempt retained, not accepted as performance.
+Measurement-only monotonic deadline remedy H1059ac0 independently reviewed;
+root diagnostics48/48, controlled native helper passes. New clean build/freeze
+and full strict rerun next; no product scheduler or resource ownership change.
 
 ## Completed — supported own playback and one real UI icon
 
