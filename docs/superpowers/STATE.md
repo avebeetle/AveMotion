@@ -2,7 +2,43 @@
 
 Updated: 2026-10-12 (Moscow local date)
 
-## Current work — public hardening, independent-element costs and bounded reuse
+## Completed — public hardening, independent-element costs and bounded reuse
+
+Tasks1–5 delivered with explicit acceptance limits. Both public API follow-ups
+are closed by public regressions; existing timing/Player semantics are retained.
+Independent canvas/icon1/4/16 plus quiet/busy/delete A/B measurements completed
+using the same frozen13-file kit, DPR1 and original assets. Exactly one selected
+change: two renderer-local exclusive output QImage slots, fresh fallback when
+shared; retained pixels and independent playback are covered by RED/GREEN tests.
+Canvas16 steady10s allocation events9590->0 at9590->9592 readbacks; tiny icons
+have almost no allocation benefit. Private mean145.883->149.641MiB for canvas16
+and52.233->56.480MiB busy is retained, not hidden. Busy paint p9519.7329->18.2387ms
+(n20), deletion1.307->0.6922ms (n1) with real overlap/survival; not statistical
+speedup, latency-tail or leak-free proof. Measurements are separate static
+production-linked probes, NOT installed-shell performance.
+
+Final package46/46, explicit windows-msvc-win32-preview97/97, H own6/6 plus
+fresh reference4/4,shell3/3,static2/2,nine original Duck/Party gates and three
+static original smokes passed. Own6/root renderer receipts reused only across
+documentation-only checkpoints. Inherited host/reference warnings remain
+disclosed; no warning-free build claim. One strongest whole-stage review
+Approved0Critical/Important/Minor; all13 declined items dispositioned in ledger.
+
+Root reviewed-script preflight/Execute passed, exact clean compile
+E92e1cfa92f37e5671361394165c039583a967838 /
+Haa7474e4789a4e1634ec57df10c8de6887669396 installed into H/build/Release at
+2026-10-12T08:51:26.0378228Z. EXE17AA33DB.../PDBB2DAB8CB...,26files/24unchanged
+notices; installed package/readiness/stability/manifest/SymChk exit0. Verified
+old full26file/PDB backup in H/build/checks/2026-10-12-motion-resource-handoff-001/
+promotion-001/backup. Frozen178-artifact audit62299724... retained. Later docs
+commits are NOT compiled revisions. H report
+docs/testing/motion-elements-2026-10-12/REPORT.md records raw identities, commands,
+adverse results, gates, delivery and three ordered rulings/risks. Native new-icon
+visual/mixed-monitor DPR acceptance remains OPEN. No new GPU, scheduler/cache,
+format, docking/physics, dependency, Windows or licensing work. Preserve raw/SDD
+and prior installations; do not repeat completed tasks or start a new stage.
+
+### Retained execution checkpoints for this stage (not pending work)
 
 User accepts supported-own integration as implemented (new-icon native visual
 check still open), and requests two public API follow-ups followed by measured
