@@ -291,20 +291,50 @@ private:
                 item.metadata();
                 const auto group = node(SourceNodeKind::ShapeGroup, layer, item);
                 const auto contents = item.get("it").array(2, 5);
-                if (contents.front().get("ty").string() != "sh" ||
+                const auto geometryType = contents.front().get("ty").string();
+                const bool primitive = geometryType == "el" || geometryType == "rc";
+                if ((geometryType != "sh" && !primitive) ||
                     contents.back().get("ty").string() != "tr")
                     item.get("it").fail("expected one path then paints/trim then transform");
                 const auto pathValue = contents.front();
-                pathValue.keys({"ty", "nm", "ix", "mn", "ind", "ks", "hd"});
+                if (primitive) {
+                    if (contents.size() != 3 || contents[1].get("ty").string() != "fl")
+                        item.get("it").fail("primitive group requires geometry, local solid fill and transform");
+                    const auto* layerNode = model->sourceNode(layer);
+                    if (layerNode->parent != model->compositions.front().rootNode ||
+                        (layerNode->dependencyBits & StaticDependencyMatte))
+                        pathValue.fail("primitive geometry requires root shape layer without matte");
+                    if (geometryType == "rc")
+                        pathValue.keys({"ty", "nm", "ix", "mn", "ind", "d", "p", "s", "r", "hd"});
+                    else
+                        pathValue.keys({"ty", "nm", "ix", "mn", "ind", "d", "p", "s", "hd"});
+                } else
+                    pathValue.keys({"ty", "nm", "ix", "mn", "ind", "ks", "hd"});
                 pathValue.metadata();
                 if (pathValue.get("ind").exists())
                     (void)pathValue.get("ind").number(0, 32768, true);
                 if (pathCount_ >= 128)
                     pathValue.fail("path count limit exceeded");
                 ++pathCount_;
-                const auto path = node(SourceNodeKind::Shape, group, pathValue);
-                properties_.add(path, PropertySemantic::ShapePath, pathValue.get("ks"),
-                                PropertyValueType::Shape, -32768, 32768);
+                const bool rectangle = geometryType == "rc";
+                const auto path = node(primitive ? (rectangle ? SourceNodeKind::Rectangle : SourceNodeKind::Ellipse)
+                                                : SourceNodeKind::Shape, group, pathValue);
+                if (primitive) {
+                    const auto direction = pathValue.get("d").number(1, 3, true);
+                    if (direction != 1 && direction != 3)
+                        pathValue.get("d").fail("primitive direction must be exactly 1 or 3");
+                    model->sourceNodes[path.index()].pathDirection = direction == 1
+                        ? SourcePathDirection::Clockwise : SourcePathDirection::CounterClockwise;
+                    properties_.add(path, rectangle ? PropertySemantic::RectanglePosition : PropertySemantic::EllipsePosition,
+                                    pathValue.get("p"), PropertyValueType::Vec2, -32768, 32768);
+                    properties_.add(path, rectangle ? PropertySemantic::RectangleSize : PropertySemantic::EllipseSize,
+                                    pathValue.get("s"), PropertyValueType::Vec2, 0, 16384, true, 0, true);
+                    if (rectangle)
+                        properties_.add(path, PropertySemantic::RectangleRoundness, pathValue.get("r"),
+                                        PropertyValueType::Scalar, 0, 16384);
+                } else
+                    properties_.add(path, PropertySemantic::ShapePath, pathValue.get("ks"),
+                                    PropertyValueType::Shape, -32768, 32768);
                 paths.push_back({group, path, {}});
                 bool sawStroke = false, sawFill = false;
                 for (std::size_t n = 1; n + 1 < contents.size(); ++n) {
@@ -326,6 +356,10 @@ private:
             } else if (type == "tm") {
                 if (paths.empty())
                     item.fail("trim requires preceding paths");
+                if (std::any_of(paths.begin(), paths.end(), [&](const auto& path) {
+                        return model->sourceNode(path.path)->kind != SourceNodeKind::Shape;
+                    }))
+                    item.fail("outer trim involving primitive geometry unsupported");
                 const auto trim = addTrim(item, layer);
                 for (auto& path : paths) {
                     if (path.trim)
@@ -335,6 +369,8 @@ private:
             } else if (type == "st") {
                 if (paths.size() != 1)
                     item.fail("outer paint requires exactly one preceding path");
+                if (model->sourceNode(paths[0].path)->kind != SourceNodeKind::Shape)
+                    item.fail("outer paint involving primitive geometry unsupported");
                 authored.push_back({layer, paths[0].group, layer, paths[0].path,
                                     paint(item, layer, true), {}});
             } else
@@ -620,12 +656,32 @@ bool validateOwnVectorModel(const OwnVectorModel& owner) {
         const auto* paint = m.sourceNode(b.paint);
         if (!l || !g || !s || !p || !paint || l->kind != model::SourceNodeKind::Layer ||
             g->kind != model::SourceNodeKind::ShapeGroup || g->parent != l->id ||
-            p->kind != model::SourceNodeKind::Shape || p->parent != g->id ||
+            (p->kind != model::SourceNodeKind::Shape && p->kind != model::SourceNodeKind::Ellipse &&
+             p->kind != model::SourceNodeKind::Rectangle) || p->parent != g->id ||
             (s->id != g->id && s->id != l->id) || paint->parent != s->id ||
             (paint->kind != model::SourceNodeKind::Fill &&
              paint->kind != model::SourceNodeKind::Stroke &&
              paint->kind != model::SourceNodeKind::GradientFill))
             return false;
+        if (p->kind != SourceNodeKind::Shape) {
+            if (l->parent != root || (l->dependencyBits & StaticDependencyMatte) || b.trim ||
+                s->id != g->id || paint->kind != SourceNodeKind::Fill || g->children.count != 2 ||
+                (p->pathDirection != SourcePathDirection::Clockwise &&
+                 p->pathDirection != SourcePathDirection::CounterClockwise))
+                return false;
+            const auto hasProperty = [&](PropertySemantic semantic, PropertyValueType type) {
+                return std::count_if(m.properties.begin(), m.properties.end(), [&](const auto& property) {
+                    return property.owner == p->id && property.semantic == semantic && property.valueType == type;
+                }) == 1;
+            };
+            const bool rectangle = p->kind == SourceNodeKind::Rectangle;
+            if (!hasProperty(rectangle ? PropertySemantic::RectanglePosition : PropertySemantic::EllipsePosition,
+                             PropertyValueType::Vec2) ||
+                !hasProperty(rectangle ? PropertySemantic::RectangleSize : PropertySemantic::EllipseSize,
+                             PropertyValueType::Vec2) ||
+                (rectangle && !hasProperty(PropertySemantic::RectangleRoundness, PropertyValueType::Scalar)))
+                return false;
+        }
         if (b.trim) {
             const auto* t = m.sourceNode(*b.trim);
             if (!t || t->kind != model::SourceNodeKind::Trim ||

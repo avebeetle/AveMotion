@@ -193,6 +193,14 @@ prepareOwnVectorAsset(std::shared_ptr<const runtime::detail::OwnVectorModel> aut
             if (!materializeOwnScenePath(*asset, draw, view, {}, local, final))
                 return {OwnNativeEllipsePrepareCode::ResourceConstructionFailed, nullptr, "/",
                         "vector static path unavailable"};
+            const auto kind = asset->sourceNode(draw.path)->kind;
+            if ((kind == model::SourceNodeKind::Ellipse || kind == model::SourceNodeKind::Rectangle) &&
+                (local.verbs.empty() || local.points.empty() || !local.controlBounds.valid ||
+                 local.controlBounds.left >= local.controlBounds.right ||
+                 local.controlBounds.top >= local.controlBounds.bottom))
+                return {OwnNativeEllipsePrepareCode::ResourceConstructionFailed, nullptr,
+                        authored->sources[draw.path.index()].jsonPointer,
+                        "static primitive collapses during float materialization"};
             geometry.contentHash = model::detail::hashCanonicalGeometry(draw.fillRule, local);
             geometry.staticValue =
                 runtime::CanonicalGeometry{static_cast<std::uint64_t>(slot) + 1,
@@ -235,14 +243,17 @@ prepareOwnMotionAsset(const formats::detail::OwnJsonDocument &document) {
     // Select exactly once by the authored content vocabulary. A vector input
     // failing admission must never retry the primitive compiler or a renderer.
     bool primitive = false;
+    bool shape = false;
     for (std::uint32_t i = 0; i < document.nodes().size(); ++i) {
         if (document.memberName(i) == "ty") {
             const auto value = document.valueBytes(i);
             if (value == "el" || value == "rc")
                 primitive = true;
+            if (value == "sh")
+                shape = true;
         }
     }
-    if (primitive) {
+    if (primitive && !shape) {
         auto compiled = runtime::detail::buildOwnNativeEllipseModel(document);
         if (!compiled)
             return {OwnNativeEllipsePrepareCode::InvalidModel, nullptr, "/",

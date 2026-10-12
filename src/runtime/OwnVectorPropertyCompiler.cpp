@@ -83,12 +83,13 @@ void Value::metadata(bool isolatedDifference) const {
         get("hd").fail("hidden content is unsupported");
 }
 namespace {
-MotionVec2Value point(Value input, std::int64_t low, std::int64_t high, float z = 0) {
+MotionVec2Value point(Value input, std::int64_t low, std::int64_t high, float z = 0,
+                     bool strictLow = false) {
     auto a = input.array(2, 3);
     if (a.size() == 3 &&
         a[2].number(static_cast<std::int64_t>(z), static_cast<std::int64_t>(z)) != z)
         a[2].fail("non-neutral Z component");
-    return {a[0].number(low, high), a[1].number(low, high)};
+    return {a[0].number(low, high, false, strictLow), a[1].number(low, high, false, strictLow)};
 }
 float channel(Value input, std::int64_t low, std::int64_t high, bool ignoredZ = false,
               std::int64_t ignoredLow = 0, std::int64_t ignoredHigh = 1) {
@@ -162,7 +163,7 @@ MotionValueRef PropertyCompiler::value(Value input, PropertyValueType type, std:
     }
     case PropertyValueType::Vec2: {
         auto index = static_cast<std::uint32_t>(model_.vec2Values.size());
-        model_.vec2Values.push_back(point(input, low, high, z));
+        model_.vec2Values.push_back(point(input, low, high, z, strictLow));
         return {type, index};
     }
     case PropertyValueType::Color: {

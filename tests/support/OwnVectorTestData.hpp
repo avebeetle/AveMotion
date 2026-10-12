@@ -59,6 +59,13 @@ inline std::string vectorShapeLayer(const std::string& path) {
            "\"it\":[{\"ty\":\"sh\",\"ks\":" +
            path + "},{\"ty\":\"tr\"}]}]}";
 }
+inline std::string vectorPrimitiveGroup(const std::string& geometry,
+                                       const std::string& paint = R"({"ty":"fl","c":{"k":[1,0,0,1]}})") {
+    return R"({"ty":"gr","it":[)" + geometry + "," + paint + R"(,{"ty":"tr"}]})";
+}
+inline std::string vectorMixedLayer(const std::string& groups, const std::string& extra = "") {
+    return R"({"ty":4,"ind":1,"ip":0,"op":180,"ks":{},"shapes":[)" + groups + "]" + extra + "}";
+}
 inline std::string vectorPrecomp(const std::string& layers) {
     return "{\"fr\":60,\"ip\":0,\"op\":180,\"w\":128,\"h\":128,\"assets\":[{\"id\":\"x\","
            "\"layers\":[" +

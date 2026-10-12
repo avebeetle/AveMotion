@@ -13,9 +13,13 @@ optimization. New design/plan are approved under that delegation:
 - `docs/superpowers/plans/2026-10-12-own-mixed-geometry.md`
 - `.superpowers/sdd/2026-10-12-own-mixed-geometry/progress.md`
 
-Task1 is next: functional public RED before production, canonical admission and
-lowering, legacy preservation, independent review and scoped commit/push.
-Task2 owns differential/capture/UI gates, existing measurements and checked
+Task1 implemented and independently reviewed: one-shot mixed el/rc/sh admission,
+canonical primitive properties/lowering/classification and explicit scope errors.
+Functional public/model/stream RED0/3 preceded production; GREEN3/3 and fresh
+full reference-none45/45 passed. Original44/45 setup failure is retained: a child
+Ninja configure lacked cl in PATH; command-scoped VsDevCmd recovery changed no
+product/CMake code. Review: specPASS, qualityAPPROVE, no findings.
+Task2 is next and owns differential/capture/UI gates, existing measurements and checked
 delivery. The completed stage below must not be repeated. The installed
 build/Release EXE/PDB remain unchanged until the new delivery gates pass.
 Native live icon/mixed-monitor acceptance remains open; automated captures may

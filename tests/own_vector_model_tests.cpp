@@ -21,6 +21,94 @@ using test::vectorShapeLayer;
 void near(float got, float expected, const std::string& label) {
     vectorRequire(std::abs(got - expected) <= 0.0001F, label + " got=" + std::to_string(got));
 }
+void mixedPrimitiveAdmission() {
+    using namespace test;
+    // Catches a dispatcher/model that discards primitive source roles, relaxes
+    // size bounds, or admits primitives into unsupported modifier scopes.
+    const auto fixture = vectorRead(std::filesystem::path(AVEMOTION_FIXTURE_DIR) / "own/mixed_geometry.json");
+    const auto mixed = vectorCompile(fixture);
+    vectorRequire(bool(mixed), "mixed model admission: " + mixed.path + mixed.message);
+    const auto& model = *mixed.prepared->model;
+    const SourceNodeKind kinds[]{SourceNodeKind::Shape, SourceNodeKind::Rectangle, SourceNodeKind::Ellipse};
+    for (unsigned i = 0; i < 3; ++i) {
+        const auto path = mixed.prepared->draws[i].path;
+        vectorRequire(model.sourceNode(path)->kind == kinds[i]
+            && mixed.prepared->sources[path.index()].jsonPointer ==
+                "/layers/0/shapes/" + std::to_string(2 - i) + "/it/0",
+            "reverse mixed source kinds and authored pointers");
+    }
+    const auto reject = [&](const std::string& json, const std::string& context) {
+        const auto result = vectorCompile(json);
+        vectorRequire(!result && !result.prepared && !result.message.empty()
+                      && result.path.starts_with(context),
+                      "atomic contextual mixed rejection at " + context + ": " + result.path + result.message);
+    };
+    for (const auto& kind : {std::string("el"), std::string("rc")}) {
+        const std::string geometry = "{\"ty\":\"" + kind + R"(","d":1,"p":{"k":[2,3]},"s":{"k":[0.5,0.25]})"
+            + (kind == "rc" ? R"(,"r":{"k":0})" : "") + "}";
+        const auto wrap = [&](const std::string& primitive) {
+            return vectorRoot(vectorMixedLayer(vectorPrimitiveGroup(primitive)));
+        };
+        const auto admitted = vectorCompile(wrap(geometry));
+        vectorRequire(bool(admitted), "positive fractional primitive sizes: " + kind);
+        for (const auto& direction : {"1", "3", "3e0"})
+            vectorRequire(bool(vectorCompile(wrap(vectorReplace(geometry, R"("d":1)", "\"d\":" + std::string(direction))))),
+                          "exact primitive directions: " + kind);
+        for (const auto& direction : {"2", "0", "4", "1.0000000000000001", "true"})
+            reject(wrap(vectorReplace(geometry, R"("d":1)", "\"d\":" + std::string(direction))),
+                   "/layers/0/shapes/0/it/0/d");
+        reject(wrap(vectorReplace(geometry, R"("d":1,)", "")), "/layers/0/shapes/0/it/0/d");
+        for (const auto& size : {"[0,1]", "[1,0]", "[-0.01,1]", "[1,-0.01]", "[16384.0000000001,1]", "[1,16384.0000000001]"})
+            reject(wrap(vectorReplace(geometry, "[0.5,0.25]", size)), "/layers/0/shapes/0/it/0/s/k/");
+        for (const auto& position : {"[-32768.0000000001,0]", "[0,32768.0000000001]", "[0,0,1]"})
+            reject(wrap(vectorReplace(geometry, "[2,3]", position)), "/layers/0/shapes/0/it/0/p/k/");
+        vectorRequire(bool(vectorCompile(wrap(vectorReplace(vectorReplace(geometry, "[2,3]", "[-32768,32768,0]"),
+                                                           "[0.5,0.25]", "[16384,16384,0]")))),
+                      "primitive inclusive upper and position bounds with neutral Z");
+        if (kind == "rc") {
+            for (const auto& radius : {"-0.01", "16384.0000000001"})
+                reject(wrap(vectorReplace(geometry, R"("r":{"k":0})", "\"r\":{\"k\":" + std::string(radius) + "}")),
+                       "/layers/0/shapes/0/it/0/r/k");
+            vectorRequire(bool(vectorCompile(wrap(vectorReplace(geometry, R"("r":{"k":0})", R"("r":{"k":16384})")))),
+                          "rectangle maximum radius admitted for generator clamp");
+        }
+        for (const auto& size : {"[0,1]", "[1,0]", "[-1,1]", "[1,16385]"}) {
+            const auto animated = vectorReplace(geometry, R"("s":{"k":[0.5,0.25]})",
+                R"("s":{"a":1,"k":[{"t":0,"s":[1,1],"h":1},{"t":60,"s":)" + std::string(size) + "}]}");
+            reject(wrap(animated), "/layers/0/shapes/0/it/0/s/k/1/s/");
+        }
+    }
+    const std::string primitive = R"({"ty":"el","d":1,"p":{"k":[2,3]},"s":{"k":[4,6]}})";
+    const auto wrap = [&](const std::string& p) { return vectorRoot(vectorMixedLayer(vectorPrimitiveGroup(p))); };
+    const std::string linear = R"({"a":1,"k":[{"t":0,"s":[2,3],"o":{"x":0,"y":0},"i":{"x":1,"y":1}},{"t":60,"s":[4,6]}]})";
+    vectorRequire(bool(vectorCompile(wrap(vectorReplace(primitive, R"({"k":[2,3]})", linear)))), "linear primitive position");
+    for (const auto& [from, to, suffix] : std::vector<std::tuple<std::string, std::string, std::string>>{
+            {R"("t":60)", R"("t":0)", "/k/1/t"},
+            {R"("s":[4,6])", R"("s":null)", "/k/1/s"},
+            {R"("s":[4,6])", R"("e":[4,6])", "/k/1/e"},
+            {R"("a":1)", R"("a":1,"x":"expression")", "/x"},
+            {R"("t":0)", R"("t":0,"ti":[0,0],"to":[0,0])", "/k/0"},
+            {R"("x":0)", R"("x":[0,1])", "/k/0/o/x/1"}}) {
+        reject(wrap(vectorReplace(primitive, R"({"k":[2,3]})", vectorReplace(linear, from, to))),
+               "/layers/0/shapes/0/it/0/p" + suffix);
+    }
+    for (const auto& track : {R"({"a":1,"k":[]})", R"({"a":1,"k":[{"t":0,"s":[1,1]}]})"})
+        reject(wrap(vectorReplace(primitive, R"({"k":[2,3]})", track)), "/layers/0/shapes/0/it/0/p/k");
+    for (const auto& paint : {R"({"ty":"st","c":{"k":[1,0,0,1]},"w":{"k":1}})",
+                              R"({"ty":"gf"})", R"({"ty":"tm"})"})
+        reject(vectorRoot(vectorMixedLayer(vectorPrimitiveGroup(primitive, paint))), "/layers/0/shapes/0/it");
+    reject(vectorRoot(vectorMixedLayer(vectorPrimitiveGroup(primitive) + R"(,{"ty":"tm","m":1,"s":{"k":0},"e":{"k":100}})")),
+           "/layers/0/shapes/1");
+    reject(vectorRoot(vectorMixedLayer(vectorPrimitiveGroup(primitive) + R"(,{"ty":"st","c":{"k":[1,0,0,1]},"w":{"k":1}})")),
+           "/layers/0/shapes/1");
+    reject(vectorRoot(vectorMixedLayer(R"({"ty":"gr","it":[)" + vectorPrimitiveGroup(primitive) + R"(,{"ty":"tr"}]})")),
+           "/layers/0/shapes/0/it");
+    reject(vectorPrecomp(vectorMixedLayer(vectorPrimitiveGroup(primitive))), "/assets/0/layers/0/shapes/0/it/0");
+    const auto provider = vectorMixedLayer(vectorPrimitiveGroup(primitive), R"(,"td":1)");
+    const auto content = vectorReplace(vectorMixedLayer(vectorPrimitiveGroup(primitive), R"(,"tt":1)"), R"("ind":1)", R"("ind":2)");
+    reject(vectorRoot(provider + "," + content), "/layers/0/shapes/0/it/0");
+    std::cout << "PASS mixed model admission: source roles, exact domains, tracks and prohibited scopes\n";
+}
 void exporterMetadata() {
     using namespace test;
     const auto plain = vectorRoot(clippingShape(24, 24, 48, 48));
@@ -781,6 +869,7 @@ int main(int argc, char** argv) {
                 vectorReplace(vectorReplace(json, "\"ddd\":0,", ""), "\"ddd\":0,", ""));
             vectorRequire(bool(omitted), "omitted ddd defaults to admitted 2D");
             properties();
+            mixedPrimitiveAdmission();
             boundedGroups();
             groupOpacity();
             measuredNumericAdmission();

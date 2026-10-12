@@ -40,17 +40,18 @@
 - Consumes: `buildOwnVectorModel`, `validateOwnVectorModel`, `lowerOwnVectorProgram`, `materializeOwnScenePath`, existing property semantics and public `prepareOwnAsset`/`createOwnPlayback`/`evaluateAt`.
 - Produces: same signatures; mixed input accepted by the existing prepared vector owner, with three authored geometry kinds and existing scene resources.
 
-- [ ] Step 1: Add public `mixedGeometryUsesCanonicalPlayback` using sibling el/rc/sh groups; assert three draws in reverse authored order, literal path bounds, static resources and preserved source identity. Add independent playback/retained scene and animated p/s/r/hold/out-of-order seek assertions; reuse the existing legacy fixture for unchanged fitting and animation.
-- [ ] Step 2: Build/run `avemotion_own_public_playback_tests` before production changes. Save RED output showing mixed preparation fails for missing capability, not a build error.
-- [ ] Step 3: Add contextual invalid-input tests for direction2, size0/negative/>16384, negative radius, malformed/unsupported tracks, prohibited scopes and float-collapsed static geometry. Prove positive fractional sizes are accepted after implementation.
-- [ ] Step 4: Extend model admission and validation with existing Ellipse/Rectangle kinds and property semantics. Propagate Vec2 strictLow. Bind p/s/r in lowering and geometry classification. Select vector on any sh, legacy primitive only otherwise. Reject collapsed static primitive resources during vector preparation. Do not edit the path generator, stream, public API or backend.
-- [ ] Step 5: Run public/model/stream tests, then the full existing reference-none CTest suite once; preserve all logs and names of any failures. Self-review the scoped diff and report RED/GREEN commands, counts, files and concerns.
-- [ ] Step 6: Root obtains independent task spec/quality review, handles fixes, verifies focused tests, updates STATE/ledger and makes a scoped commit and ordinary push after ancestry check.
+- [x] Step 1: Add public `mixedGeometryUsesCanonicalPlayback` using sibling el/rc/sh groups; assert three draws in reverse authored order, literal path bounds, static resources and preserved source identity. Add independent playback/retained scene and animated p/s/r/hold/out-of-order seek assertions; reuse the existing legacy fixture for unchanged fitting and animation.
+- [x] Step 2: Build/run `avemotion_own_public_playback_tests` before production changes. Save RED output showing mixed preparation fails for missing capability, not a build error.
+- [x] Step 3: Add contextual invalid-input tests for direction2, size0/negative/>16384, negative radius, malformed/unsupported tracks, prohibited scopes and float-collapsed static geometry. Prove positive fractional sizes are accepted after implementation.
+- [x] Step 4: Extend model admission and validation with existing Ellipse/Rectangle kinds and property semantics. Propagate Vec2 strictLow. Bind p/s/r in lowering and geometry classification. Select vector on any sh, legacy primitive only otherwise. Reject collapsed static primitive resources during vector preparation. Do not edit the path generator, stream, public API or backend.
+- [x] Step 5: Run public/model/stream tests, then the full existing reference-none CTest suite once; preserve all logs and names of any failures. Self-review the scoped diff and report RED/GREEN commands, counts, files and concerns.
+- [x] Step 6: Root obtains independent task spec/quality review, handles fixes, verifies focused tests, updates STATE/ledger and makes a scoped commit and ordinary push after ancestry check.
 
 ### Task 2: Differential, UI evidence and checked delivery
 
 **Files:**
 - Test: existing `tests/own_vector_model_differential_tests.cpp`, `tests/own_vector_stream_differential_tests.cpp`, `tests/own_vector_capture_tests.cpp` as needed for mixed cases.
+- Test support: existing `tests/support/OwnVectorSceneComparison.hpp` only if comparator wiring needs it; optional focused `tests/support/OwnVectorMixedTestData.hpp` for shared authored variants, never for computing expected output.
 - Host test: `D:/rvc/c++/DragonianVoice/Avelabs-UI/tests/motionlab/tst_motion_page.cpp` only for a small optional icon PNG evidence hook if needed.
 - Report/checkpoint: `docs/superpowers/STATE.md`, a concise stage report under `docs/testing/`, Avelabs `docs/ROADMAP.md` and existing testing documentation.
 

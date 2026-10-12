@@ -97,6 +97,16 @@ lowerOwnVectorProgram(const runtime::detail::OwnVectorModel &owner,
             d.trim = b.trim;
             d.node = model::makeId<model::NodeId>(draws.size());
             d.shape = property(asset, d.path, model::PropertySemantic::ShapePath);
+            const auto kind = asset.sourceNode(d.path)->kind;
+            if (kind == model::SourceNodeKind::Ellipse || kind == model::SourceNodeKind::Rectangle) {
+                const bool rectangle = kind == model::SourceNodeKind::Rectangle;
+                d.position = property(asset, d.path, rectangle ? model::PropertySemantic::RectanglePosition
+                                                             : model::PropertySemantic::EllipsePosition);
+                d.size = property(asset, d.path, rectangle ? model::PropertySemantic::RectangleSize
+                                                         : model::PropertySemantic::EllipseSize);
+                if (rectangle)
+                    d.roundness = property(asset, d.path, model::PropertySemantic::RectangleRoundness);
+            }
             const bool stroke = asset.sourceNode(d.paint)->kind == model::SourceNodeKind::Stroke;
             const bool gradient = asset.sourceNode(d.paint)->kind == model::SourceNodeKind::GradientFill;
             d.paintColor = property(asset, d.paint,
@@ -121,7 +131,8 @@ lowerOwnVectorProgram(const runtime::detail::OwnVectorModel &owner,
                 d.trimEnd = property(asset, *d.trim, model::PropertySemantic::TrimEnd);
                 d.trimOffset = property(asset, *d.trim, model::PropertySemantic::TrimOffset);
             }
-            d.geometryClass = animated(asset, d.shape) || animated(asset, d.trimStart) ||
+            d.geometryClass = animated(asset, d.shape) || animated(asset, d.position) ||
+                                      animated(asset, d.size) || animated(asset, d.roundness) || animated(asset, d.trimStart) ||
                                       animated(asset, d.trimEnd) || animated(asset, d.trimOffset)
                                   ? model::ResourceClass::InstanceEvaluated
                                   : model::ResourceClass::AssetStatic;

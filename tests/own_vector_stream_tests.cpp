@@ -16,6 +16,60 @@
 #include "support/OwnVectorMetadataPositionTestData.hpp"
 using namespace avemotion;
 using namespace avemotion::test;
+void mixedPrimitiveResources() {
+    // Catches content deduplication that loses authored identity, direction
+    // loss, a missing generator radius clamp, and empty static publication.
+    const auto fixture = vectorRead(std::filesystem::path(AVEMOTION_FIXTURE_DIR) / "own/mixed_geometry.json");
+    for (const int direction : {1, 3}) {
+        auto json = vectorReplace(fixture, R"("ty":"el","d":1)", "\"ty\":\"el\",\"d\":" + std::to_string(direction));
+        json = vectorReplace(json, R"("ty":"rc","d":3)", "\"ty\":\"rc\",\"d\":" + std::to_string(direction));
+        auto stream = instanceStream(json);
+        const auto frame = stream->emit(0, 128, 96);
+        vectorRequire(bool(frame) && frame.scene->drawItems.size() == 3, "mixed stream emits three geometries");
+        const auto& ellipse = frame.scene->drawItems[2].localPath;
+        const auto& rectangle = frame.scene->drawItems[1].localPath;
+        vectorRequire(ellipse.points.front().x == 24.5F && ellipse.points.front().y == 22
+                      && (direction == 1 ? ellipse.points[1].x > 24.5F : ellipse.points[1].x < 24.5F),
+                      "ellipse follows authored winding with literal top point");
+        vectorRequire(rectangle.points.front().x == 80 && rectangle.points.front().y == 26
+                      && rectangle.points[4].x == 76 && rectangle.points[4].y == (direction == 1 ? 42 : 22),
+                      "rounded rectangle follows authored winding with literal first quarter endpoint");
+    }
+    const auto clamped = instanceStream(vectorReplace(fixture, R"("r":{"k":4})", R"("r":{"k":16384})"))->emit(0, 128, 96);
+    const auto halfSide = instanceStream(vectorReplace(fixture, R"("r":{"k":4})", R"("r":{"k":10})"))->emit(0, 128, 96);
+    vectorRequire(bool(clamped) && bool(halfSide)
+                  && clamped.scene->drawItems[1].localPath.hash == halfSide.scene->drawItems[1].localPath.hash
+                  && clamped.scene->drawItems[1].localPath.points.front().x == 80
+                  && clamped.scene->drawItems[1].localPath.points.front().y == 32,
+                  "rectangle roundness clamps at half smaller side");
+    const auto duplicate = vectorPrimitiveGroup(R"({"ty":"el","d":1,"p":{"k":[24.5,28.25]},"s":{"k":[20.5,12.5]}})");
+    auto stream = instanceStream(vectorRoot(vectorMixedLayer(duplicate + "," + duplicate + "," + vectorGroup())));
+    auto retained = stream->emit(0, 128, 128);
+    vectorRequire(bool(retained), "equal mixed geometry resources prepare");
+    const auto& first = retained.scene->drawItems[1];
+    const auto& second = retained.scene->drawItems[2];
+    const auto& resources = retained.scene->assetModel->geometries;
+    vectorRequire(first.sourcePathNode != second.sourcePathNode && first.modelGeometry != second.modelGeometry
+                  && resources[1].staticValue->contentHash == resources[2].staticValue->contentHash
+                  && resources[1].staticValue->sourceKey != resources[2].staticValue->sourceKey,
+                  "equal local content preserves two authored resource identities");
+    const auto hash = retained.scene->fingerprints.scene;
+    (void)stream->emit(100, 256, 256);
+    stream.reset();
+    vectorRequire(retained.scene->fingerprints.scene == hash && retained.scene->assetModel->geometries[1].staticValue,
+                  "mixed static resources survive stream retirement");
+    for (const auto& kind : {std::string("el"), std::string("rc")}) {
+        const auto primitive = "{\"ty\":\"" + kind + R"(","d":1,"p":{"k":[32768,32768]},"s":{"k":[0.00001,1]})"
+                               + (kind == "rc" ? R"(,"r":{"k":0})" : "") + "}";
+        const auto compiled = vectorCompile(vectorRoot(vectorMixedLayer(vectorPrimitiveGroup(primitive) + "," + vectorGroup())));
+        vectorRequire(bool(compiled), "positive primitive domain accepted before float materialization");
+        const auto prepared = render::detail::prepareOwnVectorAsset(compiled.prepared);
+        vectorRequire(!prepared && !prepared.prepared && !prepared.message.empty()
+                      && prepared.path == "/layers/0/shapes/0/it/0",
+                      "collapsed static primitive cannot publish empty canonical resource: " + prepared.path + prepared.message);
+    }
+    std::cout << "PASS mixed resources: both windings, clamped radius, equal source identities and collapsed geometry rejection\n";
+}
 void metadataPositionStream() {
     // Catch ignored split axes, shared axis knots, lost parent transforms, stale
     // reverse sampling, occurrence clock leakage, and annotation side effects.
@@ -610,6 +664,7 @@ void matteStream() {
 int main(int argc, char **argv) {
     try {
         if (argc==1) {
+            mixedPrimitiveResources();
             unreachableStructuralLayerRejected();
             missingRelationshipLookupRejected();
             matteStream();
