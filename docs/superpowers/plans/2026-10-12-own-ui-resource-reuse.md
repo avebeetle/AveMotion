@@ -81,3 +81,30 @@ windows-msvc-win32-preview, H own/reference/shell suites where applicable, stati
 package/import/identity/SymChk if promoted, and one strongest whole-stage review.
 No speculative improvement implementation is authorized by an empty task here;
 Task3 adds the exact bounded argument from measured evidence.
+
+## Task 4: Two-slot exclusive output-storage reuse
+
+**Files:** H/src/app/motionlab/OwnMotionRenderer.cpp; H/tests/motionlab/tst_own_motion_renderer.cpp only. Root owns STATE/ledger and report checkpoint separately.
+
+**Interfaces:** Existing render(OwnPlayback&, MotionTime, QSize, QString&) -> QImage, reset() and diagnostics() unchanged. Private Impl helpers QImage takeFrameStorage(QSize size, size_t& slot), void clearFrameStorage(); exactly two QImage anchors and bounded cursor. Public engine/playback and all diagnostic meanings remain unchanged.
+
+- [ ] Add `reusesExclusiveOutputStorageWithCurrentFrameRetained`: twelve256-square successful renders, alternate playback seek0/1, hold current image until render replacement returns, readbacks12, allocation events2, nominal bytes524288; verify alternating known ink/transparent pixels. Build existing own renderer target and run only this method BEFORE production change; expect functional FAIL allocations12 versus2, not a setup failure.
+- [ ] Add `retainedOutputSlotsFallBackWithoutMutation`: keep two early distinct frames and byte snapshots alive during later frames; require fresh fallback while all anchors are shared and both snapshots stable. Preserve existing reusesSurfacesAndOwnsEarlierImages assertions. Add exact resize/reset cold-allocation increments, recovery after invalid viewport, and retained-image-after-destruction checks without weakening prior odd-row/premultiplied/inactive tests.
+- [ ] Add `independentRenderersReuseWithoutCoupling`: two public own playback/renderer pairs; only A seeks/renders/resets/reuses, B position/image/diagnostics unchanged; B can then render independently. No mock storage/scene behavior or production test access API.
+- [ ] Implement the private two-slot policy from spec addendum. Eligible exact-size/premultiplied/isDetached anchor moves out before writable scanLine; fresh fallback increments allocation counters only on successful construction; fully filled local image is anchored before implicit-sharing return. Clear anchors on clearSurfaces/nativeFailure and reset; keep native reset ownership/row-copy/render path unchanged.
+- [ ] Run focused new renderer methods, then build/run existing H own suite serially: cmake --build build/cmake/supported-own-ui-task4-own-tests --config Release --parallel4; ctest --test-dir build/cmake/supported-own-ui-task4-own-tests -C Release --output-on-failure --no-tests=error. Use existing dynamic Qt environment from Task2 receipt; six test executables pass. Record warnings and named external skips. No timing overlaps tests/builds.
+- [ ] Retain commands/RED/GREEN/source diff in NEW H/build/checks/2026-10-12-motion-output-reuse-task4-001 and write task-4-report.md in this plan's ignored SDD workspace. Independent task spec/quality review, root fresh focused verification, STATE/ledger and scoped two-file commit/ordinary push. Do not promote or modify measurement kit.
+
+## Task 5: Same-instrument comparison and guarded handoff
+
+**Files:** H/docs/testing/motion-elements-2026-10-12/REPORT.md (append comparison); existing H build/current-release.md and ROADMAP.md only if promoted; E STATE/ledger. No new production subsystem or diagnostic tool.
+
+**Interfaces:** Unchanged frozen13-file Task3 adapter/observer; Task4 counters count only actual allocations; A identities/raw evidence remain immutable. Clean committed B with same assets/physical sizes. Existing package/import/readiness/SymChk/promotion contracts.
+
+- [ ] After Task4 review/commit, verify E/H clean/current remotes; build fresh own-static Release probe in build/diagnostics/motion-elements-candidate-001 with the same configure options as A. Freeze EXE/PDB/cache/manifest and exact13 kit files in NEW build/checks/2026-10-12-motion-elements-candidate-001. Verify A/B kit hashes equal and unchanged installed EXE/PDB.
+- [ ] Stop no foreign process; verify no active build/test/GUI overlaps, record idle evidence. Run all eight cases serially using collect.py into series-B, then strict analyse.py. A stays baseline-002/series-A. Root owns timing; no implementer/reviewer GUI overlap.
+- [ ] Append comparable prep/device/target/storage/readback counts, load, phase memory/CPU/handles, quiet/busy latency and actual deletion overlap/survival to H report. Report adverse results; single A/B is not a statistical speedup test. Reduction in storage events is required; no CPU/private-memory/latency guarantee. If gates fail, establish cause and bounded revision, not weakened checks.
+- [ ] Fresh final no-reference package46 and explicit windows-msvc-win32-preview97, H own6/reference4/shell3 where applicable, nine original Duck/Party opt-in gates and static2 plus three original smokes. Preserve actual warnings/setup failures and don't call external skips original acceptance. No goldens/formats/scheduler/GPU changes.
+- [ ] One strongest whole-stage review over E/H start-to-final changes with reports/ledger and deferred warnings; one combined final fix wave plus scoped re-review if needed. Rulings and residual limits recorded. No duplicate task suites without an amended-code reason.
+- [ ] Prepare normal static /MT AvelabsUI candidate without engine install; package/import/readiness/SymChk verify exact compiled source and notices. Check no running installed app, make verified full-package/PDB backup, guarded promote into same build/Release and build/symbols; verify installed hashes and repeat readiness. Do not close foreign processes or replace a running EXE. Native new-icon visual/mixed-DPR acceptance remains explicitly open.
+- [ ] Final STATE/ledger/report scoped commit and ordinary push after remote check. Handoff exact SHAs/compiled identities/commands/results/all ordered rulings and limits. Preserve raw/SDD/frozen evidence; do not create schedules or start a GPU/format follow-on.

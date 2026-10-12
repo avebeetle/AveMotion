@@ -35,6 +35,19 @@ four intervals short by<0.5ms. Raw attempt retained, not accepted as performance
 Measurement-only monotonic deadline remedy H1059ac0 independently reviewed;
 root diagnostics48/48, controlled native helper passes. New clean build/freeze
 and full strict rerun next; no product scheduler or resource ownership change.
+Task3 rerun accepted: E a596884/H1059ac0 static Release probe, all8serial cases
+strict analysis0; frozen13-file kit/raw identities in H/build/checks/
+2026-10-12-motion-elements-baseline-002. H report
+docs/testing/motion-elements-2026-10-12/REPORT.md; installed EXE/PDB unchanged.
+Canvas16 steady10s9590alloc/2.514billion nominalbytes; prep/device1per session.
+Busy icon Qt-paint p9519.7329ms/n20; busy-delete1.307ms/n1 with actual overlap
+and peer survival. No speedup/leak-free/physical-presentation claim.
+Root selected exactly one improvement: two renderer-local exclusive output
+QImage anchors, fresh fallback if shared, immutable retained frames, clear on
+resize/reset/nativeFailure. Written spec addendum/Tasks4–5 before product work;
+independent report/selection review clean after one bookkeeping/precision fix.
+No device/asset sharing or scheduler,
+GPU/format/docking change. Next Task4 TDD/review then identical-kit comparison.
 
 ## Completed — supported own playback and one real UI icon
 

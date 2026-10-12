@@ -108,3 +108,64 @@ latencies are recorded with limitations. The selected single change has a real
 RED/GREEN, retained-image and independent-playback tests, independent review and
 same-instrument comparison. Fresh no-reference/package and explicit Windows
 preview gates are retained; promotion, if needed, is guarded and recoverable.
+
+## Measured-selection addendum — 2026-10-12
+
+Accepted A is H `build/checks/2026-10-12-motion-elements-baseline-002/series-A`,
+compiled from E a596884/H1059ac0. All eight serial full cases passed unchanged
+strict analysis; the rejected baseline-001 stays separate. The report is H
+`docs/testing/motion-elements-2026-10-12/REPORT.md`. It measures a separate static
+production-linked probe, not the installed shell. Each independent session
+prepared its asset and created its device/target once. Canvas16 steady10s had
+9590 successful output-image allocations/readbacks, 2513960960 nominal bytes.
+Busy icon paint p95 was19.7329ms (20 activations); one actual overlapping owner
+deletion took1.307ms with peer survival. These are exploratory observations.
+
+Select exactly one change: renderer-local, two-slot output QImage reuse.
+Preparation sharing addresses one-time work (canvas16 aggregate130.23ms), not
+steady churn. Device sharing would cross lifetimes without native-memory
+attribution. One deletion sample does not establish a retirement bottleneck.
+Do not bundle these alternatives with output storage reuse.
+
+Only H `src/app/motionlab/OwnMotionRenderer.cpp` production implementation and
+`tests/motionlab/tst_own_motion_renderer.cpp` regressions change. No public
+signature, worker, controller, Player, executor, resource manager or format
+change. `Impl` owns exactly two QImage anchors and a bounded replacement cursor.
+Private helpers are `QImage takeFrameStorage(QSize size, size_t& slot)` and
+`void clearFrameStorage()`; publication restores the selected anchor only after
+all rows are filled. All access remains on the existing renderer owner thread.
+
+Storage is reusable only at the exact fitted target size, with
+Format_ARGB32_Premultiplied and isDetached()==true. Move/swap the eligible anchor
+into a sole local owner BEFORE writable scanLine access, avoiding implicit-copy
+detach. If none is eligible, create fresh QImage storage and replace one bounded
+anchor; consumers retain the old pixels through Qt ownership. No consumer-held
+image may be mutated, even when both slots are occupied or playback is reset.
+Successful fresh constructions alone increment the existing allocation/nominal
+byte counters. Reuse does not increment them; readbacks still count each output.
+
+Clear anchors/cursor on target resize, reset and native failure. Native devices
+retain their existing reset lifetime. Invalid-viewport or evaluate/plan errors
+still return explicit errors and never mutate retained images. Existing WARP
+draw, full row-copy/Map, transparency, fitting and pixel quality remain unchanged.
+Each renderer may retain at most two1024-square output anchors (8MiB nominal);
+external retained images are NOT bounded by those anchors. Smaller sizes retain
+their exact-sized storage only. This is a small working set, not a frame cache.
+
+Proof: twelve sequential256-square renders, with the current consumer image
+retained until replacement returns, use exactly two successful allocations;
+retain multiple earlier frames to force fresh fallback and check byte stability;
+resize/reset/destruction and two independent renderers preserve prior pixels
+and playback. Keep odd-row, premultiplied-edge, inactive-clear and original
+Duck/Party assertions. No tests or goldens are loosened. Native failure cleanup
+is inspected in the shared cleanup path; no new fault-injection API is added.
+
+Compare frozen A against a clean committed candidate B with identical13-file
+adapter/observer hashes, eight cases, physical sizes and inputs. Benefit is fewer
+actual storage events/nominal allocation traffic at comparable readback cadence,
+not a promised CPU/private-memory/latency improvement or zero-allocation result.
+Report all memory/latency tradeoffs, including post-delete/repeat phases and
+one-sample busy deletion. Keep the candidate only if correctness holds and
+allocation reduction is observed without an unexplained behavioral regression.
+Standing delegated written design approval applies; root records preflight and
+independent report review before implementation. Native icon acceptance stays open.
